@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Görev & Mesaj Sistemi (Test)</title>
+<title>Görev & Mesaj Sistemi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{font-family:Arial,sans-serif;background:#eceff1;margin:0;padding:0}
@@ -19,7 +19,7 @@ button:hover{opacity:0.85}
 
 <header>Görev & Mesaj Sistemi</header>
 
-<!-- LOGIN EKRANI -->
+<!-- LOGIN -->
 <div class="card" id="login">
 <h3>Giriş</h3>
 <input id="gmail" placeholder="Gmail">
@@ -28,15 +28,15 @@ button:hover{opacity:0.85}
 <button onclick="login()">Giriş Yap</button>
 </div>
 
-<!-- UYGULAMA EKRANI -->
+<!-- APP -->
 <div class="card" id="app" style="display:none">
-<h3>Yeni Görev (Test)</h3>
-<input type="text" id="baslik" placeholder="Görev Başlığı">
+<h3>Yeni Görev</h3>
+<input type="text" id="baslik" placeholder="Başlık">
 <input type="text" id="aciklama" placeholder="Açıklama">
 <button onclick="gorevEkle()">Görev Kaydet</button>
 
 <hr>
-<h3>Mesaj (Test)</h3>
+<h3>Mesaj</h3>
 <input id="mesajInput" placeholder="Mesaj yaz">
 <button onclick="mesajGonder()">Mesaj Gönder</button>
 
@@ -50,73 +50,95 @@ button:hover{opacity:0.85}
 </div>
 
 <script>
-// SHA-256 hash fonksiyonu
-async function sha256(str) {
+const API = "https://script.google.com/macros/s/AKfycbzk54RQgoTibLfA5Yn6Jvz9PGgdpWtu6S4Vh9lf4hILXGyFwOX1seMajPtFlgvhWEY3/exec";
+
+// SHA256 Fonksiyonu
+async function sha256(str){
   const buffer = new TextEncoder("utf-8").encode(str);
   const hash = await crypto.subtle.digest("SHA-256", buffer);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("");
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
-// Login fonksiyonu
+// LOGIN
 async function login(){
-  if(!gmail.value || !rumuz.value || !sifre.value){
-    alert("Tüm alanlar zorunlu");
-    return;
-  }
-
+  if(!gmail.value || !rumuz.value || !sifre.value){ alert("Boş alan bırakma"); return; }
   const hash = await sha256(sifre.value.trim());
-  localStorage.setItem("gmail", gmail.value.trim());
-  localStorage.setItem("rumuz", rumuz.value.trim());
-  localStorage.setItem("sifre", hash);
 
-  login.style.display="none";
-  app.style.display="block";
-
-  alert("Giriş başarılı! (Test modunda, e-tablo bağlantısı yok)");
-  veriGetir();
+  fetch(API,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({tip:"login", gmail:gmail.value.trim(), rumuz:rumuz.value.trim(), hash:hash})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.status=="ok"){
+      login.style.display="none";
+      app.style.display="block";
+      veriGetir();
+      setInterval(veriGetir,5000);
+    } else alert(d.message);
+  })
+  .catch(e=>alert("Bağlantı hatası: "+e));
 }
 
-// Görev ekleme (test)
+// GÖREV EKLE
 function gorevEkle(){
   const bas = baslik.value.trim();
   const acik = aciklama.value.trim();
   if(!bas){ alert("Başlık boş olamaz"); return; }
-  const rumuz = localStorage.getItem("rumuz");
-  const tarihSaat = new Date().toLocaleString();
+  const tarihSaat = new Date().toLocaleDateString();
+  const saat = new Date().toLocaleTimeString();
 
-  // Test için alert
-  alert(`Görev eklendi:\nBaşlık: ${bas}\nAçıklama: ${acik}\nKullanıcı: ${rumuz}\nTarih/Saat: ${tarihSaat}`);
-
-  // Görevleri sayfada göster
-  const div = document.createElement("div");
-  div.className="task";
-  div.innerHTML=`<b>${tarihSaat}</b><br>${bas}<br>${acik}<br><small>${rumuz}</small>`;
-  gorevListe.prepend(div);
-
-  baslik.value=""; aciklama.value="";
+  fetch(API,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tip:"not", tarihSaat:tarihSaat, saat:saat, baslik:bas, aciklama:acik, kullanici:rumuz.value.trim()})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.status=="ok"){ baslik.value=""; aciklama.value=""; veriGetir(); }
+    else alert(d.message);
+  })
+  .catch(e=>alert("Görev ekleme hatası: "+e));
 }
 
-// Mesaj gönderme (test)
+// MESAJ GÖNDER
 function mesajGonder(){
   const msg = mesajInput.value.trim();
   if(!msg){ alert("Mesaj boş olamaz"); return; }
-  const rumuz = localStorage.getItem("rumuz");
-  const tarihSaat = new Date().toLocaleString();
+  const tarih = new Date().toLocaleDateString();
+  const saat = new Date().toLocaleTimeString();
 
-  alert(`Mesaj gönderildi:\nMesaj: ${msg}\nKullanıcı: ${rumuz}\nTarih/Saat: ${tarihSaat}`);
-
-  const div = document.createElement("div");
-  div.className="msg";
-  div.innerHTML=`<b>${rumuz}</b>: ${msg} <small>${tarihSaat}</small>`;
-  mesajListe.prepend(div);
-
-  mesajInput.value="";
+  fetch(API,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tip:"mesaj", mesaj:msg, tarih:tarih, saat:saat, kullanici:rumuz.value.trim()})
+  })
+  .then(r=>r.json())
+  .then(d=>{ mesajInput.value=""; veriGetir(); })
+  .catch(e=>alert("Mesaj gönderme hatası: "+e));
 }
 
-// Test verilerini göster (sayfa açıldığında)
+// VERİ ÇEK
 function veriGetir(){
-  // Şimdilik test modunda, boş bırak
+  fetch(API)
+  .then(r=>r.json())
+  .then(d=>{
+    let gorevHtml="", mesajHtml="";
+    d.veriler.forEach(r=>{
+      if(r[0]=="not"){
+        gorevHtml += `<div class="task"><b>${r[1]} ${r[2]}</b><br>${r[3]}<br>${r[4]}<br><small>${r[5]}</small></div>`;
+      }
+      if(r[0]=="mesaj"){
+        mesajHtml += `<div class="msg"><b>${r[5]}</b>: ${r[4]}</div>`;
+      }
+    });
+    gorevListe.innerHTML = gorevHtml || "Henüz görev yok";
+    mesajListe.innerHTML = mesajHtml || "Henüz mesaj yok";
+  })
+  .catch(e=>console.error("Veri çekme hatası: ",e));
 }
 </script>
+
 </body>
 </html>

@@ -2,14 +2,15 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Görev & Mesaj Sistemi</title>
+<title>Görev & Mesaj Sistemi (Test)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{font-family:Arial;background:#eceff1;margin:0}
-header{background:#263238;color:#fff;padding:12px;text-align:center;font-size:18px}
+body{font-family:Arial,sans-serif;background:#eceff1;margin:0;padding:0}
+header{background:#263238;color:#fff;padding:15px;text-align:center;font-size:20px}
 .card{background:#fff;margin:15px;padding:15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.2)}
 input,button{width:100%;padding:8px;margin:6px 0;font-size:14px;border-radius:6px;border:1px solid #ccc}
-button{background:#2196F3;color:#fff;border:none}
+button{background:#2196F3;color:#fff;border:none;cursor:pointer}
+button:hover{opacity:0.85}
 .task{border:1px solid #aaa;border-radius:6px;padding:8px;margin:5px 0}
 .msg{background:#f5f5f5;padding:6px;border-radius:5px;margin:4px 0}
 </style>
@@ -18,123 +19,104 @@ button{background:#2196F3;color:#fff;border:none}
 
 <header>Görev & Mesaj Sistemi</header>
 
+<!-- LOGIN EKRANI -->
 <div class="card" id="login">
 <h3>Giriş</h3>
 <input id="gmail" placeholder="Gmail">
 <input id="rumuz" placeholder="Rumuz">
+<input id="sifre" type="password" placeholder="Şifre">
 <button onclick="login()">Giriş Yap</button>
 </div>
 
+<!-- UYGULAMA EKRANI -->
 <div class="card" id="app" style="display:none">
-<h3>Yeni Görev</h3>
-<input type="date" id="tarih">
-<input type="time" id="saat">
-<input id="baslik" placeholder="Başlık">
-<input id="aciklama" placeholder="Açıklama">
+<h3>Yeni Görev (Test)</h3>
+<input type="text" id="baslik" placeholder="Görev Başlığı">
+<input type="text" id="aciklama" placeholder="Açıklama">
 <button onclick="gorevEkle()">Görev Kaydet</button>
 
 <hr>
-<h3>Mesaj</h3>
+<h3>Mesaj (Test)</h3>
 <input id="mesajInput" placeholder="Mesaj yaz">
 <button onclick="mesajGonder()">Mesaj Gönder</button>
 
 <hr>
 <h3>Görevler</h3>
-<div id="gorevListe"></div>
+<div id="gorevListe">Henüz görev yok</div>
 
 <hr>
 <h3>Mesajlar</h3>
-<div id="mesajListe"></div>
+<div id="mesajListe">Henüz mesaj yok</div>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbyxfXsdgam3BzOID_79PoA1eEMrepWl35uVnvNZmVuBkItb5KfeAuB7g8GKZHFNPNg4/exec";
+// SHA-256 hash fonksiyonu
+async function sha256(str) {
+  const buffer = new TextEncoder("utf-8").encode(str);
+  const hash = await crypto.subtle.digest("SHA-256", buffer);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
 
-function login(){
-  if(!gmail.value || !rumuz.value){
-    alert("Boş bırakma"); return;
+// Login fonksiyonu
+async function login(){
+  if(!gmail.value || !rumuz.value || !sifre.value){
+    alert("Tüm alanlar zorunlu");
+    return;
   }
-  localStorage.setItem("gmail", gmail.value);
-  localStorage.setItem("rumuz", rumuz.value);
+
+  const hash = await sha256(sifre.value.trim());
+  localStorage.setItem("gmail", gmail.value.trim());
+  localStorage.setItem("rumuz", rumuz.value.trim());
+  localStorage.setItem("sifre", hash);
+
   login.style.display="none";
   app.style.display="block";
+
+  alert("Giriş başarılı! (Test modunda, e-tablo bağlantısı yok)");
   veriGetir();
-  setInterval(veriGetir,5000);
 }
 
-// GÖREV
+// Görev ekleme (test)
 function gorevEkle(){
-  fetch(API,{
-    method:"POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      tip:"not",
-      tarih: tarih.value,
-      saat: saat.value,
-      baslik: baslik.value,
-      aciklama: aciklama.value,
-      kullanici: localStorage.getItem("rumuz")
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    alert(JSON.stringify(d));
-    baslik.value=""; aciklama.value="";
-    veriGetir();
-  })
-  .catch(e=>alert("HATA: "+e));
+  const bas = baslik.value.trim();
+  const acik = aciklama.value.trim();
+  if(!bas){ alert("Başlık boş olamaz"); return; }
+  const rumuz = localStorage.getItem("rumuz");
+  const tarihSaat = new Date().toLocaleString();
+
+  // Test için alert
+  alert(`Görev eklendi:\nBaşlık: ${bas}\nAçıklama: ${acik}\nKullanıcı: ${rumuz}\nTarih/Saat: ${tarihSaat}`);
+
+  // Görevleri sayfada göster
+  const div = document.createElement("div");
+  div.className="task";
+  div.innerHTML=`<b>${tarihSaat}</b><br>${bas}<br>${acik}<br><small>${rumuz}</small>`;
+  gorevListe.prepend(div);
+
+  baslik.value=""; aciklama.value="";
 }
 
-// MESAJ
+// Mesaj gönderme (test)
 function mesajGonder(){
-  fetch(API,{
-    method:"POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      tip:"mesaj",
-      mesaj: mesajInput.value,
-      kullanici: localStorage.getItem("rumuz")
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    alert(JSON.stringify(d));
-    mesajInput.value="";
-    veriGetir();
-  })
-  .catch(e=>alert("HATA: "+e));
+  const msg = mesajInput.value.trim();
+  if(!msg){ alert("Mesaj boş olamaz"); return; }
+  const rumuz = localStorage.getItem("rumuz");
+  const tarihSaat = new Date().toLocaleString();
+
+  alert(`Mesaj gönderildi:\nMesaj: ${msg}\nKullanıcı: ${rumuz}\nTarih/Saat: ${tarihSaat}`);
+
+  const div = document.createElement("div");
+  div.className="msg";
+  div.innerHTML=`<b>${rumuz}</b>: ${msg} <small>${tarihSaat}</small>`;
+  mesajListe.prepend(div);
+
+  mesajInput.value="";
 }
 
-// VERİ OKU
+// Test verilerini göster (sayfa açıldığında)
 function veriGetir(){
-  fetch(API)
-  .then(r=>r.json())
-  .then(data=>{
-    let gorevHtml="";
-    let mesajHtml="";
-
-    data.slice(1).forEach(r=>{
-      if(r[0]=="not"){
-        gorevHtml += `<div class="task">
-          <b>${r[1]} ${r[2]}</b><br>
-          ${r[3]}<br>
-          ${r[4]}<br>
-          <small>${r[5]}</small>
-        </div>`;
-      }
-      if(r[0]=="mesaj"){
-        mesajHtml += `<div class="msg">
-          <b>${r[5]}</b>: ${r[4]}
-        </div>`;
-      }
-    });
-
-    gorevListe.innerHTML = gorevHtml || "Görev yok";
-    mesajListe.innerHTML = mesajHtml || "Mesaj yok";
-  })
-  .catch(e=>alert("OKUMA HATA: "+e));
+  // Şimdilik test modunda, boş bırak
 }
 </script>
 </body>
 </html>
-

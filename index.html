@@ -5,12 +5,11 @@
 <title>Görev & Mesaj Sistemi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{font-family:Arial,sans-serif;background:#eceff1;margin:0;padding:0}
+body{font-family:Arial;background:#eceff1;margin:0}
 header{background:#263238;color:#fff;padding:15px;text-align:center;font-size:20px}
 .card{background:#fff;margin:15px;padding:15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.2)}
 input,button{width:100%;padding:8px;margin:6px 0;font-size:14px;border-radius:6px;border:1px solid #ccc}
-button{background:#2196F3;color:#fff;border:none;cursor:pointer}
-button:hover{opacity:0.85}
+button{background:#2196F3;color:#fff;border:none}
 .task{border:1px solid #aaa;border-radius:6px;padding:8px;margin:5px 0}
 .msg{background:#f5f5f5;padding:6px;border-radius:5px;margin:4px 0}
 </style>
@@ -19,126 +18,124 @@ button:hover{opacity:0.85}
 
 <header>Görev & Mesaj Sistemi</header>
 
-<!-- LOGIN -->
 <div class="card" id="login">
 <h3>Giriş</h3>
-<input id="gmail" placeholder="Gmail">
-<input id="rumuz" placeholder="Rumuz">
-<input id="sifre" type="password" placeholder="Şifre">
-<button onclick="login()">Giriş Yap</button>
+<input id="gmail" placeholder="Gmail adresin">
+<button id="loginBtn">Giriş Yap</button>
 </div>
 
-<!-- APP -->
 <div class="card" id="app" style="display:none">
 <h3>Yeni Görev</h3>
-<input type="text" id="baslik" placeholder="Başlık">
-<input type="text" id="aciklama" placeholder="Açıklama">
-<button onclick="gorevEkle()">Görev Kaydet</button>
+<input id="baslik" placeholder="Başlık">
+<input id="aciklama" placeholder="Açıklama">
+<button id="gorevBtn">Görev Kaydet</button>
 
 <hr>
 <h3>Mesaj</h3>
 <input id="mesajInput" placeholder="Mesaj yaz">
-<button onclick="mesajGonder()">Mesaj Gönder</button>
+<button id="mesajBtn">Mesaj Gönder</button>
 
 <hr>
 <h3>Görevler</h3>
-<div id="gorevListe">Henüz görev yok</div>
+<div id="gorevListe"></div>
 
 <hr>
 <h3>Mesajlar</h3>
-<div id="mesajListe">Henüz mesaj yok</div>
+<div id="mesajListe"></div>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzk54RQgoTibLfA5Yn6Jvz9PGgdpWtu6S4Vh9lf4hILXGyFwOX1seMajPtFlgvhWEY3/exec";
+const API = "YOUR_DEPLOYED_SCRIPT_URL_HERE"; // Apps Script URL
 
-// SHA256 Fonksiyonu
-async function sha256(str){
-  const buffer = new TextEncoder("utf-8").encode(str);
-  const hash = await crypto.subtle.digest("SHA-256", buffer);
-  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
-}
+const loginDiv = document.getElementById("login");
+const appDiv = document.getElementById("app");
+const loginBtn = document.getElementById("loginBtn");
+const gorevBtn = document.getElementById("gorevBtn");
+const mesajBtn = document.getElementById("mesajBtn");
 
-// LOGIN
-async function login(){
-  if(!gmail.value || !rumuz.value || !sifre.value){ alert("Boş alan bırakma"); return; }
-  const hash = await sha256(sifre.value.trim());
+const gmailInput = document.getElementById("gmail");
+const baslikInput = document.getElementById("baslik");
+const aciklamaInput = document.getElementById("aciklama");
+const mesajInput = document.getElementById("mesajInput");
 
-  fetch(API,{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({tip:"login", gmail:gmail.value.trim(), rumuz:rumuz.value.trim(), hash:hash})
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.status=="ok"){
-      login.style.display="none";
-      app.style.display="block";
-      veriGetir();
-      setInterval(veriGetir,5000);
-    } else alert(d.message);
-  })
-  .catch(e=>alert("Bağlantı hatası: "+e));
-}
+const gorevListe = document.getElementById("gorevListe");
+const mesajListe = document.getElementById("mesajListe");
 
-// GÖREV EKLE
-function gorevEkle(){
-  const bas = baslik.value.trim();
-  const acik = aciklama.value.trim();
-  if(!bas){ alert("Başlık boş olamaz"); return; }
-  const tarihSaat = new Date().toLocaleDateString();
-  const saat = new Date().toLocaleTimeString();
+let rumuz = "";
 
-  fetch(API,{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({tip:"not", tarihSaat:tarihSaat, saat:saat, baslik:bas, aciklama:acik, kullanici:rumuz.value.trim()})
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.status=="ok"){ baslik.value=""; aciklama.value=""; veriGetir(); }
-    else alert(d.message);
-  })
-  .catch(e=>alert("Görev ekleme hatası: "+e));
-}
+loginBtn.addEventListener("click", () => {
+  const email = gmailInput.value.trim();
+  if (!email || !email.includes("@")) { alert("Geçerli Gmail gir"); return; }
+  rumuz = email.split("@")[0];
+  localStorage.setItem("rumuz", rumuz);
+  loginDiv.style.display = "none";
+  appDiv.style.display = "block";
+  veriGetir();
+  setInterval(veriGetir, 5000);
+});
 
-// MESAJ GÖNDER
-function mesajGonder(){
-  const msg = mesajInput.value.trim();
-  if(!msg){ alert("Mesaj boş olamaz"); return; }
-  const tarih = new Date().toLocaleDateString();
-  const saat = new Date().toLocaleTimeString();
+gorevBtn.addEventListener("click", () => {
+  const baslik = baslikInput.value.trim();
+  const aciklama = aciklamaInput.value.trim();
+  if (!baslik) { alert("Başlık boş"); return; }
+  const now = new Date();
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      tip: "not",
+      tarihSaat: now.toLocaleDateString(),
+      saat: now.toLocaleTimeString(),
+      baslik: baslik,
+      aciklama: aciklama,
+      kullanici: rumuz
+    })
+  }).then(() => { baslikInput.value=""; aciklamaInput.value=""; veriGetir(); })
+    .catch(err => console.error(err));
+});
 
-  fetch(API,{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({tip:"mesaj", mesaj:msg, tarih:tarih, saat:saat, kullanici:rumuz.value.trim()})
-  })
-  .then(r=>r.json())
-  .then(d=>{ mesajInput.value=""; veriGetir(); })
-  .catch(e=>alert("Mesaj gönderme hatası: "+e));
-}
+mesajBtn.addEventListener("click", () => {
+  const mesaj = mesajInput.value.trim();
+  if (!mesaj) { alert("Mesaj boş"); return; }
+  const now = new Date();
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      tip: "mesaj",
+      tarih: now.toLocaleDateString(),
+      saat: now.toLocaleTimeString(),
+      mesaj: mesaj,
+      kullanici: rumuz
+    })
+  }).then(() => { mesajInput.value=""; veriGetir(); })
+    .catch(err => console.error(err));
+});
 
-// VERİ ÇEK
-function veriGetir(){
+function veriGetir() {
   fetch(API)
-  .then(r=>r.json())
-  .then(d=>{
-    let gorevHtml="", mesajHtml="";
-    d.veriler.forEach(r=>{
-      if(r[0]=="not"){
-        gorevHtml += `<div class="task"><b>${r[1]} ${r[2]}</b><br>${r[3]}<br>${r[4]}<br><small>${r[5]}</small></div>`;
-      }
-      if(r[0]=="mesaj"){
-        mesajHtml += `<div class="msg"><b>${r[5]}</b>: ${r[4]}</div>`;
-      }
-    });
-    gorevListe.innerHTML = gorevHtml || "Henüz görev yok";
-    mesajListe.innerHTML = mesajHtml || "Henüz mesaj yok";
-  })
-  .catch(e=>console.error("Veri çekme hatası: ",e));
+    .then(r => r.json())
+    .then(d => {
+      gorevListe.innerHTML = "";
+      mesajListe.innerHTML = "";
+      if(!d.veriler) return;
+
+      d.veriler.forEach(r => {
+        if(r[0] === "not"){
+          const div = document.createElement("div");
+          div.className = "task";
+          div.innerHTML = `<b>${r[1]} ${r[2]}</b><br>${r[3]}<br>${r[4]}<br><small>${r[5]}</small>`;
+          gorevListe.appendChild(div);
+        } else if(r[0] === "mesaj"){
+          const div = document.createElement("div");
+          div.className = "msg";
+          div.innerHTML = `<b>${r[5]}</b>: ${r[4]}`;
+          mesajListe.appendChild(div);
+        }
+      });
+
+      if(gorevListe.innerHTML==="") gorevListe.innerHTML="Görev yok";
+      if(mesajListe.innerHTML==="") mesajListe.innerHTML="Mesaj yok";
+    }).catch(err => console.error(err));
 }
 </script>
-
 </body>
 </html>

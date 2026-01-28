@@ -66,6 +66,7 @@ function login(){
 function gorevEkle(){
   fetch(API,{
     method:"POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       tip:"not",
       tarih: tarih.value,
@@ -74,29 +75,34 @@ function gorevEkle(){
       aciklama: aciklama.value,
       kullanici: localStorage.getItem("rumuz")
     })
-  }).then(r=>r.json())
+  })
+  .then(r=>r.json())
   .then(d=>{
-    if(d.status=="ok"){
-      baslik.value=""; aciklama.value="";
-      veriGetir();
-    } else alert(d.message);
-  });
+    alert(JSON.stringify(d));
+    baslik.value=""; aciklama.value="";
+    veriGetir();
+  })
+  .catch(e=>alert("HATA: "+e));
 }
 
 // MESAJ
 function mesajGonder(){
   fetch(API,{
     method:"POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       tip:"mesaj",
       mesaj: mesajInput.value,
       kullanici: localStorage.getItem("rumuz")
     })
-  }).then(r=>r.json())
+  })
+  .then(r=>r.json())
   .then(d=>{
+    alert(JSON.stringify(d));
     mesajInput.value="";
     veriGetir();
-  });
+  })
+  .catch(e=>alert("HATA: "+e));
 }
 
 // VERİ OKU
@@ -125,7 +131,8 @@ function veriGetir(){
 
     gorevListe.innerHTML = gorevHtml || "Görev yok";
     mesajListe.innerHTML = mesajHtml || "Mesaj yok";
-  });
+  })
+  .catch(e=>alert("OKUMA HATA: "+e));
 }
 </script>
 </body>

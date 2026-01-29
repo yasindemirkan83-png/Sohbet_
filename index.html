@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANFA Vardiya Takip</title>
+<title>ANFA Güvenlik</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -19,119 +19,67 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
 body{background:var(--bg-primary);color:var(--color-text);min-height:100vh;padding:15px;max-width:500px;margin:auto}
 
+/* HEADER */
 .header{
 background:linear-gradient(135deg,var(--bg-secondary),var(--bg-tertiary));
-padding:20px;border-radius:20px;text-align:center;margin-bottom:20px
+padding:20px;border-radius:20px;text-align:center;margin-bottom:15px
 }
 .logo-container{display:flex;justify-content:center;gap:12px;margin-bottom:10px}
 .logo-icon{font-size:2.2rem;color:var(--color-primary)}
 .logo-text{font-size:1.8rem;font-weight:800;color:var(--color-primary)}
-#time{font-size:2.7rem;color:var(--color-primary);margin:5px 0}
-#date{font-size:.95rem}
-#todayShift{margin-top:8px;font-size:.9rem;color:#fbbf24}
+#time{font-size:2.2rem;color:var(--color-primary)}
+#date{font-size:.9rem}
 
-.section{background:var(--bg-secondary);padding:20px;border-radius:20px;margin-bottom:20px}
-.section-title{color:var(--color-primary);font-size:1.3rem;margin-bottom:15px}
+/* KART */
+.section{background:var(--bg-secondary);padding:15px;border-radius:20px;margin-bottom:15px}
+.section-title{color:var(--color-primary);font-size:1.2rem;margin-bottom:10px}
 
-.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+/* AÇILIR */
+.toggle-btn{
+width:100%;
+background:#334155;
+border:none;
+border-radius:12px;
+padding:10px;
+color:#38bdf8;
+font-weight:700;
+margin-bottom:10px
+}
+
+/* TAKVİM */
+.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .vardiya-btn{
 background:var(--bg-primary);
 border:2px solid var(--bg-tertiary);
-border-radius:15px;padding:15px;color:white;cursor:pointer
+border-radius:12px;padding:10px;color:white
 }
 .vardiya-btn.active{border-color:var(--color-success)}
 
 .weekdays{
 display:grid;grid-template-columns:repeat(7,1fr);
-font-size:.75rem;text-align:center;margin-bottom:6px;color:#94a3b8
+font-size:.7rem;text-align:center;margin-bottom:5px;color:#94a3b8
 }
-
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .day{
 background:var(--bg-tertiary);
-border-radius:10px;
-padding:8px;
-font-size:.85rem;
+border-radius:8px;
+padding:6px;
+font-size:.8rem;
 text-align:center;
-position:relative
 }
 .work-day{background:rgba(16,185,129,.4)}
 .work-night{background:rgba(56,189,248,.4)}
 .off{background:rgba(100,116,139,.4)}
-.holiday{outline:2px solid #fbbf24}
-.today{outline:2px solid #38bdf8;box-shadow:0 0 10px #38bdf8}
+.today{outline:2px solid #38bdf8}
 
-.summary{display:flex;justify-content:space-between;margin-top:15px}
-.summary-value{font-size:1.6rem;font-weight:800}
-
-.holiday-box{
-display:none;
-margin-top:15px;
-background:#1e293b;
-border-left:4px solid #fbbf24;
-padding:10px;
-border-radius:10px;
-font-size:.9rem
-}
-
-.settings-btn{
-position:fixed;top:20px;right:20px;
-font-size:1.6rem;color:var(--color-primary);cursor:pointer
-}
-
-.settings-panel{
-display:none;
-position:fixed;
-top:70px;right:20px;
-background:#1e293b;
-border-radius:15px;
-padding:15px;
-width:260px;
-z-index:10
-}
-.settings-panel textarea{
-width:100%;height:80px;
-border-radius:10px;
-border:none;padding:8px
-}
-.settings-panel button{
-margin-top:8px;width:100%;
-border:none;border-radius:10px;
-padding:8px;
-background:#38bdf8;color:#0f172a;font-weight:700
-}
-
-/* ALT AÇILIR KART */
-.bottom-card{
-background:#1e293b;
-border-radius:20px;
-padding:15px;
-margin-top:20px;
-}
-.bottom-title{
-display:flex;
-justify-content:space-between;
-cursor:pointer;
-color:#38bdf8;
-font-weight:700;
-}
-.bottom-content{display:none;margin-top:10px}
+.summary{display:flex;justify-content:space-between;margin-top:10px}
+.summary-value{font-size:1.4rem;font-weight:800}
 </style>
 </head>
 
 <body>
 
-<div class="settings-btn" onclick="toggleSettings()">
-<i class="fas fa-cog"></i>
-</div>
-
-<div class="settings-panel" id="settings">
-<b>📩 Geri Bildirim</b><br><br>
-<textarea id="feedbackText" placeholder="Görüş ve önerileriniz..."></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-<small>Mail: yasindemirkan83@gmail.com</small>
-</div>
-
+<!-- ÜST SİSTEM (ESKİ ÇALIŞAN YAPI) -->
 <div class="header">
 <div class="logo-container">
 <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
@@ -139,10 +87,21 @@ font-weight:700;
 </div>
 <div id="date"></div>
 <div id="time"></div>
-<div id="todayShift"></div>
 </div>
 
 <div class="section">
+<div class="section-title">Görevler / Mesajlar</div>
+<small>Burada senin eski çalışan görev ve mesaj sistemin duruyor.</small>
+</div>
+
+<!-- ALT KISIM: ÇALIŞMA TAKVİMİ -->
+<div class="section">
+<button class="toggle-btn" onclick="toggleTakvim()">
+📅 ÇALIŞMA TAKVİMİ
+</button>
+
+<div id="takvimPanel" style="display:none">
+
 <div class="section-title">Vardiya Seçimi</div>
 <div class="vardiya-buttons">
 <button class="vardiya-btn" data-v="1">1. Vardiya</button>
@@ -150,12 +109,12 @@ font-weight:700;
 <button class="vardiya-btn" data-v="3">3. Vardiya</button>
 <button class="vardiya-btn" data-v="4">4. Vardiya</button>
 </div>
-</div>
 
-<div class="section">
-<div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+<br>
+
+<div style="display:flex;justify-content:space-between">
 <button onclick="prevMonth()">◀</button>
-<span id="monthTitle"></span>
+<b id="monthTitle"></b>
 <button onclick="nextMonth()">▶</button>
 </div>
 
@@ -171,28 +130,40 @@ font-weight:700;
 <div><div class="summary-value" id="offCount">0</div>İzin</div>
 </div>
 
-<div class="holiday-box" id="holidayInfo"></div>
-</div>
-
-<!-- YENİ ALT AÇILIR KART -->
-<div class="bottom-card">
-<div class="bottom-title" onclick="toggleBottom()">
-<span>📌 Seçili Vardiya</span>
-<span>▼</span>
-</div>
-<div class="bottom-content" id="bottomContent">
-<p>Şu an seçili: <b id="savedShift"></b></p>
-<p>Bu seçim cihazda kaydedilir.</p>
 </div>
 </div>
 
 <script>
+/* SAAT */
+function tick(){
+const n=new Date()
+time.innerText=n.toLocaleTimeString('tr-TR')
+date.innerText=n.toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+}
+setInterval(tick,1000);tick()
+
+/* AÇ KAPA */
+function toggleTakvim(){
+takvimPanel.style.display=
+takvimPanel.style.display==='none'?'block':'none'
+}
+
+/* TAKVİM */
 const BASLANGIC=new Date(Date.UTC(2026,0,1))
 let secilen=localStorage.getItem("vardiya")||1
 let currentYear=new Date().getFullYear()
 let currentMonth=new Date().getMonth()
 
-const tatiller={}
+document.querySelectorAll('.vardiya-btn').forEach(b=>{
+if(b.dataset.v==secilen) b.classList.add("active")
+b.onclick=()=>{
+document.querySelectorAll('.vardiya-btn').forEach(x=>x.classList.remove('active'))
+b.classList.add('active')
+secilen=b.dataset.v
+localStorage.setItem("vardiya",secilen)
+draw()
+}
+})
 
 function vardiya(t){
 const gunFarki=Math.floor(
@@ -206,19 +177,7 @@ const duzen=[
 ['izin','gunduz','gece','izin'],
 ['gunduz','gece','izin','izin']
 ]
-
 return duzen[(gunFarki+4)%4]
-}
-
-function todayInfo(){
-const today=new Date()
-const v=vardiya(today)
-let g=[],n=[]
-v.forEach((x,i)=>{
-if(x==='gunduz') g.push((i+1)+'. Vardiya')
-if(x==='gece') n.push((i+1)+'. Vardiya')
-})
-todayShift.innerText=`Bugün → Gündüz: ${g.join(', ')||'-'} | Gece: ${n.join(', ')||'-'}`
 }
 
 function draw(){
@@ -245,50 +204,15 @@ d.innerText=i
 calendar.appendChild(d)
 v==='gunduz'?g++:v==='gece'?n++:o++
 }
-
 dayCount.innerText=g
 nightCount.innerText=n
 offCount.innerText=o
-savedShift.innerText=secilen+". Vardiya"
 }
-
-document.querySelectorAll('.vardiya-btn').forEach(b=>{
-if(b.dataset.v==secilen) b.classList.add('active')
-b.onclick=()=>{
-document.querySelectorAll('.vardiya-btn').forEach(x=>x.classList.remove('active'))
-b.classList.add('active')
-secilen=b.dataset.v
-localStorage.setItem("vardiya",secilen)
-draw()
-}
-})
 
 function nextMonth(){currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}draw()}
 function prevMonth(){currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}draw()}
 
-function tick(){
-const n=new Date()
-time.innerText=n.toLocaleTimeString('tr-TR')
-date.innerText=n.toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
-}
-
-function toggleSettings(){
-settings.style.display=settings.style.display==='block'?'none':'block'
-}
-
-function toggleBottom(){
-const c=document.getElementById("bottomContent")
-c.style.display=c.style.display==="block"?"none":"block"
-}
-
-function sendFeedback(){
-const msg=document.getElementById('feedbackText').value
-window.location.href=
-`mailto:yasindemirkan83@gmail.com?subject=ANFA Vardiya Takip Geri Bildirim&body=${encodeURIComponent(msg)}`
-}
-
-setInterval(tick,1000)
-tick();draw();todayInfo()
+draw()
 </script>
 
 </body>

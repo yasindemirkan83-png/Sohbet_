@@ -4,225 +4,153 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ANFA Güvenlik</title>
-<link rel="manifest" href="manifest.json">
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 body{
-margin:0;
-font-family:Segoe UI;
-background:url("https://source.unsplash.com/1600x900/?security,night,city") no-repeat center fixed;
-background-size:cover;
-color:white;
+  font-family:'Poppins',sans-serif;
+  margin:0;
+  min-height:100vh;
+  background:url('https://source.unsplash.com/1600x900/?security,city') no-repeat center/cover;
+  color:white;
+}
+.overlay{
+  background:rgba(0,0,0,0.75);
+  min-height:100vh;
+  padding:20px;
 }
 header{
-background:rgba(0,0,0,0.8);
-padding:15px;
-display:flex;
-justify-content:space-between;
-box-shadow:0 0 20px cyan;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
-#logo{
-font-size:28px;
-color:cyan;
-text-shadow:0 0 15px cyan;
+header h1{
+  color:#00ffff;
+  margin:0;
 }
 .card{
-background:rgba(0,0,0,0.7);
-margin:15px;
-padding:15px;
-border-radius:15px;
-box-shadow:0 0 15px cyan;
+  background:rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:16px;
+  margin-top:20px;
+  backdrop-filter:blur(10px);
 }
-.task{
-border:1px solid cyan;
-padding:10px;
-margin:5px;
-border-radius:10px;
-cursor:pointer;
+button{
+  background:#00ffff;
+  border:none;
+  border-radius:10px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-weight:600;
 }
-.task.selected{background:rgba(0,255,255,0.4);}
-.task.yapildi{background:rgba(255,0,0,0.4);}
-button{padding:10px;border-radius:8px;border:none;background:cyan;font-weight:bold;}
-input,textarea{width:100%;padding:10px;border-radius:8px;margin:5px;}
+button:hover{opacity:0.85;}
+.hidden{display:none;}
+.task{border-bottom:1px solid rgba(255,255,255,0.2);padding:6px 0;}
+.task.done{text-decoration:line-through;color:#aaa;}
 </style>
 </head>
 
 <body>
+<div class="overlay">
 
 <header>
-<div id="logo">ANFA GÜVENLİK</div>
-<div id="clock"></div>
+  <h1>ANFA Güvenlik</h1>
+  <div id="datetime"></div>
 </header>
 
-<div class="card" id="login">
-<button onclick="login()">Gmail ile Giriş</button>
+<div class="card" id="loginBox">
+  <h3>Giriş</h3>
+  <button onclick="login()">Google ile Giriş</button>
 </div>
 
-<div class="card" id="app" style="display:none">
+<div class="card hidden" id="panel">
+  <h3>Görev Panosu</h3>
+  <div id="taskList"></div>
 
-<h3>Görev Panosu</h3>
-<div id="gorevListe"></div>
-
-<div>
-<button onclick="toggleNew()">➕ Yeni Görev</button>
-<button onclick="doneTask()">✔️</button>
-<button onclick="deleteTask()">🗑️</button>
+  <div id="adminBox" class="hidden">
+    <h4>Yeni Görev (Admin)</h4>
+    <input id="newTask" placeholder="Görev açıklaması">
+    <button onclick="addTask()">Ekle</button>
+  </div>
 </div>
-
-<div id="newTask" style="display:none">
-<input id="baslik" placeholder="Başlık">
-<input id="aciklama" placeholder="Açıklama">
-<input type="datetime-local" id="alarm">
-<button onclick="addTask()">Kaydet</button>
-</div>
-
-<hr>
-<h3>Mesajlar</h3>
-<div id="mesajListe"></div>
-<input id="msg">
-<button onclick="sendMsg()">Gönder</button>
-
-<hr>
-<h3>Görüş & Öneri</h3>
-<textarea id="fb"></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-
-<hr>
-<h3>Admin Panel</h3>
-<div id="users"></div>
 
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
-
-const firebaseConfig={
-apiKey:"AIzaSyDctzYKpvGNfyF-P7wTNy_XcbN5ECP5vJc",
-authDomain:"anfaguvenlik-17ad3.firebaseapp.com",
-databaseURL:"https://anfaguvenlik-17ad3-default-rtdb.firebaseio.com",
-projectId:"anfaguvenlik-17ad3"
+const firebaseConfig = {
+  apiKey: "AIzaSyDctzYKpvGNfyF-P7wTNy_XcbN5ECP5vJc",
+  authDomain: "anfaguvenlik-17ad3.firebaseapp.com",
+  projectId: "anfaguvenlik-17ad3"
 };
 firebase.initializeApp(firebaseConfig);
 
-const auth=firebase.auth();
-const db=firebase.database();
-const admin="yasindemirkan83@gmail.com";
-
-let rumuz="",selected=null;
-
-setInterval(()=>clock.innerText=new Date().toLocaleString("tr-TR"),1000);
+const adminMail="yasindemirkan83@gmail.com";
 
 function login(){
-const p=new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(p).then(r=>{
-const mail=r.user.email;
-db.ref("ban/"+mail.replace(".","_")).once("value",b=>{
-if(b.exists()){alert("Engellendiniz");return;}
-rumuz=prompt("Rumuz:");
-localStorage.mail=mail;
-login.style.display="none";
-app.style.display="block";
-init();
-});
-});
+  const provider=new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+  .then(res=>{
+    localStorage.setItem("email",res.user.email);
+    initPanel();
+  })
+  .catch(err=>alert(err.message));
 }
 
-function toggleNew(){
-if(localStorage.mail!==admin)return;
-newTask.style.display=newTask.style.display=="none"?"block":"none";
+function initPanel(){
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("panel").classList.remove("hidden");
+
+  if(localStorage.getItem("email")===adminMail){
+    document.getElementById("adminBox").classList.remove("hidden");
+  }
+  loadTasks();
+}
+
+let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+
+function saveTasks(){
+  localStorage.setItem("tasks",JSON.stringify(tasks));
+  loadTasks();
 }
 
 function addTask(){
-const key=db.ref("tasks").push().key;
-db.ref("tasks/"+key).set({
-baslik:baslik.value,
-aciklama:aciklama.value,
-alarm:alarm.value,
-yapildi:false,
-ekleyen:rumuz
-});
-scheduleAlarm(alarm.value,baslik.value);
+  const val=document.getElementById("newTask").value;
+  if(!val) return;
+  tasks.push({text:val,done:false});
+  document.getElementById("newTask").value="";
+  saveTasks();
 }
 
-function scheduleAlarm(time,title){
-if(Notification.permission!=="granted"){
-Notification.requestPermission();
-}
-const diff=new Date(time)-new Date();
-setTimeout(()=>{
-new Notification("ANFA GÖREV",{body:title});
-},diff);
+function toggleTask(i){
+  tasks[i].done=!tasks[i].done;
+  saveTasks();
 }
 
-function init(){
-db.ref("tasks").on("value",s=>{
-gorevListe.innerHTML="";
-s.forEach(t=>{
-const d=document.createElement("div");
-d.className="task";
-if(t.val().yapildi)d.classList.add("yapildi");
-d.innerHTML="<b>"+t.val().baslik+"</b><br>"+t.val().aciklama;
-d.onclick=()=>{selected=t.key;}
-gorevListe.prepend(d);
-});
-});
-
-db.ref("messages").on("value",s=>{
-mesajListe.innerHTML="";
-s.forEach(m=>{
-let d=document.createElement("div");
-d.className="task";
-d.innerHTML="<b>"+m.val().rumuz+"</b>: "+m.val().msg;
-if(localStorage.mail==admin){
-d.innerHTML+=" <button onclick='delMsg(\""+m.key+"\")'>🗑️</button>";
-}
-mesajListe.append(d);
-});
-});
-
-if(localStorage.mail==admin){
-db.ref("online").on("value",s=>{
-users.innerHTML="";
-s.forEach(u=>{
-users.innerHTML+=u.val()+" <button onclick='ban(\""+u.key+"\")'>BAN</button><br>";
-});
-});
-}
+function loadTasks(){
+  const list=document.getElementById("taskList");
+  list.innerHTML="";
+  tasks.forEach((t,i)=>{
+    const div=document.createElement("div");
+    div.className="task"+(t.done?" done":"");
+    div.innerHTML=`<span onclick="toggleTask(${i})">${t.text}</span>`;
+    list.appendChild(div);
+  });
 }
 
-function sendMsg(){
-db.ref("messages").push({rumuz, msg:msg.value});
-msg.value="";
+function updateTime(){
+  const d=new Date();
+  document.getElementById("datetime").innerText=
+    d.toLocaleDateString()+" "+d.toLocaleTimeString();
 }
+setInterval(updateTime,1000);
+updateTime();
 
-function delMsg(k){db.ref("messages/"+k).remove();}
-function deleteTask(){if(localStorage.mail==admin)db.ref("tasks/"+selected).remove();}
-function doneTask(){if(localStorage.mail==admin)db.ref("tasks/"+selected+"/yapildi").set(true);}
-
-function ban(mail){
-db.ref("ban/"+mail).set(true);
-alert("Banlandı");
-}
-
-function sendFeedback(){
-db.ref("feedback").push({rumuz, msg:fb.value});
-emailjs.send("service_id","template_id",{
-message:fb.value,
-to_email:"yasindemirkan83@gmail.com"
-});
-alert("Mail gönderildi");
-fb.value="";
-}
-</script>
-
-<script>
-if("serviceWorker"in navigator){
-navigator.serviceWorker.register("sw.js");
+if(localStorage.getItem("email")){
+  initPanel();
 }
 </script>
 

@@ -2,146 +2,89 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ANFA Güvenlik</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="manifest" href="manifest.json">
 
 <style>
 body{
-margin:0;
-font-family:Arial;
-background:url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1500&q=80') no-repeat center center fixed;
-background-size:cover;
+  margin:0;
+  font-family:Arial;
+  background:url("https://picsum.photos/1080/1920") no-repeat center center fixed;
+  background-size:cover;
+  color:white;
 }
-
 header{
-background:rgba(0,0,0,0.85);
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-font-size:20px;
+  background:rgba(0,0,0,0.7);
+  padding:10px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
 }
-
-#panel{padding:15px}
-
 .card{
-background:rgba(255,255,255,0.95);
-padding:15px;
-margin-bottom:15px;
-border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.4)
+  background:rgba(0,0,0,0.7);
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
 }
-
-.task{
-border:1px solid #ccc;
-padding:10px;
-margin:5px 0;
-border-radius:8px;
-cursor:pointer;
+button,input,textarea{
+  width:100%;
+  margin-top:5px;
+  padding:8px;
+  border-radius:6px;
+  border:none;
 }
-
+.list{
+  max-height:200px;
+  overflow-y:auto;
+}
 .task.done{
-background:#d4edda;
-text-decoration:line-through;
+  text-decoration:line-through;
+  color:lightgreen;
 }
-
-button{
-padding:8px;
-border:none;
-border-radius:6px;
-background:#2196F3;
-color:white;
-cursor:pointer;
-}
-
-button:hover{background:#1976D2}
-
-#settings{
-position:absolute;
-top:60px;
-right:15px;
-background:white;
-width:300px;
-padding:10px;
-border-radius:10px;
-display:none;
-z-index:999;
-}
-
-.scrollBox{
-max-height:250px;
-overflow-y:auto;
-border:1px solid #ddd;
-padding:5px;
-}
-
-#msgCounter{
-background:red;
-color:white;
-border-radius:50%;
-padding:3px 7px;
-font-size:12px;
-margin-left:5px;
-}
+.hide{display:none}
 </style>
 </head>
 
 <body>
 
 <header>
-<div><b>ANFA GÜVENLİK</b></div>
-<div>
-<span id="clock"></span>
-<span style="margin-left:10px;cursor:pointer" onclick="toggleSettings()">⚙️</span>
-</div>
+ANFA GÜVENLİK  
+<div id="userInfo"></div>
 </header>
 
-<div id="settings">
-<h3>Ayarlar</h3>
-<div id="adminPanel"></div>
-<hr>
-<h4>Görüş & Öneri</h4>
-<textarea id="feedback" style="width:100%"></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-</div>
-
-<div id="panel">
-
 <div class="card" id="loginCard">
-<button onclick="login()">Gmail ile Giriş</button>
+<button onclick="login()">Google ile Giriş</button>
 </div>
 
-<div class="card" id="taskPanel" style="display:none">
-<h3>Görev Panosu</h3>
-<div id="taskList" class="scrollBox"></div>
-
-<div id="adminTask" style="display:none">
-<hr>
-<input id="title" placeholder="Görev">
-<input type="datetime-local" id="start">
-<input type="datetime-local" id="end">
-<br><br>
-<button onclick="addTask()">Görev Ekle</button>
-<button onclick="deleteTask()">Sil</button>
-<button onclick="markDone()">Tamamlandı</button>
-<button onclick="setAlarm()">Alarm</button>
+<!-- MESAJLAR -->
+<div class="card hide" id="messageCard">
+<h3 onclick="toggleMsg()">📩 Mesajlar (<span id="msgCount">0</span>)</h3>
+<div id="msgArea" class="hide">
+<textarea id="msgText" placeholder="Mesaj yaz"></textarea>
+<button onclick="sendMessage()">Gönder</button>
+<div class="list" id="msgList"></div>
 </div>
 </div>
 
-<div class="card" id="messagePanel" style="display:none">
-<h3 style="cursor:pointer" onclick="toggleMessages()">
-Mesajlar <span id="msgCounter" style="display:none">0</span>
-</h3>
-
-<div id="messageBox" style="display:none">
-<div id="messages" class="scrollBox"></div>
-<input id="msgText" placeholder="Mesaj">
-<button onclick="sendMsg()">Gönder</button>
-</div>
+<!-- GÖREVLER -->
+<div class="card hide" id="taskCard">
+<h3>📋 Görevler</h3>
+<input id="taskTitle" placeholder="Görev">
+<input type="datetime-local" id="taskStart">
+<input type="datetime-local" id="taskEnd">
+<button onclick="addTask()">Ekle</button>
+<div class="list" id="taskList"></div>
 </div>
 
+<!-- TAKVİM -->
+<div class="card hide" id="calendarCard">
+<h3>📅 Çalışma Takvimi</h3>
+<input type="date" id="calDate">
+<input id="calNote" placeholder="Not">
+<button onclick="addCalendar()">Ekle</button>
+<div class="list" id="calList"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -150,157 +93,136 @@ Mesajlar <span id="msgCounter" style="display:none">0</span>
 
 <script>
 const firebaseConfig = {
-apiKey: "AIzaSyDctzYKpvGNfyF-P7wTNy_XcbN5ECP5vJc",
-authDomain: "anfaguvenlik-17ad3.firebaseapp.com",
-databaseURL: "https://anfaguvenlik-17ad3-default-rtdb.firebaseio.com",
-projectId: "anfaguvenlik-17ad3"
+ apiKey: "API_KEY",
+ authDomain: "PROJECT.firebaseapp.com",
+ databaseURL: "https://PROJECT.firebaseio.com",
+ projectId: "PROJECT",
 };
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.database();
 
-let userEmail="";
-let selectedTask=null;
-const ADMIN="yasindemirkan83@gmail.com";
-let lastMsgCount=0;
-const notifySound=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3");
+const auth = firebase.auth();
+const db = firebase.database();
 
-function clock(){
-document.getElementById("clock").innerText=new Date().toLocaleString("tr-TR");
-}
-setInterval(clock,1000);
+let currentUser = null;
+const ADMIN = "yasindemirkan83@gmail.com";
 
-function toggleSettings(){
-settings.style.display=settings.style.display=="block"?"none":"block";
-}
-
-function toggleMessages(){
-messageBox.style.display=messageBox.style.display=="block"?"none":"block";
-msgCounter.style.display="none";
-lastMsgCount=0;
-}
-
+/* GİRİŞ */
 function login(){
-let provider=new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider).then(res=>{
-userEmail=res.user.email;
-loginCard.style.display="none";
-taskPanel.style.display="block";
-messagePanel.style.display="block";
-if(userEmail==ADMIN){
-adminTask.style.display="block";
-adminPanel.innerHTML="<b>ADMIN PANEL</b>";
+ const provider = new firebase.auth.GoogleAuthProvider();
+ auth.signInWithPopup(provider);
 }
-Notification.requestPermission();
-loadTasks();
-loadMessages();
+
+auth.onAuthStateChanged(user=>{
+ if(user){
+   currentUser=user;
+   document.getElementById("loginCard").classList.add("hide");
+   document.getElementById("messageCard").classList.remove("hide");
+   document.getElementById("taskCard").classList.remove("hide");
+   document.getElementById("calendarCard").classList.remove("hide");
+   document.getElementById("userInfo").innerText=user.email;
+   loadMessages();
+   loadTasks();
+   loadCalendar();
+   Notification.requestPermission();
+ }
 });
+
+/* MESAJ */
+function toggleMsg(){
+ document.getElementById("msgArea").classList.toggle("hide");
 }
 
-function addTask(){
-let title=titleInput=title.value.toUpperCase();
-let start=startInput=start.value;
-let end=endInput=end.value;
-
-db.ref("tasks").once("value",snap=>{
-let exists=false;
-snap.forEach(s=>{
-let t=s.val();
-if(t.title==title && t.start==start) exists=true;
-});
-if(!exists){
-db.ref("tasks").push({title,start,end,done:false});
-}
-});
-}
-
-function loadTasks(){
-db.ref("tasks").on("value",snap=>{
-let html="";
-snap.forEach(s=>{
-let t=s.val();
-html+=`<div class="task ${t.done?"done":""}" onclick="selectTask('${s.key}')">
-<b>${t.title}</b><br>${t.start} - ${t.end}
-</div>`;
-});
-taskList.innerHTML=html;
-});
-}
-
-function selectTask(key){selectedTask=key}
-
-function deleteTask(){
-if(userEmail!=ADMIN||!selectedTask)return;
-db.ref("tasks/"+selectedTask).remove();
-}
-
-function markDone(){
-if(userEmail!=ADMIN||!selectedTask)return;
-db.ref("tasks/"+selectedTask+"/done").set(true);
-}
-
-function setAlarm(){
-if(Notification.permission!=="granted") Notification.requestPermission();
-alert("Alarm aktif (tarayıcı açıkken çalışır)");
-}
-
-function sendMsg(){
-let text=msgText.value.trim();
-if(!text) return;
-
-db.ref("messages").once("value",snap=>{
-let exists=false;
-snap.forEach(s=>{
-let m=s.val();
-if(m.user==userEmail && m.msg==text) exists=true;
-});
-if(!exists){
-db.ref("messages").push({user:userEmail,msg:text});
-msgText.value="";
-}
-});
+function sendMessage(){
+ let text = msgText.value.trim();
+ if(!text) return;
+ let id = Date.now();
+ db.ref("messages/"+id).set({
+   user:currentUser.email,
+   text:text
+ });
+ msgText.value="";
 }
 
 function loadMessages(){
-db.ref("messages").on("value",snap=>{
-let html="";
-let count=snap.numChildren();
-snap.forEach(s=>{
-let m=s.val();
-html+=`<div>${m.user}: ${m.msg} ${
-userEmail==ADMIN?`<button onclick="delMsg('${s.key}')">Sil</button>`:""
-}</div>`;
-});
-messages.innerHTML=html;
-
-if(count>lastMsgCount){
-msgCounter.innerText=count-lastMsgCount;
-msgCounter.style.display="inline";
-notifySound.play();
-if(Notification.permission=="granted"){
-new Notification("Yeni mesaj geldi");
-}
-}
-lastMsgCount=count;
-});
+ db.ref("messages").on("value",snap=>{
+   let html="";
+   let count=0;
+   snap.forEach(s=>{
+     let d=s.val();
+     count++;
+     html+=`<div>
+     <b>${d.user}</b>: ${d.text}
+     ${currentUser.email==ADMIN?`<button onclick="delMsg('${s.key}')">Sil</button>`:""}
+     </div>`;
+   });
+   msgList.innerHTML=html;
+   msgCount.innerText=count;
+   if(count>0){
+     new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+   }
+ });
 }
 
-function delMsg(k){
-db.ref("messages/"+k).remove();
+function delMsg(id){
+ db.ref("messages/"+id).remove();
 }
 
-function sendFeedback(){
-let f=feedback.value;
-db.ref("feedback").push({user:userEmail,msg:f});
-alert("Gönderildi");
+/* GÖREV */
+function addTask(){
+ let t=taskTitle.value.trim().toUpperCase();
+ if(!t) return;
+ let id=Date.now();
+ db.ref("tasks/"+id).set({
+   title:t,
+   start:taskStart.value,
+   end:taskEnd.value,
+   done:false
+ });
+ taskTitle.value="";
+}
+
+function loadTasks(){
+ db.ref("tasks").on("value",snap=>{
+   let html="";
+   snap.forEach(s=>{
+     let d=s.val();
+     html+=`<div class="task ${d.done?"done":""}">
+     ${d.title}
+     <button onclick="markTask('${s.key}')">✔</button>
+     ${currentUser.email==ADMIN?`<button onclick="delTask('${s.key}')">Sil</button>`:""}
+     </div>`;
+   });
+   taskList.innerHTML=html;
+ });
+}
+
+function markTask(id){
+ db.ref("tasks/"+id+"/done").set(true);
+}
+
+function delTask(id){
+ db.ref("tasks/"+id).remove();
+}
+
+/* TAKVİM */
+function addCalendar(){
+ let note=calNote.value;
+ let date=calDate.value;
+ let id=Date.now();
+ db.ref("calendar/"+id).set({date,note});
+ calNote.value="";
+}
+
+function loadCalendar(){
+ db.ref("calendar").on("value",snap=>{
+   let html="";
+   snap.forEach(s=>{
+     let d=s.val();
+     html+=`<div>${d.date} - ${d.note}</div>`;
+   });
+   calList.innerHTML=html;
+ });
 }
 </script>
-
-<script>
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('sw.js');
-}
-</script>
-
 </body>
 </html>

@@ -1,141 +1,97 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ANFA Güvenlik</title>
+<link rel="manifest" href="manifest.json">
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:url('https://images.unsplash.com/photo-1607083203141-6d536b6b14b5?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
-  background-size:cover;
-  color:#333;
-}
-header{
-  background:rgba(38,50,56,0.9);
-  color:#fff;
-  padding:15px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:22px;
-  position:relative;
-}
-header #baslik{font-weight:bold;color:#fff;}
-header #tarihSaat{font-size:14px;color:#ccc;}
-header #settingsBtn{cursor:pointer;font-size:22px;margin-left:10px;}
-
-.card{
-  background:rgba(255,255,255,0.95);
-  margin:15px;
-  padding:15px;
-  border-radius:10px;
-  box-shadow:0 3px 8px rgba(0,0,0,.3);
-}
-input,button,select,textarea{
-  width:100%;
-  padding:8px;
-  margin:6px 0;
-  font-size:14px;
-  border-radius:6px;
-  border:1px solid #ccc;
-}
-button{
-  background:#2196F3;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-  transition:0.3s;
-}
-button:hover{background:#1976D2;}
-
-.task{
-  border:1px solid #aaa;
-  border-radius:10px;
-  padding:10px;
-  margin:8px 0;
-  background:#fff;
-  box-shadow:0 3px 5px rgba(0,0,0,0.2);
-  cursor:pointer;
-}
-.task.selected{border:2px solid #2196F3;background:#e3f2fd;}
-.task.yapildi{background:#ffcccc;border-color:#f44336;}
-
-#actionPanel{display:flex;justify-content:flex-end;align-items:center;background:#fff;padding:10px 15px;margin:10px 15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.3);}
-#actionPanel .iconBtn{margin:0 5px;font-size:20px;cursor:pointer;padding:5px 8px;border-radius:6px;transition:0.2s;}
-#actionPanel .iconBtn:hover{background:#e3f2fd;}
-#gorevListe,#mesajListe,#onlineUsers{max-height:300px;overflow-y:auto;padding-bottom:10px;}
-#settingsMenu{position:absolute;top:60px;right:20px;background:#fff;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.3);width:300px;display:none;z-index:1000;padding:10px;}
-#settingsMenu h4{margin:5px 0;font-size:16px;}
-#userList{max-height:150px;overflow-y:auto;border:1px solid #ccc;padding:5px;border-radius:6px;}
-.userRow{display:flex;justify-content:space-between;align-items:center;padding:2px 0;}
+body{margin:0;font-family:Arial,sans-serif;background:url('https://images.unsplash.com/photo-1607083203141-6d536b6b14b5?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;background-size:cover;color:#333;}
+header{background:rgba(38,50,56,0.9);color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;font-size:22px;position:relative}
+header #baslik{font-weight:bold;font-size:22px;color:#fff}
+header #tarihSaat{font-size:14px;color:#ccc}
+header #settingsBtn{cursor:pointer;font-size:22px;margin-left:10px}
+.card{background:rgba(255,255,255,0.95);margin:15px;padding:15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+input,button,select,textarea{width:100%;padding:8px;margin:6px 0;font-size:14px;border-radius:6px;border:1px solid #ccc}
+button{background:#2196F3;color:#fff;border:none;cursor:pointer;transition:0.3s}
+button:hover{background:#1976D2}
+.task{border:1px solid #aaa;border-radius:10px;padding:10px;margin:8px 0;position:relative;background:#fff;transition:0.3s;box-shadow:0 3px 5px rgba(0,0,0,0.2);cursor:pointer;}
+.task.selected{border:2px solid #2196F3;background:#e3f2fd}
+.task.yapildi{background:#ffcccc;border-color:#f44336}
+#actionPanel{display:flex;justify-content:flex-end;align-items:center;background:#fff;padding:10px 15px;margin:10px 15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+#actionPanel .iconBtn{margin:0 5px;font-size:20px;cursor:pointer;padding:5px 8px;border-radius:6px;transition:0.2s}
+#actionPanel .iconBtn:hover{background:#e3f2fd}
+#gorevListe{max-height:300px;overflow-y:auto;padding-bottom:10px}
+#mesajListe,#onlineUsers{max-height:200px;overflow-y:auto;padding:5px;margin-top:5px}
+#settingsMenu{position:absolute;top:60px;right:20px;background:#fff;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.3);width:300px;display:none;z-index:1000;padding:10px}
+#settingsMenu h4{margin:5px 0;font-size:16px}
+#userList{max-height:150px;overflow-y:auto;border:1px solid #ccc;padding:5px;border-radius:6px}
+.userRow{display:flex;justify-content:space-between;align-items:center;padding:2px 0}
 </style>
 </head>
 <body>
 
 <header>
-  <div id="baslik">ANFA Güvenlik</div>
-  <div>
-    <span id="tarihSaat"></span>
-    <span id="settingsBtn">⚙️</span>
-  </div>
+<div id="baslik">ANFA Güvenlik</div>
+<div>
+<span id="tarihSaat"></span>
+<span id="settingsBtn">⚙️</span>
+</div>
 </header>
 
 <div id="settingsMenu">
-  <h4>Görüş & Öneri</h4>
-  <textarea id="feedback" placeholder="Yazınızı girin..." style="width:100%;height:60px;"></textarea>
-  <button id="feedbackBtn">Gönder</button>
-  <hr>
-  <h4>Kullanıcı Yönetimi</h4>
-  <div id="userList"></div>
+<h4>Görüş & Öneri</h4>
+<textarea id="feedback" placeholder="Yazınızı girin..." style="width:100%;height:60px;"></textarea>
+<button id="feedbackBtn">Gönder</button>
+<hr>
+<h4>Kullanıcı Yönetimi</h4>
+<div id="userList"></div>
 </div>
 
 <div class="card" id="login">
-  <h3>Giriş (Gmail)</h3>
-  <button id="loginBtn">Gmail ile Giriş Yap</button>
+<h3>Giriş (Gmail)</h3>
+<button id="loginBtn">Gmail ile Giriş Yap</button>
 </div>
 
 <div class="card" id="app" style="display:none">
-  <h3>Görevler</h3>
-  <div id="gorevListe"></div>
 
-  <div id="actionPanel">
-    <button id="editTask" class="iconBtn" disabled>✏️ Düzenle</button>
-    <button id="deleteTask" class="iconBtn" disabled>🗑️ Sil</button>
-    <button id="doneTask" class="iconBtn" disabled>✔️ İşaretle</button>
-    <button id="alarmTask" class="iconBtn" disabled>🔔 Alarm</button>
-  </div>
+<h3>Görevler</h3>
+<div id="gorevListe"></div>
 
-  <div class="card" id="yeniGorevCard" style="display:none">
-    <h3>Yeni Görev</h3>
-    <input id="baslik" placeholder="Başlık">
-    <input id="aciklama" placeholder="Açıklama">
-    <label>Başlangıç:</label>
-    <input type="date" id="basTarih">
-    <input type="time" id="basSaat">
-    <label>Bitiş:</label>
-    <input type="date" id="bitTarih">
-    <input type="time" id="bitSaat">
-    <button id="gorevBtn">Görev Kaydet 🔔</button>
-  </div>
-
-  <hr>
-
-  <div class="card" id="mesajCard">
-    <h3>Mesajlar</h3>
-    <div id="mesajListe"></div>
-
-    <h3>Mesaj Gönder</h3>
-    <input id="mesajInput" placeholder="Mesaj yaz">
-    <button id="mesajBtn">Mesaj Gönder</button>
-
-    <h4>Online Kullanıcılar</h4>
-    <div id="onlineUsers"></div>
-  </div>
+<div id="actionPanel">
+  <button id="editTask" class="iconBtn" disabled>✏️ Düzenle</button>
+  <button id="deleteTask" class="iconBtn" disabled>🗑️ Sil</button>
+  <button id="doneTask" class="iconBtn" disabled>✔️ İşaretle</button>
+  <button id="alarmTask" class="iconBtn" disabled>🔔 Alarm</button>
 </div>
 
-<!-- Firebase SDK -->
+<div class="card" id="yeniGorevCard" style="display:none">
+<h3>Yeni Görev</h3>
+<input id="baslik" placeholder="Başlık">
+<input id="aciklama" placeholder="Açıklama">
+<label>Başlangıç:</label>
+<input type="date" id="basTarih">
+<input type="time" id="basSaat">
+<label>Bitiş:</label>
+<input type="date" id="bitTarih">
+<input type="time" id="bitSaat">
+<button id="gorevBtn">Görev Kaydet 🔔</button>
+</div>
+
+<hr>
+
+<div class="card" id="mesajCard">
+<h3>Mesajlar</h3>
+<div id="mesajListe"></div>
+
+<h3>Mesaj Gönder</h3>
+<input id="mesajInput" placeholder="Mesaj yaz">
+<button id="mesajBtn">Mesaj Gönder</button>
+
+<h4>Online Kullanıcılar</h4>
+<div id="onlineUsers"></div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -145,7 +101,7 @@ button:hover{background:#1976D2;}
 const firebaseConfig = {
   apiKey: "AIzaSyDctzYKpvGNfyF-P7wTNy_XcbN5ECP5vJc",
   authDomain: "anfaguvenlik-17ad3.firebaseapp.com",
-  databaseURL: "https://anfaguvenlik-17ad3-default-rtdb.firebaseio.com",
+  databaseURL: "https://anfaguvenlik-17ad3-default-rtdb.firebaseio.com/",
   projectId: "anfaguvenlik-17ad3",
   storageBucket: "anfaguvenlik-17ad3.firebasestorage.app",
   messagingSenderId: "41513312502",
@@ -159,14 +115,14 @@ let selectedTaskKey = null;
 let rumuz = "";
 const adminEmail = "yasindemirkan83@gmail.com";
 
-// --- Tarih Saat ---
+// --- Tarih saat ---
 function tarihSaatGuncelle(){
   const now = new Date();
   document.getElementById("tarihSaat").innerText = now.toLocaleDateString("tr-TR")+" "+now.toLocaleTimeString("tr-TR");
 }
 setInterval(tarihSaatGuncelle,1000);
 
-// --- Settings menu ---
+// --- Settings menü ---
 document.getElementById("settingsBtn").onclick = ()=>{
   const menu = document.getElementById("settingsMenu");
   menu.style.display = menu.style.display==="block" ? "none" : "block";
@@ -192,6 +148,7 @@ function initApp(){
   const gorevListe = document.getElementById("gorevListe");
   const mesajListe = document.getElementById("mesajListe");
   const onlineUsersDiv = document.getElementById("onlineUsers");
+  const userListDiv = document.getElementById("userList");
 
   // Görevleri oku
   db.ref("gorevler").on("value",snap=>{
@@ -201,7 +158,7 @@ function initApp(){
       const div = document.createElement("div");
       div.className="task";
       div.dataset.key = s.key;
-      div.innerHTML = `<b>${t.baslik}</b><br>${t.aciklama}<br>${t.basTarih} ${t.basSaat} - ${t.bitTarih} ${t.bitSaat}`;
+      div.innerHTML = `<div class="taskContent"><b>${t.baslik}</b><br>${t.aciklama}<br>${t.basTarih} ${t.basSaat} - ${t.bitTarih} ${t.bitSaat}</div>`;
       div.addEventListener("click",()=>{
         document.querySelectorAll(".task").forEach(x=>x.classList.remove("selected"));
         div.classList.add("selected");
@@ -244,6 +201,20 @@ function initApp(){
       onlineUsersDiv.append(div);
     });
   });
+
+  // Kullanıcı yönetimi paneli
+  if(localStorage.getItem("gmail")===adminEmail){
+    db.ref("online").on("value",snap=>{
+      userListDiv.innerHTML="";
+      snap.forEach(u=>{
+        const email = u.key.replace("_",".");
+        const div = document.createElement("div");
+        div.className="userRow";
+        div.innerHTML=`<span>${u.val()}</span><button onclick="removeUser('${email}')">Kapat</button>`;
+        userListDiv.append(div);
+      });
+    });
+  }
 }
 
 // --- Yeni görev kaydet ---
@@ -311,6 +282,20 @@ document.getElementById("feedbackBtn").onclick=()=>{
   db.ref("feedback").push({rumuz,tarih:new Date().toLocaleDateString("tr-TR"),saat:new Date().toLocaleTimeString("tr-TR"),mesaj:text});
   document.getElementById("feedback").value="";
 };
+
+// --- Kullanıcıyı kapat (admin) ---
+function removeUser(email){
+  db.ref("online/"+email.replace(".","_")).remove();
+}
+</script>
+
+<script>
+// --- Service Worker PWA ---
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(()=>{
+    console.log("Service Worker registered");
+  });
+}
 </script>
 </body>
 </html>

@@ -128,15 +128,20 @@ document.getElementById("settingsBtn").onclick = ()=>{
   menu.style.display = menu.style.display==="block" ? "none" : "block";
 };
 
-// --- Gmail login ---
+// --- Gmail login ve rumuz iste ---
 document.getElementById("loginBtn").onclick = ()=>{
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).then(result=>{
     const user = result.user;
-    rumuz = user.displayName || user.email.split("@")[0];
     const email = user.email;
+    if(email!==adminEmail){
+      rumuz = prompt("Lütfen bir rumuz girin:");
+      if(!rumuz) rumuz="Misafir";
+    } else {
+      rumuz = "Admin";
+      document.getElementById("yeniGorevCard").style.display="block";
+    }
     localStorage.setItem("gmail",email);
-    if(email===adminEmail) document.getElementById("yeniGorevCard").style.display="block";
     document.getElementById("login").style.display="none";
     document.getElementById("app").style.display="block";
     initApp();
@@ -163,8 +168,9 @@ function initApp(){
         document.querySelectorAll(".task").forEach(x=>x.classList.remove("selected"));
         div.classList.add("selected");
         selectedTaskKey = s.key;
+        const admin = localStorage.getItem("gmail")===adminEmail;
         document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>{
-          b.disabled = !(localStorage.getItem("gmail")===adminEmail);
+          b.disabled = !admin;
         });
       });
       if(t.yapildi) div.classList.add("yapildi");
@@ -219,13 +225,14 @@ function initApp(){
 
 // --- Yeni görev kaydet ---
 document.getElementById("gorevBtn").onclick=()=>{
-  const baslik=document.getElementById("baslik").value;
+  if(localStorage.getItem("gmail")!==adminEmail) return alert("Yetkiniz yok!");
+  const baslik=document.getElementById("baslik").value.trim();
+  if(!baslik){alert("Başlık gerekli");return;}
   const aciklama=document.getElementById("aciklama").value;
   const basTarih=document.getElementById("basTarih").value;
   const basSaat=document.getElementById("basSaat").value;
   const bitTarih=document.getElementById("bitTarih").value;
   const bitSaat=document.getElementById("bitSaat").value;
-  if(!baslik){alert("Başlık gerekli");return;}
   const key=db.ref("gorevler").push().key;
   db.ref("gorevler/"+key).set({baslik,aciklama,basTarih,basSaat,bitTarih,bitSaat,yapildi:false});
   document.getElementById("baslik").value="";
@@ -234,7 +241,7 @@ document.getElementById("gorevBtn").onclick=()=>{
 
 // --- Mesaj gönder ---
 document.getElementById("mesajBtn").onclick=()=>{
-  const msg=document.getElementById("mesajInput").value;
+  const msg=document.getElementById("mesajInput").value.trim();
   if(!msg){alert("Mesaj boş olamaz");return;}
   const tarih=new Date();
   const tarihStr=tarih.toLocaleDateString("tr-TR");
@@ -246,12 +253,14 @@ document.getElementById("mesajBtn").onclick=()=>{
 
 // --- Alt panel iconları ---
 document.getElementById("deleteTask").onclick=()=>{
+  if(localStorage.getItem("gmail")!==adminEmail) return;
   if(!selectedTaskKey) return;
   db.ref("gorevler/"+selectedTaskKey).remove();
   selectedTaskKey=null;
   document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>b.disabled=true);
 };
 document.getElementById("doneTask").onclick=()=>{
+  if(localStorage.getItem("gmail")!==adminEmail) return;
   if(!selectedTaskKey) return;
   const taskRef=db.ref("gorevler/"+selectedTaskKey);
   taskRef.once("value").then(s=>{
@@ -259,6 +268,7 @@ document.getElementById("doneTask").onclick=()=>{
   });
 };
 document.getElementById("editTask").onclick=()=>{
+  if(localStorage.getItem("gmail")!==adminEmail) return;
   if(!selectedTaskKey) return;
   const taskRef=db.ref("gorevler/"+selectedTaskKey);
   taskRef.once("value").then(s=>{
@@ -273,23 +283,32 @@ document.getElementById("editTask").onclick=()=>{
     document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>b.disabled=true);
   });
 };
-document.getElementById("alarmTask").onclick=()=>{alert("Alarm fonksiyonu yakında eklenebilir");};
+document.getElementById("alarmTask").onclick=()=>{
+  if(localStorage.getItem("gmail")!==adminEmail) return;
+  alert("Alarm fonksiyonu yakında eklenebilir");
+};
 
-// --- Feedback ---
+// --- Feedback sadece admin mailine ---
 document.getElementById("feedbackBtn").onclick=()=>{
-  const text=document.getElementById("feedback").value;
+  const text=document.getElementById("feedback").value.trim();
   if(!text) return;
-  db.ref("feedback").push({rumuz,tarih:new Date().toLocaleDateString("tr-TR"),saat:new Date().toLocaleTimeString("tr-TR"),mesaj:text});
+  const tarih=new Date();
+  db.ref("feedback").push({
+    rumuz,
+    tarih:tarih.toLocaleDateString("tr-TR"),
+    saat:tarih.toLocaleTimeString("tr-TR"),
+    mesaj:text,
+    to:adminEmail
+  });
   document.getElementById("feedback").value="";
 };
 
 // --- Kullanıcıyı kapat (admin) ---
 function removeUser(email){
+  if(localStorage.getItem("gmail")!==adminEmail) return;
   db.ref("online/"+email.replace(".","_")).remove();
 }
-</script>
 
-<script>
 // --- Service Worker PWA ---
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(()=>{

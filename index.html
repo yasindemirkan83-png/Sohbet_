@@ -1,141 +1,316 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Görev & Mesaj Sistemi</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANFA Güvenlik</title>
 <style>
-body{font-family:Arial;background:#eceff1;margin:0}
-header{background:#263238;color:#fff;padding:15px;text-align:center;font-size:20px}
-.card{background:#fff;margin:15px;padding:15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.2)}
-input,button{width:100%;padding:8px;margin:6px 0;font-size:14px;border-radius:6px;border:1px solid #ccc}
-button{background:#2196F3;color:#fff;border:none}
-.task{border:1px solid #aaa;border-radius:6px;padding:8px;margin:5px 0}
-.msg{background:#f5f5f5;padding:6px;border-radius:5px;margin:4px 0}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:url('https://images.unsplash.com/photo-1607083203141-6d536b6b14b5?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+  background-size:cover;
+  color:#333;
+}
+header{
+  background:rgba(38,50,56,0.9);
+  color:#fff;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:22px;
+  position:relative;
+}
+header #baslik{font-weight:bold;color:#fff;}
+header #tarihSaat{font-size:14px;color:#ccc;}
+header #settingsBtn{cursor:pointer;font-size:22px;margin-left:10px;}
+
+.card{
+  background:rgba(255,255,255,0.95);
+  margin:15px;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 3px 8px rgba(0,0,0,.3);
+}
+input,button,select,textarea{
+  width:100%;
+  padding:8px;
+  margin:6px 0;
+  font-size:14px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+button{
+  background:#2196F3;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  transition:0.3s;
+}
+button:hover{background:#1976D2;}
+
+.task{
+  border:1px solid #aaa;
+  border-radius:10px;
+  padding:10px;
+  margin:8px 0;
+  background:#fff;
+  box-shadow:0 3px 5px rgba(0,0,0,0.2);
+  cursor:pointer;
+}
+.task.selected{border:2px solid #2196F3;background:#e3f2fd;}
+.task.yapildi{background:#ffcccc;border-color:#f44336;}
+
+#actionPanel{display:flex;justify-content:flex-end;align-items:center;background:#fff;padding:10px 15px;margin:10px 15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.3);}
+#actionPanel .iconBtn{margin:0 5px;font-size:20px;cursor:pointer;padding:5px 8px;border-radius:6px;transition:0.2s;}
+#actionPanel .iconBtn:hover{background:#e3f2fd;}
+#gorevListe,#mesajListe,#onlineUsers{max-height:300px;overflow-y:auto;padding-bottom:10px;}
+#settingsMenu{position:absolute;top:60px;right:20px;background:#fff;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.3);width:300px;display:none;z-index:1000;padding:10px;}
+#settingsMenu h4{margin:5px 0;font-size:16px;}
+#userList{max-height:150px;overflow-y:auto;border:1px solid #ccc;padding:5px;border-radius:6px;}
+.userRow{display:flex;justify-content:space-between;align-items:center;padding:2px 0;}
 </style>
 </head>
 <body>
 
-<header>Görev & Mesaj Sistemi</header>
+<header>
+  <div id="baslik">ANFA Güvenlik</div>
+  <div>
+    <span id="tarihSaat"></span>
+    <span id="settingsBtn">⚙️</span>
+  </div>
+</header>
+
+<div id="settingsMenu">
+  <h4>Görüş & Öneri</h4>
+  <textarea id="feedback" placeholder="Yazınızı girin..." style="width:100%;height:60px;"></textarea>
+  <button id="feedbackBtn">Gönder</button>
+  <hr>
+  <h4>Kullanıcı Yönetimi</h4>
+  <div id="userList"></div>
+</div>
 
 <div class="card" id="login">
-<h3>Giriş</h3>
-<input id="gmail" placeholder="Gmail adresin">
-<button id="loginBtn">Giriş Yap</button>
+  <h3>Giriş (Gmail)</h3>
+  <button id="loginBtn">Gmail ile Giriş Yap</button>
 </div>
 
 <div class="card" id="app" style="display:none">
-<h3>Yeni Görev</h3>
-<input id="baslik" placeholder="Başlık">
-<input id="aciklama" placeholder="Açıklama">
-<button id="gorevBtn">Görev Kaydet</button>
+  <h3>Görevler</h3>
+  <div id="gorevListe"></div>
 
-<hr>
-<h3>Mesaj</h3>
-<input id="mesajInput" placeholder="Mesaj yaz">
-<button id="mesajBtn">Mesaj Gönder</button>
+  <div id="actionPanel">
+    <button id="editTask" class="iconBtn" disabled>✏️ Düzenle</button>
+    <button id="deleteTask" class="iconBtn" disabled>🗑️ Sil</button>
+    <button id="doneTask" class="iconBtn" disabled>✔️ İşaretle</button>
+    <button id="alarmTask" class="iconBtn" disabled>🔔 Alarm</button>
+  </div>
 
-<hr>
-<h3>Görevler</h3>
-<div id="gorevListe"></div>
+  <div class="card" id="yeniGorevCard" style="display:none">
+    <h3>Yeni Görev</h3>
+    <input id="baslik" placeholder="Başlık">
+    <input id="aciklama" placeholder="Açıklama">
+    <label>Başlangıç:</label>
+    <input type="date" id="basTarih">
+    <input type="time" id="basSaat">
+    <label>Bitiş:</label>
+    <input type="date" id="bitTarih">
+    <input type="time" id="bitSaat">
+    <button id="gorevBtn">Görev Kaydet 🔔</button>
+  </div>
 
-<hr>
-<h3>Mesajlar</h3>
-<div id="mesajListe"></div>
+  <hr>
+
+  <div class="card" id="mesajCard">
+    <h3>Mesajlar</h3>
+    <div id="mesajListe"></div>
+
+    <h3>Mesaj Gönder</h3>
+    <input id="mesajInput" placeholder="Mesaj yaz">
+    <button id="mesajBtn">Mesaj Gönder</button>
+
+    <h4>Online Kullanıcılar</h4>
+    <div id="onlineUsers"></div>
+  </div>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-const API = "YOUR_DEPLOYED_SCRIPT_URL_HERE"; // Apps Script URL
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDctzYKpvGNfyF-P7wTNy_XcbN5ECP5vJc",
+  authDomain: "anfaguvenlik-17ad3.firebaseapp.com",
+  databaseURL: "https://anfaguvenlik-17ad3-default-rtdb.firebaseio.com",
+  projectId: "anfaguvenlik-17ad3",
+  storageBucket: "anfaguvenlik-17ad3.firebasestorage.app",
+  messagingSenderId: "41513312502",
+  appId: "1:41513312502:web:332571bc6be8ce90398cd7"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-const loginDiv = document.getElementById("login");
-const appDiv = document.getElementById("app");
-const loginBtn = document.getElementById("loginBtn");
-const gorevBtn = document.getElementById("gorevBtn");
-const mesajBtn = document.getElementById("mesajBtn");
-
-const gmailInput = document.getElementById("gmail");
-const baslikInput = document.getElementById("baslik");
-const aciklamaInput = document.getElementById("aciklama");
-const mesajInput = document.getElementById("mesajInput");
-
-const gorevListe = document.getElementById("gorevListe");
-const mesajListe = document.getElementById("mesajListe");
-
+let selectedTaskKey = null;
 let rumuz = "";
+const adminEmail = "yasindemirkan83@gmail.com";
 
-loginBtn.addEventListener("click", () => {
-  const email = gmailInput.value.trim();
-  if (!email || !email.includes("@")) { alert("Geçerli Gmail gir"); return; }
-  rumuz = email.split("@")[0];
-  localStorage.setItem("rumuz", rumuz);
-  loginDiv.style.display = "none";
-  appDiv.style.display = "block";
-  veriGetir();
-  setInterval(veriGetir, 5000);
-});
-
-gorevBtn.addEventListener("click", () => {
-  const baslik = baslikInput.value.trim();
-  const aciklama = aciklamaInput.value.trim();
-  if (!baslik) { alert("Başlık boş"); return; }
+// --- Tarih Saat ---
+function tarihSaatGuncelle(){
   const now = new Date();
-  fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      tip: "not",
-      tarihSaat: now.toLocaleDateString(),
-      saat: now.toLocaleTimeString(),
-      baslik: baslik,
-      aciklama: aciklama,
-      kullanici: rumuz
-    })
-  }).then(() => { baslikInput.value=""; aciklamaInput.value=""; veriGetir(); })
-    .catch(err => console.error(err));
-});
-
-mesajBtn.addEventListener("click", () => {
-  const mesaj = mesajInput.value.trim();
-  if (!mesaj) { alert("Mesaj boş"); return; }
-  const now = new Date();
-  fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      tip: "mesaj",
-      tarih: now.toLocaleDateString(),
-      saat: now.toLocaleTimeString(),
-      mesaj: mesaj,
-      kullanici: rumuz
-    })
-  }).then(() => { mesajInput.value=""; veriGetir(); })
-    .catch(err => console.error(err));
-});
-
-function veriGetir() {
-  fetch(API)
-    .then(r => r.json())
-    .then(d => {
-      gorevListe.innerHTML = "";
-      mesajListe.innerHTML = "";
-      if(!d.veriler) return;
-
-      d.veriler.forEach(r => {
-        if(r[0] === "not"){
-          const div = document.createElement("div");
-          div.className = "task";
-          div.innerHTML = `<b>${r[1]} ${r[2]}</b><br>${r[3]}<br>${r[4]}<br><small>${r[5]}</small>`;
-          gorevListe.appendChild(div);
-        } else if(r[0] === "mesaj"){
-          const div = document.createElement("div");
-          div.className = "msg";
-          div.innerHTML = `<b>${r[5]}</b>: ${r[4]}`;
-          mesajListe.appendChild(div);
-        }
-      });
-
-      if(gorevListe.innerHTML==="") gorevListe.innerHTML="Görev yok";
-      if(mesajListe.innerHTML==="") mesajListe.innerHTML="Mesaj yok";
-    }).catch(err => console.error(err));
+  document.getElementById("tarihSaat").innerText = now.toLocaleDateString("tr-TR")+" "+now.toLocaleTimeString("tr-TR");
 }
+setInterval(tarihSaatGuncelle,1000);
+
+// --- Settings menu ---
+document.getElementById("settingsBtn").onclick = ()=>{
+  const menu = document.getElementById("settingsMenu");
+  menu.style.display = menu.style.display==="block" ? "none" : "block";
+};
+
+// --- Gmail login ---
+document.getElementById("loginBtn").onclick = ()=>{
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result=>{
+    const user = result.user;
+    rumuz = user.displayName || user.email.split("@")[0];
+    const email = user.email;
+    localStorage.setItem("gmail",email);
+    if(email===adminEmail) document.getElementById("yeniGorevCard").style.display="block";
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+    initApp();
+  }).catch(err=>alert("Giriş hatası: "+err.message));
+};
+
+// --- Uygulamayı başlat ---
+function initApp(){
+  const gorevListe = document.getElementById("gorevListe");
+  const mesajListe = document.getElementById("mesajListe");
+  const onlineUsersDiv = document.getElementById("onlineUsers");
+
+  // Görevleri oku
+  db.ref("gorevler").on("value",snap=>{
+    gorevListe.innerHTML="";
+    snap.forEach(s=>{
+      const t = s.val();
+      const div = document.createElement("div");
+      div.className="task";
+      div.dataset.key = s.key;
+      div.innerHTML = `<b>${t.baslik}</b><br>${t.aciklama}<br>${t.basTarih} ${t.basSaat} - ${t.bitTarih} ${t.bitSaat}`;
+      div.addEventListener("click",()=>{
+        document.querySelectorAll(".task").forEach(x=>x.classList.remove("selected"));
+        div.classList.add("selected");
+        selectedTaskKey = s.key;
+        document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>{
+          b.disabled = !(localStorage.getItem("gmail")===adminEmail);
+        });
+      });
+      if(t.yapildi) div.classList.add("yapildi");
+      gorevListe.prepend(div);
+    });
+  });
+
+  // Mesajları oku
+  db.ref("mesajlar").on("value",snap=>{
+    mesajListe.innerHTML="";
+    snap.forEach(s=>{
+      const m = s.val();
+      const div = document.createElement("div");
+      div.className="task";
+      div.innerHTML=`<b>${m.rumuz}</b>: ${m.mesaj} <small>${m.tarih} ${m.saat}</small>`;
+      mesajListe.append(div);
+    });
+  });
+
+  // Online kullanıcı
+  db.ref(".info/connected").on("value",snap=>{
+    if(snap.val()===true){
+      const email = localStorage.getItem("gmail");
+      const onlineRef = db.ref("online/"+email.replace(".","_"));
+      onlineRef.set(rumuz);
+      onlineRef.onDisconnect().remove();
+    }
+  });
+  db.ref("online").on("value",snap=>{
+    onlineUsersDiv.innerHTML="";
+    snap.forEach(u=>{
+      const div = document.createElement("div");
+      div.innerText = u.val();
+      onlineUsersDiv.append(div);
+    });
+  });
+}
+
+// --- Yeni görev kaydet ---
+document.getElementById("gorevBtn").onclick=()=>{
+  const baslik=document.getElementById("baslik").value;
+  const aciklama=document.getElementById("aciklama").value;
+  const basTarih=document.getElementById("basTarih").value;
+  const basSaat=document.getElementById("basSaat").value;
+  const bitTarih=document.getElementById("bitTarih").value;
+  const bitSaat=document.getElementById("bitSaat").value;
+  if(!baslik){alert("Başlık gerekli");return;}
+  const key=db.ref("gorevler").push().key;
+  db.ref("gorevler/"+key).set({baslik,aciklama,basTarih,basSaat,bitTarih,bitSaat,yapildi:false});
+  document.getElementById("baslik").value="";
+  document.getElementById("aciklama").value="";
+};
+
+// --- Mesaj gönder ---
+document.getElementById("mesajBtn").onclick=()=>{
+  const msg=document.getElementById("mesajInput").value;
+  if(!msg){alert("Mesaj boş olamaz");return;}
+  const tarih=new Date();
+  const tarihStr=tarih.toLocaleDateString("tr-TR");
+  const saatStr=tarih.toLocaleTimeString("tr-TR");
+  const key=db.ref("mesajlar").push().key;
+  db.ref("mesajlar/"+key).set({mesaj:msg,rumuz,tarih:tarihStr,saat:saatStr});
+  document.getElementById("mesajInput").value="";
+};
+
+// --- Alt panel iconları ---
+document.getElementById("deleteTask").onclick=()=>{
+  if(!selectedTaskKey) return;
+  db.ref("gorevler/"+selectedTaskKey).remove();
+  selectedTaskKey=null;
+  document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>b.disabled=true);
+};
+document.getElementById("doneTask").onclick=()=>{
+  if(!selectedTaskKey) return;
+  const taskRef=db.ref("gorevler/"+selectedTaskKey);
+  taskRef.once("value").then(s=>{
+    taskRef.update({yapildi:!s.val().yapildi});
+  });
+};
+document.getElementById("editTask").onclick=()=>{
+  if(!selectedTaskKey) return;
+  const taskRef=db.ref("gorevler/"+selectedTaskKey);
+  taskRef.once("value").then(s=>{
+    const t=s.val();
+    document.getElementById("baslik").value=t.baslik;
+    document.getElementById("aciklama").value=t.aciklama;
+    document.getElementById("basTarih").value=t.basTarih;
+    document.getElementById("basSaat").value=t.basSaat;
+    document.getElementById("bitTarih").value=t.bitTarih;
+    document.getElementById("bitSaat").value=t.bitSaat;
+    selectedTaskKey=null;
+    document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>b.disabled=true);
+  });
+};
+document.getElementById("alarmTask").onclick=()=>{alert("Alarm fonksiyonu yakında eklenebilir");};
+
+// --- Feedback ---
+document.getElementById("feedbackBtn").onclick=()=>{
+  const text=document.getElementById("feedback").value;
+  if(!text) return;
+  db.ref("feedback").push({rumuz,tarih:new Date().toLocaleDateString("tr-TR"),saat:new Date().toLocaleTimeString("tr-TR"),mesaj:text});
+  document.getElementById("feedback").value="";
+};
 </script>
 </body>
 </html>

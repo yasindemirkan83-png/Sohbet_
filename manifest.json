@@ -3,8 +3,9 @@
   "short_name": "ANFA",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#263238",
-  "theme_color": "#2196F3",
+  "background_color": "#000000",
+  "theme_color": "#00ffff",
+  "description": "ANFA Güvenlik Görev ve Mesaj Sistemi",
   "icons": [
     {
       "src": "icon-192.png",

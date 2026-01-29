@@ -5,91 +5,93 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ANFA Güvenlik</title>
 <link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:url('https://images.unsplash.com/photo-1607083203141-6d536b6b14b5?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;background-size:cover;color:#333;}
-header{background:rgba(38,50,56,0.9);color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;font-size:22px;position:relative}
-header #baslik{font-weight:bold;font-size:22px;color:#fff}
-header #tarihSaat{font-size:14px;color:#ccc}
-header #settingsBtn{cursor:pointer;font-size:22px;margin-left:10px}
-.card{background:rgba(255,255,255,0.95);margin:15px;padding:15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.3)}
-input,button,select,textarea{width:100%;padding:8px;margin:6px 0;font-size:14px;border-radius:6px;border:1px solid #ccc}
-button{background:#2196F3;color:#fff;border:none;cursor:pointer;transition:0.3s}
-button:hover{background:#1976D2}
-.task{border:1px solid #aaa;border-radius:10px;padding:10px;margin:8px 0;position:relative;background:#fff;transition:0.3s;box-shadow:0 3px 5px rgba(0,0,0,0.2);cursor:pointer;}
-.task.selected{border:2px solid #2196F3;background:#e3f2fd}
-.task.yapildi{background:#ffcccc;border-color:#f44336}
-#actionPanel{display:flex;justify-content:flex-end;align-items:center;background:#fff;padding:10px 15px;margin:10px 15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.3)}
-#actionPanel .iconBtn{margin:0 5px;font-size:20px;cursor:pointer;padding:5px 8px;border-radius:6px;transition:0.2s}
-#actionPanel .iconBtn:hover{background:#e3f2fd}
-#gorevListe{max-height:300px;overflow-y:auto;padding-bottom:10px}
-#mesajListe,#onlineUsers{max-height:200px;overflow-y:auto;padding:5px;margin-top:5px}
-#settingsMenu{position:absolute;top:60px;right:20px;background:#fff;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.3);width:300px;display:none;z-index:1000;padding:10px}
-#settingsMenu h4{margin:5px 0;font-size:16px}
-#userList{max-height:150px;overflow-y:auto;border:1px solid #ccc;padding:5px;border-radius:6px}
-.userRow{display:flex;justify-content:space-between;align-items:center;padding:2px 0}
+body{
+margin:0;
+font-family:Segoe UI;
+background:url("https://source.unsplash.com/1600x900/?security,night,city") no-repeat center fixed;
+background-size:cover;
+color:white;
+}
+header{
+background:rgba(0,0,0,0.8);
+padding:15px;
+display:flex;
+justify-content:space-between;
+box-shadow:0 0 20px cyan;
+}
+#logo{
+font-size:28px;
+color:cyan;
+text-shadow:0 0 15px cyan;
+}
+.card{
+background:rgba(0,0,0,0.7);
+margin:15px;
+padding:15px;
+border-radius:15px;
+box-shadow:0 0 15px cyan;
+}
+.task{
+border:1px solid cyan;
+padding:10px;
+margin:5px;
+border-radius:10px;
+cursor:pointer;
+}
+.task.selected{background:rgba(0,255,255,0.4);}
+.task.yapildi{background:rgba(255,0,0,0.4);}
+button{padding:10px;border-radius:8px;border:none;background:cyan;font-weight:bold;}
+input,textarea{width:100%;padding:10px;border-radius:8px;margin:5px;}
 </style>
 </head>
+
 <body>
 
 <header>
-<div id="baslik">ANFA Güvenlik</div>
-<div>
-<span id="tarihSaat"></span>
-<span id="settingsBtn">⚙️</span>
-</div>
+<div id="logo">ANFA GÜVENLİK</div>
+<div id="clock"></div>
 </header>
 
-<div id="settingsMenu">
-<h4>Görüş & Öneri</h4>
-<textarea id="feedback" placeholder="Yazınızı girin..." style="width:100%;height:60px;"></textarea>
-<button id="feedbackBtn">Gönder</button>
-<hr>
-<h4>Kullanıcı Yönetimi</h4>
-<div id="userList"></div>
-</div>
-
 <div class="card" id="login">
-<h3>Giriş (Gmail)</h3>
-<button id="loginBtn">Gmail ile Giriş Yap</button>
+<button onclick="login()">Gmail ile Giriş</button>
 </div>
 
 <div class="card" id="app" style="display:none">
 
-<h3>Görevler</h3>
+<h3>Görev Panosu</h3>
 <div id="gorevListe"></div>
 
-<div id="actionPanel">
-  <button id="editTask" class="iconBtn" disabled>✏️ Düzenle</button>
-  <button id="deleteTask" class="iconBtn" disabled>🗑️ Sil</button>
-  <button id="doneTask" class="iconBtn" disabled>✔️ İşaretle</button>
-  <button id="alarmTask" class="iconBtn" disabled>🔔 Alarm</button>
+<div>
+<button onclick="toggleNew()">➕ Yeni Görev</button>
+<button onclick="doneTask()">✔️</button>
+<button onclick="deleteTask()">🗑️</button>
 </div>
 
-<div class="card" id="yeniGorevCard" style="display:none">
-<h3>Yeni Görev</h3>
+<div id="newTask" style="display:none">
 <input id="baslik" placeholder="Başlık">
 <input id="aciklama" placeholder="Açıklama">
-<label>Başlangıç:</label>
-<input type="date" id="basTarih">
-<input type="time" id="basSaat">
-<label>Bitiş:</label>
-<input type="date" id="bitTarih">
-<input type="time" id="bitSaat">
-<button id="gorevBtn">Görev Kaydet 🔔</button>
+<input type="datetime-local" id="alarm">
+<button onclick="addTask()">Kaydet</button>
 </div>
 
 <hr>
-
-<div class="card" id="mesajCard">
 <h3>Mesajlar</h3>
 <div id="mesajListe"></div>
+<input id="msg">
+<button onclick="sendMsg()">Gönder</button>
 
-<h3>Mesaj Gönder</h3>
-<input id="mesajInput" placeholder="Mesaj yaz">
-<button id="mesajBtn">Mesaj Gönder</button>
+<hr>
+<h3>Görüş & Öneri</h3>
+<textarea id="fb"></textarea>
+<button onclick="sendFeedback()">Gönder</button>
 
-<h4>Online Kullanıcılar</h4>
-<div id="onlineUsers"></div>
+<hr>
+<h3>Admin Panel</h3>
+<div id="users"></div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -97,224 +99,132 @@ button:hover{background:#1976D2}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// --- Firebase config ---
-const firebaseConfig = {
-  apiKey: "AIzaSyDctzYKpvGNfyF-P7wTNy_XcbN5ECP5vJc",
-  authDomain: "anfaguvenlik-17ad3.firebaseapp.com",
-  databaseURL: "https://anfaguvenlik-17ad3-default-rtdb.firebaseio.com/",
-  projectId: "anfaguvenlik-17ad3",
-  storageBucket: "anfaguvenlik-17ad3.firebasestorage.app",
-  messagingSenderId: "41513312502",
-  appId: "1:41513312502:web:332571bc6be8ce90398cd7"
+emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+
+const firebaseConfig={
+apiKey:"AIzaSyDctzYKpvGNfyF-P7wTNy_XcbN5ECP5vJc",
+authDomain:"anfaguvenlik-17ad3.firebaseapp.com",
+databaseURL:"https://anfaguvenlik-17ad3-default-rtdb.firebaseio.com",
+projectId:"anfaguvenlik-17ad3"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
 
-let selectedTaskKey = null;
-let rumuz = "";
-const adminEmail = "yasindemirkan83@gmail.com";
+const auth=firebase.auth();
+const db=firebase.database();
+const admin="yasindemirkan83@gmail.com";
 
-// --- Tarih saat ---
-function tarihSaatGuncelle(){
-  const now = new Date();
-  document.getElementById("tarihSaat").innerText = now.toLocaleDateString("tr-TR")+" "+now.toLocaleTimeString("tr-TR");
-}
-setInterval(tarihSaatGuncelle,1000);
+let rumuz="",selected=null;
 
-// --- Settings menü ---
-document.getElementById("settingsBtn").onclick = ()=>{
-  const menu = document.getElementById("settingsMenu");
-  menu.style.display = menu.style.display==="block" ? "none" : "block";
-};
+setInterval(()=>clock.innerText=new Date().toLocaleString("tr-TR"),1000);
 
-// --- Gmail login ve rumuz iste ---
-document.getElementById("loginBtn").onclick = ()=>{
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).then(result=>{
-    const user = result.user;
-    const email = user.email;
-    if(email!==adminEmail){
-      rumuz = prompt("Lütfen bir rumuz girin:");
-      if(!rumuz) rumuz="Misafir";
-    } else {
-      rumuz = "Admin";
-      document.getElementById("yeniGorevCard").style.display="block";
-    }
-    localStorage.setItem("gmail",email);
-    document.getElementById("login").style.display="none";
-    document.getElementById("app").style.display="block";
-    initApp();
-  }).catch(err=>alert("Giriş hatası: "+err.message));
-};
-
-// --- Uygulamayı başlat ---
-function initApp(){
-  const gorevListe = document.getElementById("gorevListe");
-  const mesajListe = document.getElementById("mesajListe");
-  const onlineUsersDiv = document.getElementById("onlineUsers");
-  const userListDiv = document.getElementById("userList");
-
-  // Görevleri oku
-  db.ref("gorevler").on("value",snap=>{
-    gorevListe.innerHTML="";
-    snap.forEach(s=>{
-      const t = s.val();
-      const div = document.createElement("div");
-      div.className="task";
-      div.dataset.key = s.key;
-      div.innerHTML = `<div class="taskContent"><b>${t.baslik}</b><br>${t.aciklama}<br>${t.basTarih} ${t.basSaat} - ${t.bitTarih} ${t.bitSaat}</div>`;
-      div.addEventListener("click",()=>{
-        document.querySelectorAll(".task").forEach(x=>x.classList.remove("selected"));
-        div.classList.add("selected");
-        selectedTaskKey = s.key;
-        const admin = localStorage.getItem("gmail")===adminEmail;
-        document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>{
-          b.disabled = !admin;
-        });
-      });
-      if(t.yapildi) div.classList.add("yapildi");
-      gorevListe.prepend(div);
-    });
-  });
-
-  // Mesajları oku
-  db.ref("mesajlar").on("value",snap=>{
-    mesajListe.innerHTML="";
-    snap.forEach(s=>{
-      const m = s.val();
-      const div = document.createElement("div");
-      div.className="task";
-      div.innerHTML=`<b>${m.rumuz}</b>: ${m.mesaj} <small>${m.tarih} ${m.saat}</small>`;
-      mesajListe.append(div);
-    });
-  });
-
-  // Online kullanıcı
-  db.ref(".info/connected").on("value",snap=>{
-    if(snap.val()===true){
-      const email = localStorage.getItem("gmail");
-      const onlineRef = db.ref("online/"+email.replace(".","_"));
-      onlineRef.set(rumuz);
-      onlineRef.onDisconnect().remove();
-    }
-  });
-  db.ref("online").on("value",snap=>{
-    onlineUsersDiv.innerHTML="";
-    snap.forEach(u=>{
-      const div = document.createElement("div");
-      div.innerText = u.val();
-      onlineUsersDiv.append(div);
-    });
-  });
-
-  // Kullanıcı yönetimi paneli
-  if(localStorage.getItem("gmail")===adminEmail){
-    db.ref("online").on("value",snap=>{
-      userListDiv.innerHTML="";
-      snap.forEach(u=>{
-        const email = u.key.replace("_",".");
-        const div = document.createElement("div");
-        div.className="userRow";
-        div.innerHTML=`<span>${u.val()}</span><button onclick="removeUser('${email}')">Kapat</button>`;
-        userListDiv.append(div);
-      });
-    });
-  }
+function login(){
+const p=new firebase.auth.GoogleAuthProvider();
+auth.signInWithPopup(p).then(r=>{
+const mail=r.user.email;
+db.ref("ban/"+mail.replace(".","_")).once("value",b=>{
+if(b.exists()){alert("Engellendiniz");return;}
+rumuz=prompt("Rumuz:");
+localStorage.mail=mail;
+login.style.display="none";
+app.style.display="block";
+init();
+});
+});
 }
 
-// --- Yeni görev kaydet ---
-document.getElementById("gorevBtn").onclick=()=>{
-  if(localStorage.getItem("gmail")!==adminEmail) return alert("Yetkiniz yok!");
-  const baslik=document.getElementById("baslik").value.trim();
-  if(!baslik){alert("Başlık gerekli");return;}
-  const aciklama=document.getElementById("aciklama").value;
-  const basTarih=document.getElementById("basTarih").value;
-  const basSaat=document.getElementById("basSaat").value;
-  const bitTarih=document.getElementById("bitTarih").value;
-  const bitSaat=document.getElementById("bitSaat").value;
-  const key=db.ref("gorevler").push().key;
-  db.ref("gorevler/"+key).set({baslik,aciklama,basTarih,basSaat,bitTarih,bitSaat,yapildi:false});
-  document.getElementById("baslik").value="";
-  document.getElementById("aciklama").value="";
-};
-
-// --- Mesaj gönder ---
-document.getElementById("mesajBtn").onclick=()=>{
-  const msg=document.getElementById("mesajInput").value.trim();
-  if(!msg){alert("Mesaj boş olamaz");return;}
-  const tarih=new Date();
-  const tarihStr=tarih.toLocaleDateString("tr-TR");
-  const saatStr=tarih.toLocaleTimeString("tr-TR");
-  const key=db.ref("mesajlar").push().key;
-  db.ref("mesajlar/"+key).set({mesaj:msg,rumuz,tarih:tarihStr,saat:saatStr});
-  document.getElementById("mesajInput").value="";
-};
-
-// --- Alt panel iconları ---
-document.getElementById("deleteTask").onclick=()=>{
-  if(localStorage.getItem("gmail")!==adminEmail) return;
-  if(!selectedTaskKey) return;
-  db.ref("gorevler/"+selectedTaskKey).remove();
-  selectedTaskKey=null;
-  document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>b.disabled=true);
-};
-document.getElementById("doneTask").onclick=()=>{
-  if(localStorage.getItem("gmail")!==adminEmail) return;
-  if(!selectedTaskKey) return;
-  const taskRef=db.ref("gorevler/"+selectedTaskKey);
-  taskRef.once("value").then(s=>{
-    taskRef.update({yapildi:!s.val().yapildi});
-  });
-};
-document.getElementById("editTask").onclick=()=>{
-  if(localStorage.getItem("gmail")!==adminEmail) return;
-  if(!selectedTaskKey) return;
-  const taskRef=db.ref("gorevler/"+selectedTaskKey);
-  taskRef.once("value").then(s=>{
-    const t=s.val();
-    document.getElementById("baslik").value=t.baslik;
-    document.getElementById("aciklama").value=t.aciklama;
-    document.getElementById("basTarih").value=t.basTarih;
-    document.getElementById("basSaat").value=t.basSaat;
-    document.getElementById("bitTarih").value=t.bitTarih;
-    document.getElementById("bitSaat").value=t.bitSaat;
-    selectedTaskKey=null;
-    document.querySelectorAll("#actionPanel .iconBtn").forEach(b=>b.disabled=true);
-  });
-};
-document.getElementById("alarmTask").onclick=()=>{
-  if(localStorage.getItem("gmail")!==adminEmail) return;
-  alert("Alarm fonksiyonu yakında eklenebilir");
-};
-
-// --- Feedback sadece admin mailine ---
-document.getElementById("feedbackBtn").onclick=()=>{
-  const text=document.getElementById("feedback").value.trim();
-  if(!text) return;
-  const tarih=new Date();
-  db.ref("feedback").push({
-    rumuz,
-    tarih:tarih.toLocaleDateString("tr-TR"),
-    saat:tarih.toLocaleTimeString("tr-TR"),
-    mesaj:text,
-    to:adminEmail
-  });
-  document.getElementById("feedback").value="";
-};
-
-// --- Kullanıcıyı kapat (admin) ---
-function removeUser(email){
-  if(localStorage.getItem("gmail")!==adminEmail) return;
-  db.ref("online/"+email.replace(".","_")).remove();
+function toggleNew(){
+if(localStorage.mail!==admin)return;
+newTask.style.display=newTask.style.display=="none"?"block":"none";
 }
 
-// --- Service Worker PWA ---
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').then(()=>{
-    console.log("Service Worker registered");
-  });
+function addTask(){
+const key=db.ref("tasks").push().key;
+db.ref("tasks/"+key).set({
+baslik:baslik.value,
+aciklama:aciklama.value,
+alarm:alarm.value,
+yapildi:false,
+ekleyen:rumuz
+});
+scheduleAlarm(alarm.value,baslik.value);
+}
+
+function scheduleAlarm(time,title){
+if(Notification.permission!=="granted"){
+Notification.requestPermission();
+}
+const diff=new Date(time)-new Date();
+setTimeout(()=>{
+new Notification("ANFA GÖREV",{body:title});
+},diff);
+}
+
+function init(){
+db.ref("tasks").on("value",s=>{
+gorevListe.innerHTML="";
+s.forEach(t=>{
+const d=document.createElement("div");
+d.className="task";
+if(t.val().yapildi)d.classList.add("yapildi");
+d.innerHTML="<b>"+t.val().baslik+"</b><br>"+t.val().aciklama;
+d.onclick=()=>{selected=t.key;}
+gorevListe.prepend(d);
+});
+});
+
+db.ref("messages").on("value",s=>{
+mesajListe.innerHTML="";
+s.forEach(m=>{
+let d=document.createElement("div");
+d.className="task";
+d.innerHTML="<b>"+m.val().rumuz+"</b>: "+m.val().msg;
+if(localStorage.mail==admin){
+d.innerHTML+=" <button onclick='delMsg(\""+m.key+"\")'>🗑️</button>";
+}
+mesajListe.append(d);
+});
+});
+
+if(localStorage.mail==admin){
+db.ref("online").on("value",s=>{
+users.innerHTML="";
+s.forEach(u=>{
+users.innerHTML+=u.val()+" <button onclick='ban(\""+u.key+"\")'>BAN</button><br>";
+});
+});
+}
+}
+
+function sendMsg(){
+db.ref("messages").push({rumuz, msg:msg.value});
+msg.value="";
+}
+
+function delMsg(k){db.ref("messages/"+k).remove();}
+function deleteTask(){if(localStorage.mail==admin)db.ref("tasks/"+selected).remove();}
+function doneTask(){if(localStorage.mail==admin)db.ref("tasks/"+selected+"/yapildi").set(true);}
+
+function ban(mail){
+db.ref("ban/"+mail).set(true);
+alert("Banlandı");
+}
+
+function sendFeedback(){
+db.ref("feedback").push({rumuz, msg:fb.value});
+emailjs.send("service_id","template_id",{
+message:fb.value,
+to_email:"yasindemirkan83@gmail.com"
+});
+alert("Mail gönderildi");
+fb.value="";
 }
 </script>
+
+<script>
+if("serviceWorker"in navigator){
+navigator.serviceWorker.register("sw.js");
+}
+</script>
+
 </body>
 </html>

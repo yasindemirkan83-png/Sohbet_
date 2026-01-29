@@ -9,11 +9,11 @@
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80") no-repeat center center fixed;
+  background:url("https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80") no-repeat center center fixed;
   background-size:cover;
 }
 header{
-  background:rgba(0,0,0,0.7);
+  background:rgba(0,0,0,0.75);
   color:#fff;
   padding:15px;
   display:flex;
@@ -21,6 +21,8 @@ header{
   align-items:center;
 }
 #title{font-size:24px;font-weight:bold;color:#4FC3F7;}
+#clock{font-size:14px;color:#fff}
+#settingsBtn{font-size:22px;cursor:pointer}
 .card{
   background:rgba(255,255,255,0.95);
   margin:15px;
@@ -29,29 +31,71 @@ header{
   box-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
 button{
-  padding:10px;
+  padding:8px 12px;
   border:none;
   border-radius:6px;
   background:#2196F3;
   color:white;
   cursor:pointer;
+  margin:2px;
 }
 button:disabled{background:#aaa;}
 .task{
   border:1px solid #ccc;
   padding:10px;
-  margin:5px 0;
+  margin:6px 0;
   border-radius:8px;
+  cursor:pointer;
 }
+.task.selected{border:2px solid #2196F3;}
 .task.done{background:#c8e6c9;}
+#settingsPanel{
+  position:fixed;
+  top:60px;
+  right:15px;
+  width:300px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,.4);
+  padding:10px;
+  display:none;
+  z-index:999;
+}
 </style>
 </head>
 <body>
 
 <header>
 <div id="title">ANFA GÜVENLİK</div>
-<div id="clock"></div>
+<div>
+<span id="clock"></span>
+<span id="settingsBtn">⚙️</span>
+</div>
 </header>
+
+<div id="settingsPanel">
+<h4>Ayarlar</h4>
+
+<div id="adminSettings" style="display:none">
+<b>Admin Yetkileri</b><br>
+<label><input type="checkbox" id="allowEdit" checked> Kullanıcı görev düzenlesin</label><br>
+<label><input type="checkbox" id="allowDelete" checked> Kullanıcı görev silebilsin</label><br>
+<label><input type="checkbox" id="allowDone" checked> Kullanıcı tamamlayabilsin</label><br>
+<label><input type="checkbox" id="allowAlarm" checked> Kullanıcı alarm ekleyebilsin</label><br>
+</div>
+
+<hr>
+<b>Görüş & Öneri</b><br>
+<textarea id="feedback" style="width:100%;height:60px;"></textarea>
+<button onclick="sendFeedback()">Gönder</button>
+
+<hr>
+<div id="adminNotify" style="display:none">
+<b>Bildirim (Admin)</b><br>
+<input id="notifyText" placeholder="Bildirim mesajı">
+<button onclick="sendNotify()">Gönder</button>
+</div>
+</div>
 
 <div class="card" id="loginCard">
 <h3>Giriş</h3>
@@ -61,18 +105,26 @@ button:disabled{background:#aaa;}
 <div id="app" style="display:none">
 
 <div class="card">
-<h3>Hoşgeldin <span id="userName"></span></h3>
+Hoşgeldin: <b><span id="userName"></span></b>
 </div>
 
-<div class="card" id="taskPanel">
-<h3>Görevler</h3>
+<div class="card">
+<h3>Görev Panosu</h3>
 <div id="taskList"></div>
 
 <div id="adminTask" style="display:none">
-<h4>Yeni Görev</h4>
-<input id="tTitle" placeholder="Başlık"><br>
-<input id="tDesc" placeholder="Açıklama"><br>
-<button onclick="addTask()">Görev Ekle</button>
+<h4>Yeni / Düzenle Görev</h4>
+<input id="tTitle" placeholder="Başlık">
+<input id="tDesc" placeholder="Açıklama">
+Başlangıç:
+<input type="date" id="tStartDate">
+<input type="time" id="tStartTime">
+Bitiş:
+<input type="date" id="tEndDate">
+<input type="time" id="tEndTime"><br>
+<button onclick="saveTask()">Kaydet</button>
+<button onclick="deleteTask()">Sil</button>
+<button onclick="markDone()">Tamamlandı</button>
 </div>
 </div>
 
@@ -81,12 +133,6 @@ button:disabled{background:#aaa;}
 <div id="msgList"></div>
 <input id="msgInput" placeholder="Mesaj yaz">
 <button onclick="sendMsg()">Gönder</button>
-</div>
-
-<div class="card">
-<h3>Görüş & Öneri</h3>
-<textarea id="feedback" style="width:100%;height:60px;"></textarea>
-<button onclick="sendFeedback()">Gönder</button>
 </div>
 
 </div>
@@ -107,91 +153,114 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.database();
 const adminMail="yasindemirkan83@gmail.com";
-let userEmail="";
-let userName="";
+let userEmail="", userName="";
+let selectedTask=null;
 
 function clock(){
   document.getElementById("clock").innerText=new Date().toLocaleString("tr-TR");
 }
 setInterval(clock,1000);clock();
 
+settingsBtn.onclick=()=>{
+  settingsPanel.style.display = settingsPanel.style.display=="block"?"none":"block";
+};
+
 function login(){
   const provider=new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).then(r=>{
     userEmail=r.user.email;
     userName=r.user.displayName;
-    document.getElementById("loginCard").style.display="none";
-    document.getElementById("app").style.display="block";
+    loginCard.style.display="none";
+    app.style.display="block";
+    userNameSpan=userName;
     document.getElementById("userName").innerText=userName;
     if(userEmail===adminMail){
-      document.getElementById("adminTask").style.display="block";
+      adminTask.style.display="block";
+      adminSettings.style.display="block";
+      adminNotify.style.display="block";
     }
     loadTasks();
     loadMsgs();
-  }).catch(e=>alert(e.message));
+  });
 }
 
-function addTask(){
-  const title=document.getElementById("tTitle").value;
-  const desc=document.getElementById("tDesc").value;
-  if(!title){alert("Başlık gerekli");return;}
-  db.ref("tasks").push({title,desc,done:false});
-  document.getElementById("tTitle").value="";
-  document.getElementById("tDesc").value="";
+function saveTask(){
+  const data={
+    title:tTitle.value,
+    desc:tDesc.value,
+    sd:tStartDate.value,
+    st:tStartTime.value,
+    ed:tEndDate.value,
+    et:tEndTime.value,
+    done:false
+  };
+  if(!data.title){alert("Başlık gerekli");return;}
+  if(selectedTask){
+    db.ref("tasks/"+selectedTask).update(data);
+  }else{
+    db.ref("tasks").push(data);
+  }
+  selectedTask=null;
 }
 
 function loadTasks(){
   db.ref("tasks").on("value",snap=>{
-    const list=document.getElementById("taskList");
-    list.innerHTML="";
+    taskList.innerHTML="";
     snap.forEach(s=>{
       const t=s.val();
+      let timeText = t.sd+" "+t.st;
+      if(t.sd!=t.ed || t.st!=t.et){
+        timeText += " - "+t.ed+" "+t.et;
+      }
       const div=document.createElement("div");
       div.className="task"+(t.done?" done":"");
-      div.innerHTML=`<b>${t.title}</b><br>${t.desc}`;
-      if(userEmail===adminMail){
-        div.onclick=()=>db.ref("tasks/"+s.key).update({done:!t.done});
-      }
-      list.append(div);
+      div.innerHTML=`<b>${t.title}</b><br>${t.desc}<br><small>${timeText}</small>`;
+      div.onclick=()=>{
+        document.querySelectorAll(".task").forEach(x=>x.classList.remove("selected"));
+        div.classList.add("selected");
+        selectedTask=s.key;
+        tTitle.value=t.title;
+        tDesc.value=t.desc;
+        tStartDate.value=t.sd;
+        tStartTime.value=t.st;
+        tEndDate.value=t.ed;
+        tEndTime.value=t.et;
+      };
+      taskList.prepend(div);
     });
   });
 }
 
-function sendMsg(){
-  const txt=document.getElementById("msgInput").value;
-  if(!txt)return;
-  db.ref("messages").push({
-    user:userName,
-    msg:txt,
-    time:new Date().toLocaleString("tr-TR")
-  });
-  document.getElementById("msgInput").value="";
+function deleteTask(){
+  if(selectedTask) db.ref("tasks/"+selectedTask).remove();
+}
+function markDone(){
+  if(selectedTask) db.ref("tasks/"+selectedTask+"/done").set(true);
 }
 
+function sendMsg(){
+  db.ref("messages").push({user:userName,msg:msgInput.value,time:new Date().toLocaleString("tr-TR")});
+  msgInput.value="";
+}
 function loadMsgs(){
   db.ref("messages").on("value",snap=>{
-    const list=document.getElementById("msgList");
-    list.innerHTML="";
+    msgList.innerHTML="";
     snap.forEach(s=>{
       const m=s.val();
-      const div=document.createElement("div");
-      div.className="task";
-      div.innerHTML=`<b>${m.user}</b>: ${m.msg}<br><small>${m.time}</small>`;
-      list.append(div);
+      msgList.innerHTML+=`<div class="task"><b>${m.user}</b>: ${m.msg}<br><small>${m.time}</small></div>`;
     });
   });
 }
 
 function sendFeedback(){
-  const txt=document.getElementById("feedback").value;
-  if(!txt)return;
-  db.ref("feedback").push({
-    user:userName,
-    msg:txt,
-    time:new Date().toLocaleString("tr-TR")
-  });
-  document.getElementById("feedback").value="";
+  db.ref("feedback").push({user:userName,msg:feedback.value,time:new Date().toLocaleString("tr-TR")});
+  feedback.value="";
   alert("Gönderildi");
+}
+
+function sendNotify(){
+  db.ref("notifications").push({text:notifyText.value,time:new Date().toLocaleString("tr-TR")});
+  notifyText.value="";
 }
 </script>
 

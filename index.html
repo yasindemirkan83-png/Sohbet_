@@ -17,7 +17,7 @@
 --color-warning:#fbbf24;
 --color-text:#e2e8f0;
 }
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;text-transform:uppercase}
 body{background:url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1500&q=80') no-repeat center center fixed;background-size:cover;color:var(--color-text);min-height:100vh;padding:15px;max-width:500px;margin:auto}
 
 /* HEADER */
@@ -25,19 +25,20 @@ header{background:rgba(0,0,0,0.8);padding:15px;display:flex;justify-content:spac
 header b{color:var(--color-primary)}
 #clock{margin-right:10px}
 
-/* CARD */
-.card{background:rgba(255,255,255,0.95);padding:15px;margin-bottom:15px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.4)}
-.task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer}
-.task.done{background:#d4edda;text-decoration:line-through}
-
-/* BUTTONS */
-button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin:3px 0}
-button:hover{background:#1976D2}
-
 /* SETTINGS */
 #settings{position:absolute;top:60px;right:15px;background:white;width:300px;padding:10px;border-radius:10px;display:none;z-index:999}
 #adminPanel{margin-bottom:8px}
 textarea{width:100%;border-radius:8px;padding:5px}
+
+/* CARD */
+.card{background:rgba(255,255,255,0.95);padding:15px;margin-bottom:15px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.4)}
+.task{border:1px solid #ccc;padding:12px;margin:5px 0;border-radius:8px;cursor:pointer;color:black;font-size:0.95rem}
+.task.done{background:#d4edda;text-decoration:line-through}
+
+/* BUTTONS */
+button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin:3px}
+button:hover{background:#1976D2}
+.button-row{display:flex;gap:5px;flex-wrap:wrap;}
 
 /* TAKVİM */
 .toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px}
@@ -53,14 +54,20 @@ textarea{width:100%;border-radius:8px;padding:5px}
 .today{outline:2px solid #38bdf8}
 .summary{display:flex;justify-content:space-between;margin-top:10px}
 .summary-value{font-size:1.2rem;font-weight:700}
+
+/* MESAJ */
+#messages{max-height:250px;overflow-y:auto;padding:5px;margin-bottom:5px;background:#f1f1f1;color:black;border-radius:8px}
+#msgCount{font-size:0.9rem;margin-left:5px;color:#fbbf24}
 </style>
 </head>
-
 <body>
 
 <header>
 <div><b>ANFA GÜVENLİK</b></div>
-<div><span id="clock"></span><span style="cursor:pointer" onclick="toggleSettings()">⚙️</span></div>
+<div>
+<span id="clock"></span>
+<span style="cursor:pointer" onclick="toggleSettings()">⚙️</span>
+</div>
 </header>
 
 <div id="settings">
@@ -78,27 +85,29 @@ textarea{width:100%;border-radius:8px;padding:5px}
 
 <div class="card" id="taskPanel" style="display:none">
 <h3>Görev Panosu</h3>
-<div id="taskList" style="max-height:200px;overflow-y:auto"></div>
+<div id="taskList" style="max-height:220px;overflow-y:auto"></div>
 <div id="adminTask" style="display:none">
 <hr>
 <input id="title" placeholder="Görev Başlığı">
 <input type="datetime-local" id="start">
 <input type="datetime-local" id="end">
-<button onclick="addTask()">Görev Ekle</button>
+<div class="button-row">
+<button onclick="addTask()">Ekle</button>
 <button onclick="deleteTask()">Sil</button>
 <button onclick="markDone()">Tamamlandı</button>
 <button onclick="setAlarm()">Alarm</button>
 </div>
 </div>
+</div>
 
 <div class="card" id="messagePanel" style="display:none">
 <h3>Mesajlar <span id="msgCount"></span></h3>
-<div id="messages" style="max-height:200px;overflow-y:auto"></div>
+<div id="messages"></div>
 <input id="msgText" placeholder="Mesaj">
 <button onclick="sendMsg()">Gönder</button>
 </div>
 
-<!-- ALT: ÇALIŞMA TAKVİMİ -->
+<!-- TAKVİM -->
 <div class="card">
 <button class="toggle-btn" onclick="toggleTakvim()">📅 Çalışma Takvimi</button>
 <div id="takvimPanel" style="display:none">
@@ -131,6 +140,7 @@ textarea{width:100%;border-radius:8px;padding:5px}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
+// Firebase config
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
 authDomain: "studio-3972799448-609d1.firebaseapp.com",
@@ -153,12 +163,7 @@ setInterval(clock,1000);clock();
 
 /* Ayarlar */
 function toggleSettings(){let s=document.getElementById("settings");s.style.display=s.style.display=="block"?"none":"block"}
-function sendFeedback(){
-let f=document.getElementById("feedback").value;
-if(!f)return alert("Boş mesaj gönderilemez");
-db.ref("feedback").push({user:userEmail,msg:f});
-alert("Gönderildi");document.getElementById("feedback").value="";
-}
+function sendFeedback(){let f=document.getElementById("feedback").value;if(!f)return alert("Boş mesaj gönderilemez");db.ref("feedback").push({user:userEmail,msg:f});alert("Gönderildi");document.getElementById("feedback").value="";}
 
 /* Login */
 function login(){
@@ -196,7 +201,6 @@ html+=`<div class="task ${t.done?"done":""}" onclick="selectTask('${s.key}')"><b
 document.getElementById("taskList").innerHTML=html;
 });
 }
-
 function selectTask(key){selectedTask=key}
 function deleteTask(){if(userEmail!=ADMIN||!selectedTask)return;db.ref("tasks/"+selectedTask).remove()}
 function markDone(){if(userEmail!=ADMIN||!selectedTask)return;db.ref("tasks/"+selectedTask+"/done").set(true)}
@@ -204,7 +208,7 @@ function setAlarm(){if(Notification.permission!=="granted")Notification.requestP
 
 /* Mesaj */
 function sendMsg(){
-let text=document.getElementById("msgText").value;
+let text=document.getElementById("msgText").value.toUpperCase();
 if(!text)return;
 if(msgSet.has(text))return alert("Bu mesaj zaten gönderildi");
 db.ref("messages").push({user:userEmail,msg:text});

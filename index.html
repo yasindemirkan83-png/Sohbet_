@@ -1,225 +1,114 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Tek Sayfa Uygulama</title>
+  <title>Uygulama Arayüzü</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <style>
-    body, html { margin:0; padding:0; height:100%; background:black; font-family:sans-serif; color:black; text-transform: uppercase; }
-    #loginScreen { position:relative; width:100%; height:100%; }
-    #loginScreen video { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
-    #googleBtn {
-      position:absolute; top:10px; right:10px; width:50px; height:50px; 
-      background-color:white; color:black; border:none; border-radius:25px;
-      font-size:24px; cursor:pointer;
+    body { margin:0; overflow:hidden; }
+    #loginScreen, #mainScreen { position:absolute; top:0; left:0; width:100%; height:100%; }
+    #loginScreen { z-index:10; }
+    #loginScreen video { object-fit:cover; width:100%; height:100%; }
+    #loginScreen #googleBtn {
+      position:absolute; top:20px; right:20px;
+      cursor:pointer; width:40px; height:40px;
     }
-    #nav { display:none; background:#222; padding:5px; text-align:center; }
-    #nav button { margin:5px; padding:10px 15px; background:#fff; color:#000; border:none; cursor:pointer; }
+    #mainScreen { display:none; background:black; color:black; padding:20px; box-sizing:border-box; }
     .card {
-      display:none; background:white; padding:15px; margin:20px auto; max-width:500px;
-      border-radius:8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      background:white; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.1);
+      color:black; text-transform:uppercase; margin-bottom:20px; padding:16px;
     }
-    .card h2 { margin-top:0; }
-    .card input, .card textarea { width:100%; padding:5px; margin:5px 0; box-sizing:border-box; }
-    .card button { padding:10px 20px; background:#000; color:#fff; border:none; cursor:pointer; }
-    /* Takvim stili */
-    table { width:100%; border-collapse: collapse; margin-top:10px; }
-    th, td { width:14%; border:1px solid #ccc; text-align:center; padding:5px; }
-    th { background:#f0f0f0; }
+    #settingsIcon {
+      position:absolute; top:20px; right:20px; color:white; font-size:24px; cursor:pointer;
+    }
+    #settingsMenu {
+      position:absolute; top:0; right:0; width:250px; height:100%;
+      background:#333; display:none; padding:20px; box-sizing:border-box;
+    }
+    #backBtn { color:white; cursor:pointer; font-size:18px; margin-bottom:10px; display:inline-block; }
   </style>
 </head>
 <body>
-  <!-- Giriş Ekranı -->
-  <div id="loginScreen">
-    <video autoplay muted loop>
-      <source src="https://raw.githubusercontent.com/kullanici/videolar/main/arkaplan.mp4" type="video/mp4">
-      Tarayıcınız video etiketini desteklemiyor.
-    </video>
-    <button id="googleBtn">G</button>
+
+<!-- Giriş Ekranı -->
+<div id="loginScreen">
+  <video autoplay loop muted>
+    <source src="login-video.mp4" type="video/mp4">
+    Tarayıcı video oynatamıyor.
+  </video>
+  <img id="googleBtn" src="https://developers.google.com/identity/images/g-logo.png" title="G ile Giriş" alt="G" />
+</div>
+
+<!-- Ana Ekran (giriş sonrası) -->
+<div id="mainScreen">
+  <div id="settingsIcon">⚙</div>
+  <div id="settingsMenu">
+    <div id="backBtn">← ANA EKRAN</div>
+    <!-- Ayar seçenekleri buraya -->
   </div>
+  <div class="card" id="tasksCard">GÖREVLER: Henüz yüklenmedi.</div>
+  <div class="card" id="messagesCard">MESAJLAR: Henüz yüklenmedi.</div>
+  <div class="card" id="calendarCard">TAKVİM: Henüz yüklenmedi.</div>
+</div>
 
-  <!-- Navigasyon (giriş sonrası) -->
-  <div id="nav">
-    <button onclick="showPanel('taskPanel')">Görevler</button>
-    <button onclick="showPanel('messagePanel')">Mesajlar</button>
-    <button onclick="showPanel('calendarPanel')">Takvim</button>
-    <button onclick="showPanel('settingsPanel')">Ayarlar</button>
-  </div>
+<script>
+  // Firebase yapılandırma (kendi config'inizi buraya ekleyin)
+  const firebaseConfig = {
+    apiKey: "API_KEY",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    projectId: "PROJECT_ID",
+    // ... diğer ayarlar
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-  <!-- Görev Paneli -->
-  <div id="taskPanel" class="card">
-    <h2>Görevler</h2>
-    <input id="newTask" placeholder="Yeni görev ekle">
-    <button onclick="addTask()">Ekle</button>
-    <ul id="taskList"></ul>
-  </div>
+  // Google ile giriş fonksiyonu
+  document.getElementById('googleBtn').onclick = function() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(e => console.error(e));
+  };
 
-  <!-- Mesaj Paneli -->
-  <div id="messagePanel" class="card">
-    <h2>Mesajlar</h2>
-    <input id="newMessage" placeholder="Yeni mesaj ekle">
-    <button onclick="addMessage()">Gönder</button>
-    <ul id="messageList"></ul>
-  </div>
+  // Ayarlar menüsü işlemleri
+  document.getElementById('settingsIcon').onclick = function() {
+    document.getElementById('settingsMenu').style.display = 'block';
+  };
+  document.getElementById('backBtn').onclick = function() {
+    document.getElementById('settingsMenu').style.display = 'none';
+  };
 
-  <!-- Takvim Paneli -->
-  <div id="calendarPanel" class="card">
-    <h2>Takvim</h2>
-    <table id="calendar">
-      <thead><tr>
-        <th>Pzt</th><th>Sali</th><th>Çar</th><th>Per</th><th>Cum</th><th>Cmt</th><th>Paz</th>
-      </tr></thead>
-      <tbody id="calendarBody"></tbody>
-    </table>
-  </div>
+  // Kimlik durumunu dinle
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // Giriş başarılı: ana ekrana geç
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainScreen').style.display = 'block';
 
-  <!-- Ayarlar Paneli -->
-  <div id="settingsPanel" class="card">
-    <h2>Ayarlar</h2>
-    <label>Alarm Saati: <input type="time" id="alarmTime"></label><br>
-    <label>Görüş-Öneri: <textarea id="feedback" rows="4" placeholder="Yorumunuzu yazın"></textarea></label><br>
-    <button id="backBtn">Geri Dön</button>
-    <button onclick="logout()">Çıkış Yap</button>
-  </div>
-
-  <!-- Firebase SDK ve Ana JavaScript -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script>
-    // Firebase yapılandırması (kendi projenizle değiştirin)
-    var firebaseConfig = {
-      apiKey: "API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-      projectId: "YOUR_PROJECT",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    // Eleman referansları
-    const loginScreen = document.getElementById('loginScreen');
-    const navBar = document.getElementById('nav');
-    const panels = {
-      taskPanel: document.getElementById('taskPanel'),
-      messagePanel: document.getElementById('messagePanel'),
-      calendarPanel: document.getElementById('calendarPanel'),
-      settingsPanel: document.getElementById('settingsPanel')
-    };
-
-    // Google ile giriş butonu
-    document.getElementById('googleBtn').onclick = () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).catch(err => console.error(err));
-    };
-
-    // Oturum durumu dinleyicisi
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        // Giriş başarılı: Nav ve görev panelini göster
-        loginScreen.style.display = 'none';
-        navBar.style.display = 'block';
-        showPanel('taskPanel');
-
-        // Veritabanı dinleyicileri
-        const tasksRef = firebase.database().ref('tasks/' + user.uid);
-        tasksRef.on('child_added', snapshot => {
-          const li = document.createElement('li');
-          li.textContent = snapshot.val().text;
-          document.getElementById('taskList').appendChild(li);
+      // Veritabanından görevleri ve mesajları çek (örnek)
+      db.collection('tasks').get().then(snapshot => {
+        let tasks = '';
+        snapshot.forEach(doc => {
+          tasks += doc.data().title + '<br>';
         });
-        const msgsRef = firebase.database().ref('messages/' + user.uid);
-        msgsRef.on('child_added', snapshot => {
-          const li = document.createElement('li');
-          li.textContent = snapshot.val().text;
-          document.getElementById('messageList').appendChild(li);
+        document.getElementById('tasksCard').innerHTML = 'GÖREVLER:<br>' + tasks;
+      });
+      db.collection('messages').get().then(snapshot => {
+        let msgs = '';
+        snapshot.forEach(doc => {
+          msgs += doc.data().text + '<br>';
         });
-      } else {
-        // Oturum yok: Sadece giriş ekranı göster
-        loginScreen.style.display = 'block';
-        navBar.style.display = 'none';
-        hideAllPanels();
-      }
-    });
-
-    // Paneller arası geçiş fonksiyonu
-    function showPanel(id) {
-      Object.values(panels).forEach(p => p.style.display = 'none');
-      panels[id].style.display = 'block';
+        document.getElementById('messagesCard').innerHTML = 'MESAJLAR:<br>' + msgs;
+      });
+      // Takvim verilerini çekmek için benzer işlemler yapılır
+    } else {
+      // Kullanıcı çıkış yaptıysa login ekranına dön
+      document.getElementById('loginScreen').style.display = 'block';
+      document.getElementById('mainScreen').style.display = 'none';
     }
-    function hideAllPanels() {
-      Object.values(panels).forEach(p => p.style.display = 'none');
-    }
+  });
+</script>
 
-    // Görev ekleme
-    function addTask() {
-      const text = document.getElementById('newTask').value.trim();
-      const user = firebase.auth().currentUser;
-      if (user && text) {
-        firebase.database().ref('tasks/' + user.uid).push({ text: text });
-        document.getElementById('newTask').value = '';
-      }
-    }
-
-    // Mesaj ekleme
-    function addMessage() {
-      const text = document.getElementById('newMessage').value.trim();
-      const user = firebase.auth().currentUser;
-      if (user && text) {
-        firebase.database().ref('messages/' + user.uid).push({ text: text });
-        document.getElementById('newMessage').value = '';
-      }
-    }
-
-    // Takvim gösterimi (mevcut ay)
-    function showCalendar(month, year) {
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month+1, 0).getDate();
-      const tbl = document.getElementById('calendarBody');
-      tbl.innerHTML = '';
-      let date = 1;
-      for (let i = 0; i < 6; i++) {
-        let row = document.createElement('tr');
-        for (let j = 0; j < 7; j++) {
-          let cell = document.createElement('td');
-          if (i === 0 && j < firstDay) {
-            cell.textContent = '';
-          } else if (date > daysInMonth) {
-            cell.textContent = '';
-          } else {
-            cell.textContent = date;
-            date++;
-          }
-          row.appendChild(cell);
-        }
-        tbl.appendChild(row);
-      }
-    }
-    // Şu anki ayı göster
-    const today = new Date();
-    showCalendar(today.getMonth(), today.getFullYear());
-
-    // Ayarlar bölümü: Geri Dön ve Çıkış
-    document.getElementById('backBtn').onclick = () => showPanel('taskPanel');
-    function logout() {
-      firebase.auth().signOut().then(() => location.reload());
-    }
-
-    // Alarm zamanı kaydet (Realtime Database)
-    document.getElementById('alarmTime').addEventListener('change', function() {
-      const user = firebase.auth().currentUser;
-      if (user) {
-        firebase.database().ref('alarms/' + user.uid).set({ time: this.value });
-      }
-    });
-    // Görüş-öneri kaydet (sayfa dışına tıklandığında)
-    document.getElementById('feedback').addEventListener('blur', function() {
-      const user = firebase.auth().currentUser;
-      if (user) {
-        firebase.database().ref('feedback/' + user.uid).set({ text: this.value });
-      }
-    });
-  </script>
 </body>
 </html>

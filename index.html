@@ -1,229 +1,413 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<!-- AÇILIŞ EKRANININ BÜYÜMESİNİ ENGELLEME -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ANFA Güvenlik</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 :root{
---bg-primary:#ffffff;
---bg-secondary:#f0f0f0;
---bg-tertiary:#e0e0e0;
---color-primary:#000000;
---color-success:#10b981;
---color-warning:#fbbf24;
---color-text:#000000;
+  --bg-primary:#ffffff;
+  --bg-secondary:#f0f0f0;
+  --bg-tertiary:#e0e0e0;
+  --color-text:#000000;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+html,body{height:100%}
 body{
-  background:#000000;
+  background:#000;
   color:var(--color-text);
   min-height:100vh;
-  max-width:500px;
-  margin:auto;
+  margin:0 auto;
   padding:15px;
   position:relative;
+  overflow:hidden;
+  -webkit-user-select:none;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
 }
 
 /* VIDEO ARKA PLAN */
 #bgVideo{
-position:fixed;
-top:0; left:0;
-width:100%; height:100%;
-object-fit:cover;
-z-index:-1;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  z-index:-1;
 }
 
-/* GİRİŞ LOGO */
+/* LOGIN LOGO KONTEYNERI - resim veya fallback SVG buraya yerleştirilecek */
+#loginWrap{
+  position:fixed;
+  top:15px;
+  right:25px;
+  width:96px;
+  height:96px;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* img logo */
 #loginLogo{
-position:fixed;
-top:15px; right:25px;
-width:96px; height:96px;
-cursor:pointer;
-z-index:1000;
+  width:96px;
+  height:96px;
+  cursor:pointer;
+  display:block;
+  border-radius:10px;
+  background:transparent;
 }
 
-/* KART TASARIMI */
+/* fallback buton (SVG) */
+#loginFallback{
+  width:96px;height:96px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border-radius:10px;
+  background:rgba(255,255,255,0.95);
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* KONTENT */
+.container{max-width:720px;margin:110px auto 40px;overflow:auto;padding:0 12px}
 .section{
-background:var(--bg-primary);
-padding:15px;
-border-radius:15px;
-margin-bottom:15px;
-color:black;
-box-shadow:0 4px 10px rgba(0,0,0,0.3);
-text-transform:uppercase;
+  background:var(--bg-primary);
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+  color:black;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  text-transform:uppercase;
+  font-weight:700;
 }
 
-/* GÖREV & MESAJ PANELİ */
-.task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer;color:black;text-transform:uppercase; background:white;}
-.task.done{background:#d4edda;text-decoration:line-through;}
-.task.selected{outline:2px solid #2196F3;}
-#taskList{max-height:250px;overflow-y:auto;font-size:1rem;}
-#messages{max-height:250px;overflow-y:auto;font-size:1rem;background:white;padding:10px;border-radius:10px;}
-.message{padding:6px;margin:5px 0;background:#fff;border-radius:8px;cursor:pointer;text-transform:uppercase; color:black;}
-.message.selected{outline:2px solid #2196F3;}
-textarea{width:100%;border-radius:10px;padding:6px;margin-bottom:5px;}
+/* TASK & MSG */
+#taskList,#messages{max-height:260px;overflow:auto;font-size:0.95rem}
+.task{border:1px solid #ddd;padding:10px;margin:6px 0;border-radius:8px;background:#fff;color:#000;text-transform:uppercase}
+.message{padding:8px;margin:6px 0;border-radius:8px;background:#fff;color:#000;text-transform:uppercase}
 
-/* BUTONLAR */
-button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin-right:5px;}
-button:hover{background:#1976D2;}
-.action-buttons{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+/* butonlar */
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+input[type=text], input[type=datetime-local], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;box-sizing:border-box}
+button{padding:8px 12px;border-radius:8px;border:none;background:#1976D2;color:#fff;cursor:pointer;font-weight:700}
 
-/* AYARLAR PANELİ */
+/* settings panel */
 #settings{
-position:fixed;
-top:15px;
-right:15px;
-background:white;
-width:300px;
-padding:10px;
-border-radius:10px;
-display:none;
-z-index:999;
+  position:fixed;
+  top:70px;
+  right:20px;
+  width:320px;
+  max-width:90%;
+  background:#fff;
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  display:none;
+  z-index:2000;
+  text-transform:uppercase;
 }
-#settings h3{margin-bottom:10px;}
-.toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px}
 
-/* TAKVİM */
-.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.vardiya-btn{background:var(--bg-primary);border:2px solid var(--bg-tertiary);border-radius:12px;padding:10px;color:black}
-.vardiya-btn.active{border-color:var(--color-success)}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:black}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.day{background:var(--bg-tertiary);border-radius:8px;padding:6px;font-size:.8rem;text-align:center;}
-.work-day{background:rgba(16,185,129,.4)}
-.work-night{background:rgba(56,189,248,.4)}
-.off{background:rgba(100,116,139,.4)}
-.today{outline:2px solid #38bdf8}
-.summary{display:flex;justify-content:space-between;margin-top:10px}
-.summary-value{font-size:1.2rem;font-weight:800}
+/* calendar */
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;font-size:0.75rem;text-align:center}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.day{background:#f3f3f3;padding:8px;border-radius:6px;text-align:center}
+
+/* küçük cihazlar */
+@media (max-width:520px){
+  .container{margin:90px 8px 30px}
+  #loginWrap{right:12px;top:12px;width:78px;height:78px}
+  #loginLogo{width:78px;height:78px}
+  #loginFallback{width:78px;height:78px}
+}
 </style>
 </head>
 <body>
 
-<!-- VIDEO ARKA PLAN -->
-<video autoplay muted loop playsinline id="bgVideo">
+<!-- ARKA PLAN VIDEO -->
+<video id="bgVideo" autoplay muted loop playsinline>
   <source src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/InShot_20260130_145437574.mp4" type="video/mp4">
+  Tarayıcınız video etiketini desteklemiyor.
 </video>
 
-<!-- GİRİŞ LOGO -->
-<img id="loginLogo" 
-     src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png" 
-     alt="Giriş" 
-     title="Gmail ile giriş" 
-     onclick="login()">
-
-<!-- KARTLAR -->
-<div class="section" id="taskPanel" style="display:none;">
-<h3>Görevler</h3>
-<div id="taskList"></div>
-<div class="action-buttons">
-<input id="title" placeholder="Görev">
-<input type="datetime-local" id="start">
-<input type="datetime-local" id="end">
-<button onclick="addTask()">Ekle</button>
-<button onclick="deleteTask()">Sil</button>
-<button onclick="markDone()">Tamamlandı</button>
-<button onclick="setAlarm()">Alarm</button>
-</div>
+<!-- LOGO KONTEYNER: önce img, başarısızsa fallback gösterilecek -->
+<div id="loginWrap" aria-label="Giriş logosu">
+  <!-- img tag: JS ile raw URL denenecek -->
+  <img id="loginLogo" alt="Gmail ile giriş" />
+  <!-- fallback (görsel yüklenmezse gösterilecek, tıklanınca login()) -->
+  <div id="loginFallback" role="button" aria-pressed="false" title="Gmail ile giriş" onclick="login()">
+    <!-- Basit G SVG (bellek içi, her zaman gösterilebilir) -->
+    <svg width="56" height="56" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="#4285F4" d="M43.6 20.2H42V20H24v8h11.3C34.4 32 29.6 35 24 35c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.3 0 6.3 1.2 8.6 3.2l5.8-5.8C34.3 3.9 29.4 2 24 2 12.9 2 4 10.9 4 22s8.9 20 20 20c11.1 0 20-8.9 20-20 0-1.3-.1-2.3-.4-3.0z"/>
+      <path fill="#34A853" d="M6.3 14.4l6.6 4.8C14.4 16 18.8 13 24 13c3.3 0 6.3 1.2 8.6 3.2l5.8-5.8C34.3 6.2 29.4 4 24 4 16 4 9 8.8 6.3 14.4z"/>
+      <path fill="#FBBC05" d="M24 44c5.6 0 10.4-2.9 13.3-7.3L31.6 32.9C29.2 36 25.5 38 21.7 38 15.1 38 9.8 33 7.9 27.1l-6.6 4.8C6.2 40.6 14 44 24 44z"/>
+      <path fill="#EA4335" d="M43.6 20.2H42V20H24v8h11.3C34.9 30 29.6 34 24 34c-3.8 0-7.4-2-9.6-5.1l-6.6 4.8C9.8 40.6 15.1 44 24 44 34 44 43.6 36 43.6 24c0-1.3-.1-2.3-.4-3.0z"/>
+    </svg>
+  </div>
 </div>
 
-<div class="section" id="messagePanel" style="display:none;">
-<h3>Mesajlar</h3>
-<div id="messages"></div>
-<div class="action-buttons">
-<input id="msgText" placeholder="Mesaj">
-<button onclick="sendMsg()">Gönder</button>
-<button onclick="deleteSelectedMsg()">Sil</button>
-</div>
+<!-- Uygulama içerikleri (girişten sonra gösterilecek) -->
+<div class="container" id="appContent" aria-hidden="true">
+
+  <div class="section" id="tasksCard" style="display:none;">
+    <h3>Görevler</h3>
+    <div id="taskList"></div>
+    <div class="action-row">
+      <input id="title" type="text" placeholder="GöREV">
+      <input id="start" type="datetime-local">
+      <input id="end" type="datetime-local">
+    </div>
+    <div class="action-row">
+      <button onclick="addTask()">Ekle</button>
+      <button onclick="deleteTask()">Sil</button>
+      <button onclick="markDone()">Tamamlandı</button>
+      <button onclick="setAlarm()">Alarm</button>
+    </div>
+  </div>
+
+  <div class="section" id="messagesCard" style="display:none;">
+    <h3>Mesajlar</h3>
+    <div id="messages"></div>
+    <div class="action-row">
+      <input id="msgText" type="text" placeholder="Mesaj">
+      <button onclick="sendMsg()">Gönder</button>
+      <button onclick="deleteSelectedMsg()">Sil</button>
+    </div>
+  </div>
+
+  <div class="section" id="calendarCard" style="display:none;">
+    <h3>Çalışma Takvimi</h3>
+    <div class="action-row" style="margin-bottom:8px">
+      <button onclick="prevMonth()">◀</button>
+      <b id="monthTitle"></b>
+      <button onclick="nextMonth()">▶</button>
+    </div>
+    <div class="weekdays">
+      <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
+    </div>
+    <div id="calendar" class="calendar-grid"></div>
+    <div class="action-row" style="margin-top:10px">
+      <div><strong id="dayCount">0</strong><div>GÜNDÜZ</div></div>
+      <div><strong id="nightCount">0</strong><div>GECE</div></div>
+      <div><strong id="offCount">0</strong><div>İZİN</div></div>
+    </div>
+  </div>
+
 </div>
 
-<div class="section" id="takvimSection" style="display:none;">
-<button class="toggle-btn" onclick="toggleTakvim()">📅 ÇALIŞMA TAKVİMİ</button>
-<div id="takvimPanel" style="display:none">
-<div class="section-title">Vardiya Seçimi</div>
-<div class="vardiya-buttons">
-<button class="vardiya-btn" data-v="1">1. Vardiya</button>
-<button class="vardiya-btn" data-v="2">2. Vardiya</button>
-<button class="vardiya-btn" data-v="3">3. Vardiya</button>
-<button class="vardiya-btn" data-v="4">4. Vardiya</button>
-</div>
-<br>
-<div style="display:flex;justify-content:space-between">
-<button onclick="prevMonth()">◀</button>
-<b id="monthTitle"></b>
-<button onclick="nextMonth()">▶</button>
-</div>
-<div class="weekdays">
-<div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
-</div>
-<div class="calendar-grid" id="calendar"></div>
-<div class="summary">
-<div><div class="summary-value" id="dayCount">0</div>Gündüz</div>
-<div><div class="summary-value" id="nightCount">0</div>Gece</div>
-<div><div class="summary-value" id="offCount">0</div>İzin</div>
-</div>
-</div>
-
-<!-- AYARLAR -->
+<!-- Ayarlar panel (giriş sonrası) -->
 <div id="settings">
-<h3>Ayarlar</h3>
-<div id="adminPanel"></div>
-<hr>
-<div>
-<button onclick="toggleAlarmPanel()">Alarmlar</button>
-<div id="alarmPanel" style="display:none;"></div>
-</div>
-<hr>
-<div>
-<h4>Görüş & Öneri</h4>
-<textarea id="feedback"></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-</div>
-<button onclick="closeSettings()">Geri</button>
+  <h3>AYARLAR</h3>
+  <div id="adminPanel"></div>
+  <hr>
+  <button onclick="toggleAlarmPanel()">Alarmlar</button>
+  <div id="alarmPanel" style="display:none;margin-top:8px"></div>
+  <hr>
+  <h4>GÖRÜŞ & ÖNERİ</h4>
+  <textarea id="feedback" rows="4" placeholder="Görüşünüzü yazın..."></textarea>
+  <div style="margin-top:8px">
+    <button onclick="sendFeedback()">Gönder</button>
+    <button onclick="closeSettings()">Geri</button>
+  </div>
 </div>
 
-<!-- Firebase -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Firebase config
+// ---------- Firebase config (senin verdiğin) ----------
 const firebaseConfig = {
-apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
-authDomain: "studio-3972799448-609d1.firebaseapp.com",
-databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
-projectId: "studio-3972799448-609d1",
-storageBucket: "studio-3972799448-609d1.firebasestorage.app",
-messagingSenderId: "210449601127",
-appId: "1:210449601127:web:b3339666a09822b40c7ac2"
+  apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
+  authDomain: "studio-3972799448-609d1.firebaseapp.com",
+  databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
+  projectId: "studio-3972799448-609d1",
+  storageBucket: "studio-3972799448-609d1.firebasestorage.app",
+  messagingSenderId: "210449601127",
+  appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.database();
-let userEmail="", userName="", selectedTask=null, selectedMsg=null;
-const ADMIN="yasindemirkan83@gmail.com";
+const auth = firebase.auth();
+const db = firebase.database();
 
-// Login
-function login(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).then(res=>{
-    userEmail = res.user.email;
-    userName = res.user.displayName || res.user.email.split('@')[0];
-    document.getElementById("taskPanel").style.display="block";
-    document.getElementById("messagePanel").style.display="block";
-    document.getElementById("takvimSection").style.display="block";
-    document.getElementById("loginLogo").style.display="none";
-    if(userEmail==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>";}
-    loadTasks(); loadMessages();
-  });
+// State
+let userEmail = "", userName = "", selectedTask = null, selectedMsg = null;
+const ADMIN = "yasindemirkan83@gmail.com";
+
+// RAW ve BLOB URL'leri
+const rawLogo = "https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png";
+const blobLogo = "https://github.com/yasindemirkan83-png/Sohbet_/blob/main/google-symbol.png";
+
+// IMG yükleme & fallback mantığı
+const img = document.getElementById('loginLogo');
+const fallback = document.getElementById('loginFallback');
+
+function setLogoToRaw(){
+  img.src = rawLogo;
+  img.onload = ()=>{ img.style.display='block'; fallback.style.display='none'; };
+  img.onerror = ()=>{ /* raw yoksa blob fallback: gösterme img, açılır link göster */ showBlobFallback(); };
+}
+function showBlobFallback(){
+  img.style.display='none';
+  // fallback göster ve üzerine tıklanınca login() çalışsın; ayrıca blob linkini yeni sekmede açmak için konteyneri link yap
+  fallback.style.display='flex';
+  // make fallback clickable to open blob in new tab as well
+  fallback.onclick = function(e){
+    // call login() too so user can sign in even if image couldn't be loaded
+    login();
+    // also open the blob GitHub page in new tab (user can view image there)
+    window.open(blobLogo, '_blank');
+  };
 }
 
-// Tüm görev, mesaj, takvim ve ayarlar fonksiyonları önceki kod ile aynı
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
-</script>
+// Önce raw ile dene
+setLogoToRaw();
 
+// Mobil pinch/double-tap zoom engelle (ek koruma)
+document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+let lastTouch = 0;
+document.addEventListener('touchend', function(e){
+  const now = Date.now();
+  if(now - lastTouch <= 300){
+    e.preventDefault();
+  }
+  lastTouch = now;
+}, {passive:false});
+
+// ---------- LOGIN ----------
+function login(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(res=>{
+      const user = res.user;
+      userEmail = user.email;
+      userName = user.displayName || user.email.split('@')[0];
+      // gizle açılış öğeleri
+      document.getElementById('loginWrap').style.display = 'none';
+      const v = document.getElementById('bgVideo'); if(v){ v.pause(); v.style.display='none'; }
+      // göster app içerik ve ayarlar iconu
+      document.getElementById('appContent').removeAttribute('aria-hidden');
+      document.getElementById('tasksCard').style.display='block';
+      document.getElementById('messagesCard').style.display='block';
+      document.getElementById('calendarCard').style.display='block';
+      document.getElementById('settings').style.display='none';
+      if(userEmail === ADMIN) document.getElementById('adminPanel').innerHTML = "<b>ADMIN</b>";
+      loadTasks();
+      loadMessages();
+    })
+    .catch(err=>{
+      console.error(err);
+      alert("Giriş hatası: " + (err.message || err));
+    });
+}
+
+// ---------- Tasks ----------
+function addTask(){
+  const title = (document.getElementById('title').value || "").trim().toUpperCase();
+  const start = document.getElementById('start').value || "";
+  const end = document.getElementById('end').value || "";
+  if(!title) return alert("Görev başlığı gerekli.");
+  db.ref('tasks').push({ title, start, end, done:false, user:userName, createdAt: Date.now() });
+  document.getElementById('title').value=''; document.getElementById('start').value=''; document.getElementById('end').value='';
+}
+function loadTasks(){
+  const list = document.getElementById('taskList');
+  db.ref('tasks').off();
+  db.ref('tasks').on('value', snap=>{
+    let html = "";
+    snap.forEach(child=>{
+      const t = child.val(); const k = child.key;
+      html += `<div class="task" data-key="${k}" onclick="selectTask('${k}')"><b>${t.title}</b><div style="font-weight:400;font-size:0.85rem;margin-top:6px">${t.start || ''} ${t.end? ' - ' + t.end : ''}</div><div style="font-weight:400;font-size:0.8rem;margin-top:6px">${t.user || ''}</div></div>`;
+    });
+    list.innerHTML = html;
+  });
+}
+function selectTask(k){ selectedTask = k; }
+function deleteTask(){ if(!selectedTask) return alert("Önce görev seçin."); db.ref('tasks/' + selectedTask).remove(); selectedTask = null; }
+function markDone(){ if(!selectedTask) return alert("Önce görev seçin."); db.ref('tasks/' + selectedTask).update({ done:true }); selectedTask = null; }
+function setAlarm(){ alert("Alarm ayarlandı (tarayıcı açıkken çalışır)"); }
+
+// ---------- Messages ----------
+function sendMsg(){
+  const txt = (document.getElementById('msgText').value || "").trim().toUpperCase();
+  if(!txt) return;
+  db.ref('messages').push({ user: userName, msg: txt, createdAt: Date.now() });
+  document.getElementById('msgText').value = '';
+}
+function loadMessages(){
+  const node = document.getElementById('messages');
+  db.ref('messages').off();
+  db.ref('messages').on('value', snap=>{
+    let html = "";
+    snap.forEach(child=>{
+      const m = child.val(); const k = child.key;
+      const delBtn = (userEmail===ADMIN || m.user===userName) ? `<button style="margin-left:8px" onclick="delMsg('${k}')">Sil</button>` : "";
+      html += `<div class="message" data-key="${k}"><b>${m.user}</b>: ${m.msg} ${delBtn}</div>`;
+    });
+    node.innerHTML = html;
+  });
+}
+function delMsg(k){ db.ref('messages/' + k).remove(); }
+function deleteSelectedMsg(){ if(selectedMsg) db.ref('messages/' + selectedMsg).remove(); }
+function selectMsg(key){ selectedMsg = key; }
+
+// ---------- Settings / Feedback ----------
+function toggleAlarmPanel(){ const p = document.getElementById('alarmPanel'); p.style.display = (p.style.display==='block') ? 'none' : 'block'; }
+function toggleSettings(){ const s = document.getElementById('settings'); s.style.display = (s.style.display==='block') ? 'none' : 'block'; }
+function closeSettings(){ document.getElementById('settings').style.display='none'; }
+function sendFeedback(){ const f = (document.getElementById('feedback').value || "").trim().toUpperCase(); if(!f) return alert("Yorum boş."); db.ref('feedback').push({ user:userName, msg:f, ts:Date.now() }); document.getElementById('feedback').value=''; alert("Gönderildi"); }
+
+// ---------- Takvim basit gösterim ----------
+const BASE=new Date(Date.UTC(2026,0,1));
+let shiftSelected = 1;
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+
+function vardiya(date){
+  const diff = Math.floor((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()) - Date.UTC(2026,0,1))/86400000);
+  const idx = ((diff%4)+4)%4;
+  const patterns = [
+    ['gece','izin','izin','gunduz'],
+    ['izin','izin','gunduz','gece'],
+    ['izin','gunduz','gece','izin'],
+    ['gunduz','gece','izin','izin']
+  ];
+  return patterns[idx];
+}
+function drawCalendar(){
+  const cal = document.getElementById('calendar');
+  cal.innerHTML='';
+  let g=0,n=0,o=0;
+  const today = new Date();
+  const firstDay = (new Date(currentYear,currentMonth,1).getDay()+6)%7;
+  const days = new Date(currentYear,currentMonth+1,0).getDate();
+  document.getElementById('monthTitle').innerText = new Date(currentYear,currentMonth,1).toLocaleDateString('tr-TR',{month:'long', year:'numeric'});
+  for(let i=0;i<firstDay;i++){ const el=document.createElement('div'); el.className='day'; cal.appendChild(el); }
+  for(let d=1; d<=days; d++){
+    const date = new Date(currentYear,currentMonth,d);
+    const v = vardiya(date)[shiftSelected-1];
+    const el = document.createElement('div'); el.className='day'; el.innerText = d;
+    if(v==='gunduz'){ el.style.background='rgba(16,185,129,0.35)'; g++; }
+    else if(v==='gece'){ el.style.background='rgba(56,189,248,0.35)'; n++; }
+    else { el.style.background='rgba(100,116,139,0.25)'; o++; }
+    if(date.toDateString()===today.toDateString()) el.style.outline='2px solid #38bdf8';
+    cal.appendChild(el);
+  }
+  document.getElementById('dayCount').innerText=g;
+  document.getElementById('nightCount').innerText=n;
+  document.getElementById('offCount').innerText=o;
+}
+function nextMonth(){ currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++; } drawCalendar(); }
+function prevMonth(){ currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; } drawCalendar(); }
+drawCalendar();
+
+// service worker (opsiyonel)
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+</script>
 </body>
 </html>

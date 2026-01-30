@@ -24,17 +24,18 @@ body{
   max-width:500px;
   margin:auto;
   color:var(--color-text);
+  position:relative;
 }
 
 /* VIDEO ARKA PLAN */
 #bgVideo{
 position:fixed;
-right:0;
-bottom:0;
-min-width:100%;
-min-height:100%;
-z-index:-1;
+top:0;
+left:0;
+width:100%;
+height:100%;
 object-fit:cover;
+z-index:-1;
 }
 
 /* HEADER */
@@ -46,13 +47,23 @@ text-align:center;
 margin-bottom:15px;
 box-shadow:0 4px 12px rgba(0,0,0,0.3);
 }
-.logo-container{display:flex;justify-content:center;gap:12px;margin-bottom:10px;align-items:center;}
-.logo-text{font-size:2rem;font-weight:800;color:var(--color-primary);}
-#time{font-size:1.8rem;color:var(--color-primary);margin-top:5px}
-#date{font-size:1rem}
+.logo-container{
+position:absolute;
+bottom:15px;
+right:15px;
+font-size:2.5rem;
+color:var(--color-primary);
+}
 
 /* KART */
-.section{background:rgba(255,255,255,0.95);padding:15px;border-radius:20px;margin-bottom:15px;color:black;box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+.section{
+background:rgba(255,255,255,0.95);
+padding:15px;
+border-radius:20px;
+margin-bottom:15px;
+color:black;
+box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
 .section-title{color:var(--color-primary);font-size:1.2rem;margin-bottom:10px}
 
 /* GÖREV & MESAJ PANELİ */
@@ -99,12 +110,11 @@ button:hover{background:#1976D2;}
 </video>
 
 <!-- HEADER -->
-<div class="header">
+<div class="header"></div>
+
+<!-- LOGO -->
 <div class="logo-container">
-<div class="logo-text">ANFA GÜVENLİK</div>
-</div>
-<div id="date"></div>
-<div id="time"></div>
+<i class="fas fa-shield-alt"></i>
 </div>
 
 <!-- HOŞGELDİN MESAJI -->
@@ -195,8 +205,7 @@ button:hover{background:#1976D2;}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Burada mevcut login, görev, mesaj, takvim ve ayarlar scriptleri aynı kalıyor
-// Firebase config ve tüm fonksiyonlar önceki kod ile aynı
+// Mevcut Firebase, login, görev, mesaj ve takvim scriptleri burada kalacak
 </script>
 
 <script>

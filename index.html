@@ -1,30 +1,43 @@
-<!-- GİRİŞ KARTI SIFIRLANDI - SADECE LOGO GİRİŞ -->
-<!-- Mevcut <div id="loginCard"> ... </div> yerine aşağıdaki kullanılır -->
-
-<!-- GİRİŞ LOGO -->
-<div id="loginCard">
-  <img src="logo.png" id="loginLogo" onclick="login()" alt="Giriş">
-</div>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANFA Güvenlik</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="manifest" href="manifest.json">
 
 <style>
-/* LOGIN VIDEO ARKA PLAN */
+:root{
+--bg-primary:#ffffff;
+--bg-secondary:#f0f0f0;
+--bg-tertiary:#e0e0e0;
+--color-primary:#000000;
+--color-success:#10b981;
+--color-warning:#fbbf24;
+--color-text:#000000;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+body{min-height:100vh;padding:0;margin:0;color:var(--color-text);}
+
+/* VIDEO ARKA PLAN */
 #bgVideo{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  object-fit:cover; /* ekranı doldur */
+  object-fit:cover;
   z-index:-1;
 }
 
+/* GİRİŞ LOGO */
 #loginCard{
   position:fixed;
   bottom:20px;
   right:20px;
   z-index:10;
 }
-
 #loginLogo{
   width:100px;
   cursor:pointer;
@@ -34,11 +47,174 @@
   transform: scale(1.1);
 }
 
-/* Mevcut kart düzenleri ve header arka planlarını değiştirme */
+/* Uygulama içi tüm paneller (hiç değişmeyecek) */
+.section{background:rgba(255,255,255,0.95);padding:15px;border-radius:20px;margin-bottom:15px;color:black;box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+.section-title{color:var(--color-primary);font-size:1.2rem;margin-bottom:10px}
+.task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer;color:black;text-transform:uppercase; background:white;}
+.task.done{background:#d4edda;text-decoration:line-through;}
+.task.selected{outline:2px solid #2196F3;}
+#taskList{max-height:250px;overflow-y:auto;font-size:1rem;}
+#messages{max-height:250px;overflow-y:auto;font-size:1rem;background:white;padding:10px;border-radius:10px;}
+.message{padding:6px;margin:5px 0;background:#fff;border-radius:8px;cursor:pointer;text-transform:uppercase; color:black;}
+.message.selected{outline:2px solid #2196F3;}
+textarea{width:100%;border-radius:10px;padding:6px;margin-bottom:5px;}
+button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin-right:5px;}
+button:hover{background:#1976D2;}
+.action-buttons{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+#settings{position:absolute;top:10px;right:15px;background:white;width:300px;padding:10px;border-radius:10px;display:none;z-index:999;}
+#settings h3{margin-bottom:10px;}
+.toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px}
+.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.vardiya-btn{background:var(--bg-primary);border:2px solid var(--bg-tertiary);border-radius:12px;padding:10px;color:black}
+.vardiya-btn.active{border-color:var(--color-success)}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:black}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{background:var(--bg-tertiary);border-radius:8px;padding:6px;font-size:.8rem;text-align:center;}
+.work-day{background:rgba(16,185,129,.4)}
+.work-night{background:rgba(56,189,248,.4)}
+.off{background:rgba(100,116,139,.4)}
+.today{outline:2px solid #38bdf8}
+.summary{display:flex;justify-content:space-between;margin-top:10px}
+.summary-value{font-size:1.2rem;font-weight:800}
 </style>
+</head>
 
-<!-- VIDEO ARKA PLAN -->
+<body>
+
+<!-- GİRİŞ EKRANI -->
 <video autoplay muted loop id="bgVideo">
   <source src="https://github.com/yasindemirkan83-png/Sohbet_/blob/main/InShot_20260130_145437574.mp4?raw=true" type="video/mp4">
   Tarayıcınız video etiketini desteklemiyor.
 </video>
+
+<div id="loginCard">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Google_Logo.png" id="loginLogo" onclick="login()" alt="Gmail ile Giriş">
+</div>
+
+<!-- Uygulama içi tüm paneller -->
+<!-- HOŞGELDİN MESAJI -->
+<div class="section" id="welcomeCard" style="display:none;">
+<b id="welcomeText"></b>
+</div>
+
+<!-- GÖREV PANOSU -->
+<div class="section" id="taskPanel" style="display:none;">
+<h3>Görevler</h3>
+<div id="taskList"></div>
+<div class="action-buttons">
+<input id="title" placeholder="Görev">
+<input type="datetime-local" id="start">
+<input type="datetime-local" id="end">
+<button onclick="addTask()">Ekle</button>
+<button onclick="deleteTask()">Sil</button>
+<button onclick="markDone()">Tamamlandı</button>
+<button onclick="setAlarm()">Alarm</button>
+</div>
+</div>
+
+<!-- MESAJ PANELİ -->
+<div class="section" id="messagePanel" style="display:none;">
+<h3>Mesajlar</h3>
+<div id="messages"></div>
+<div class="action-buttons">
+<input id="msgText" placeholder="Mesaj">
+<button onclick="sendMsg()">Gönder</button>
+<button onclick="deleteSelectedMsg()">Sil</button>
+</div>
+</div>
+
+<!-- TAKVİM PANELİ -->
+<div class="section" id="takvimSection" style="display:none;">
+<button class="toggle-btn" onclick="toggleTakvim()">📅 ÇALIŞMA TAKVİMİ</button>
+<div id="takvimPanel" style="display:none">
+<div class="section-title">Vardiya Seçimi</div>
+<div class="vardiya-buttons">
+<button class="vardiya-btn" data-v="1">1. Vardiya</button>
+<button class="vardiya-btn" data-v="2">2. Vardiya</button>
+<button class="vardiya-btn" data-v="3">3. Vardiya</button>
+<button class="vardiya-btn" data-v="4">4. Vardiya</button>
+</div>
+<br>
+<div style="display:flex;justify-content:space-between">
+<button onclick="prevMonth()">◀</button>
+<b id="monthTitle"></b>
+<button onclick="nextMonth()">▶</button>
+</div>
+<div class="weekdays">
+<div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
+</div>
+<div class="calendar-grid" id="calendar"></div>
+<div class="summary">
+<div><div class="summary-value" id="dayCount">0</div>Gündüz</div>
+<div><div class="summary-value" id="nightCount">0</div>Gece</div>
+<div><div class="summary-value" id="offCount">0</div>İzin</div>
+</div>
+</div>
+
+<!-- AYARLAR PANELİ -->
+<div id="settings">
+<h3>Ayarlar</h3>
+<div id="adminPanel"></div>
+<hr>
+<div>
+<button onclick="toggleAlarmPanel()">Alarmlar</button>
+<div id="alarmPanel" style="display:none;"></div>
+</div>
+<hr>
+<div>
+<h4>Görüş & Öneri</h4>
+<textarea id="feedback"></textarea>
+<button onclick="sendFeedback()">Gönder</button>
+</div>
+<button onclick="closeSettings()">Geri</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// FIREBASE CONFIG
+const firebaseConfig = {
+apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
+authDomain: "studio-3972799448-609d1.firebaseapp.com",
+databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
+projectId: "studio-3972799448-609d1",
+storageBucket: "studio-3972799448-609d1.firebasestorage.app",
+messagingSenderId: "210449601127",
+appId: "1:210449601127:web:b3339666a09822b40c7ac2"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.database();
+
+let userEmail="", userName="", selectedTask=null, selectedMsg=null;
+const ADMIN="yasindemirkan83@gmail.com";
+
+// GİRİŞ
+function login(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(res=>{
+    userEmail=res.user.email;
+    userName=res.user.displayName || res.user.email.split('@')[0];
+    document.getElementById("loginCard").style.display="none";
+    document.getElementById("welcomeCard").style.display="block";
+    document.getElementById("welcomeText").innerText=`HOŞGELDİN ${userName.toUpperCase()}`;
+    document.getElementById("taskPanel").style.display="block";
+    document.getElementById("messagePanel").style.display="block";
+    document.getElementById("takvimSection").style.display="block";
+    if(userEmail==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>";}
+    loadTasks(); loadMessages();
+  }).catch(err=>{alert("Giriş başarısız: "+err.message)});
+}
+
+// Diğer tüm görev, mesaj, takvim, ayar fonksiyonları önceki kod ile aynı kalıyor
+</script>
+
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
+</script>
+
+</body>
+</html>

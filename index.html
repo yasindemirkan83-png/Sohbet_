@@ -1,215 +1,386 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>ANFA Güvenlik</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 :root{
---bg-primary:#ffffff;
---bg-secondary:#f0f0f0;
---bg-tertiary:#e0e0e0;
---color-primary:#000000;
---color-success:#10b981;
---color-warning:#fbbf24;
---color-text:#000000;
+  --bg-primary:#ffffff;
+  --bg-secondary:#f0f0f0;
+  --bg-tertiary:#e0e0e0;
+  --color-text:#000000;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+html,body{height:100%}
 body{
-  background:#000000;
+  background:#000;
   color:var(--color-text);
   min-height:100vh;
   max-width:500px;
-  margin:auto;
+  margin:0 auto;
   padding:15px;
   position:relative;
+  overflow:auto;
 }
 
 /* VIDEO ARKA PLAN */
 #bgVideo{
-position:fixed;
-top:0; left:0;
-width:100%; height:100%;
-object-fit:cover;
-z-index:-1;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  z-index:-1;
 }
 
-/* GİRİŞ LOGO */
+/* GİRİŞ LOGO (github raw google-symbol.png) */
 #loginLogo{
-position:absolute;
-top:15px; right:25px;
-width:96px; height:96px;
-cursor:pointer;
-z-index:1000;
+  position:fixed;
+  top:15px; right:25px;
+  width:96px; height:96px;
+  cursor:pointer;
+  z-index:1000;
+}
+
+/* AYARLAR İKONU (giriş sonrası görünür) */
+#settingsIcon{
+  position:fixed;
+  top:18px;
+  right:25px;
+  font-size:28px;
+  color:#ffffff;
+  cursor:pointer;
+  z-index:1000;
+  display:none;
 }
 
 /* KART TASARIMI */
+.container{max-width:720px;margin:90px auto 40px}
 .section{
-background:var(--bg-primary);
-padding:15px;
-border-radius:15px;
-margin-bottom:15px;
-color:black;
-box-shadow:0 4px 10px rgba(0,0,0,0.3);
-text-transform:uppercase;
+  background:var(--bg-primary);
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+  color:black;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  text-transform:uppercase;
+  font-weight:700;
 }
 
-/* GÖREV & MESAJ PANELİ */
-.task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer;color:black;text-transform:uppercase; background:white;}
-.task.done{background:#d4edda;text-decoration:line-through;}
-.task.selected{outline:2px solid #2196F3;}
-#taskList{max-height:250px;overflow-y:auto;font-size:1rem;}
-#messages{max-height:250px;overflow-y:auto;font-size:1rem;background:white;padding:10px;border-radius:10px;}
-.message{padding:6px;margin:5px 0;background:#fff;border-radius:8px;cursor:pointer;text-transform:uppercase; color:black;}
-.message.selected{outline:2px solid #2196F3;}
-textarea{width:100%;border-radius:10px;padding:6px;margin-bottom:5px;}
+/* TASK & MSG */
+#taskList,#messages{max-height:260px;overflow:auto;font-size:0.95rem}
+.task{border:1px solid #ddd;padding:10px;margin:6px 0;border-radius:8px;background:#fff;color:#000;text-transform:uppercase}
+.message{padding:8px;margin:6px 0;border-radius:8px;background:#fff;color:#000;text-transform:uppercase}
 
-/* BUTONLAR */
-button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin-right:5px;}
-button:hover{background:#1976D2;}
-.action-buttons{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+/* butonlar */
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+input[type=text], input[type=datetime-local], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;box-sizing:border-box}
+button{padding:8px 12px;border-radius:8px;border:none;background:#1976D2;color:#fff;cursor:pointer;font-weight:700}
 
-/* AYARLAR PANELİ */
-#settings{position:absolute;top:15px;right:15px;background:white;width:300px;padding:10px;border-radius:10px;display:none;z-index:999;}
-#settings h3{margin-bottom:10px;}
-.toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px}
+/* AYARLAR PANEL */
+#settings{
+  position:fixed;
+  top:70px;
+  right:20px;
+  width:320px;
+  max-width:90%;
+  background:#fff;
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  display:none;
+  z-index:2000;
+  text-transform:uppercase;
+}
 
-/* TAKVİM */
-.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.vardiya-btn{background:var(--bg-primary);border:2px solid var(--bg-tertiary);border-radius:12px;padding:10px;color:black}
-.vardiya-btn.active{border-color:var(--color-success)}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:black}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.day{background:var(--bg-tertiary);border-radius:8px;padding:6px;font-size:.8rem;text-align:center;}
-.work-day{background:rgba(16,185,129,.4)}
-.work-night{background:rgba(56,189,248,.4)}
-.off{background:rgba(100,116,139,.4)}
-.today{outline:2px solid #38bdf8}
-.summary{display:flex;justify-content:space-between;margin-top:10px}
-.summary-value{font-size:1.2rem;font-weight:800}
+/* TAKVIM (basit grid) */
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;font-size:0.75rem;text-align:center}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.day{background:#f3f3f3;padding:8px;border-radius:6px;text-align:center}
+
+/* küçük cihaz düzeni için container padding azalt */
+@media (max-width:520px){
+  .container{margin:70px 10px 30px}
+  #loginLogo{width:78px;height:78px;right:12px;top:12px}
+  #settingsIcon{right:12px;top:12px}
+}
 </style>
 </head>
-
 <body>
 
 <!-- VIDEO ARKA PLAN -->
-<video autoplay muted loop playsinline id="bgVideo">
+<video id="bgVideo" autoplay muted loop playsinline>
   <source src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/InShot_20260130_145437574.mp4" type="video/mp4">
+  Tarayıcınız video etiketini desteklemiyor.
 </video>
 
-<!-- GİRİŞ LOGO -->
-<img src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/google-symbol.png" id="loginLogo" onclick="login()" title="Gmail ile giriş">
+<!-- G LOGO (github raw google-symbol.png) -->
+<img id="loginLogo" src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/google-symbol.png" alt="Giriş" title="Gmail ile giriş" onclick="login()" />
 
-<!-- UYGULAMA İÇİ KODLAR -->
-<div class="section" id="taskPanel" style="display:none;">
-<h3>Görevler</h3>
-<div id="taskList"></div>
-<div class="action-buttons">
-<input id="title" placeholder="Görev">
-<input type="datetime-local" id="start">
-<input type="datetime-local" id="end">
-<button onclick="addTask()">Ekle</button>
-<button onclick="deleteTask()">Sil</button>
-<button onclick="markDone()">Tamamlandı</button>
-<button onclick="setAlarm()">Alarm</button>
-</div>
-</div>
+<!-- Ayarlar ikonu (giriş sonrası gösterilecek) -->
+<i id="settingsIcon" class="fas fa-cog" title="Ayarlar" onclick="toggleSettings()"></i>
 
-<div class="section" id="messagePanel" style="display:none;">
-<h3>Mesajlar</h3>
-<div id="messages"></div>
-<div class="action-buttons">
-<input id="msgText" placeholder="Mesaj">
-<button onclick="sendMsg()">Gönder</button>
-<button onclick="deleteSelectedMsg()">Sil</button>
-</div>
-</div>
+<!-- Uygulama içeriği -->
+<div class="container" id="appContent" aria-hidden="true">
 
-<div class="section" id="takvimSection" style="display:none;">
-<button class="toggle-btn" onclick="toggleTakvim()">📅 ÇALIŞMA TAKVİMİ</button>
-<div id="takvimPanel" style="display:none">
-<div class="section-title">Vardiya Seçimi</div>
-<div class="vardiya-buttons">
-<button class="vardiya-btn" data-v="1">1. Vardiya</button>
-<button class="vardiya-btn" data-v="2">2. Vardiya</button>
-<button class="vardiya-btn" data-v="3">3. Vardiya</button>
-<button class="vardiya-btn" data-v="4">4. Vardiya</button>
-</div>
-<br>
-<div style="display:flex;justify-content:space-between">
-<button onclick="prevMonth()">◀</button>
-<b id="monthTitle"></b>
-<button onclick="nextMonth()">▶</button>
-</div>
-<div class="weekdays">
-<div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
-</div>
-<div class="calendar-grid" id="calendar"></div>
-<div class="summary">
-<div><div class="summary-value" id="dayCount">0</div>Gündüz</div>
-<div><div class="summary-value" id="nightCount">0</div>Gece</div>
-<div><div class="summary-value" id="offCount">0</div>İzin</div>
-</div>
-</div>
+  <!-- Geri gelince gösterilecek kartlar -->
+  <div class="section" id="tasksCard" style="display:none">
+    <h3>Görevler</h3>
+    <div id="taskList"></div>
+    <div class="action-row" style="margin-top:8px">
+      <input id="title" type="text" placeholder="GöREV">
+      <input id="start" type="datetime-local">
+      <input id="end" type="datetime-local">
+    </div>
+    <div class="action-row">
+      <button onclick="addTask()">Ekle</button>
+      <button onclick="deleteTask()">Sil</button>
+      <button onclick="markDone()">Tamamlandı</button>
+      <button onclick="setAlarm()">Alarm</button>
+    </div>
+  </div>
 
-<div id="settings">
-<h3>Ayarlar</h3>
-<div id="adminPanel"></div>
-<hr>
-<div>
-<button onclick="toggleAlarmPanel()">Alarmlar</button>
-<div id="alarmPanel" style="display:none;"></div>
-</div>
-<hr>
-<div>
-<h4>Görüş & Öneri</h4>
-<textarea id="feedback"></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-</div>
-<button onclick="closeSettings()">Geri</button>
+  <div class="section" id="messagesCard" style="display:none">
+    <h3>Mesajlar</h3>
+    <div id="messages"></div>
+    <div class="action-row" style="margin-top:8px">
+      <input id="msgText" type="text" placeholder="Mesaj">
+      <button onclick="sendMsg()">Gönder</button>
+      <button onclick="deleteSelectedMsg()">Sil</button>
+    </div>
+  </div>
+
+  <div class="section" id="calendarCard" style="display:none">
+    <h3>Çalışma Takvimi</h3>
+    <div class="action-row" style="margin-bottom:8px">
+      <button onclick="prevMonth()">◀</button>
+      <b id="monthTitle"></b>
+      <button onclick="nextMonth()">▶</button>
+    </div>
+    <div class="weekdays">
+      <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
+    </div>
+    <div id="calendar" class="calendar-grid"></div>
+    <div class="action-row" style="margin-top:10px">
+      <div><strong id="dayCount">0</strong><div>GÜNDÜZ</div></div>
+      <div><strong id="nightCount">0</strong><div>GECE</div></div>
+      <div><strong id="offCount">0</strong><div>İZİN</div></div>
+    </div>
+  </div>
+
 </div>
 
+<!-- Ayarlar Paneli -->
+<div id="settings" aria-hidden="true">
+  <h3>AYARLAR</h3>
+  <div id="adminPanel"></div>
+  <hr>
+  <button onclick="toggleAlarmPanel()">Alarmlar</button>
+  <div id="alarmPanel" style="display:none;margin-top:8px"></div>
+  <hr>
+  <h4>GÖRÜŞ & ÖNERİ</h4>
+  <textarea id="feedback" rows="4" placeholder="Görüşünüzü yazın..."></textarea>
+  <div style="margin-top:8px">
+    <button onclick="sendFeedback()">Gönder</button>
+    <button onclick="closeSettings()">Geri</button>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Firebase config
+// ---------- Firebase config (sağladığın bilgiler) ----------
 const firebaseConfig = {
-apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
-authDomain: "studio-3972799448-609d1.firebaseapp.com",
-databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
-projectId: "studio-3972799448-609d1",
-storageBucket: "studio-3972799448-609d1.firebasestorage.app",
-messagingSenderId: "210449601127",
-appId: "1:210449601127:web:b3339666a09822b40c7ac2"
+  apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
+  authDomain: "studio-3972799448-609d1.firebaseapp.com",
+  databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
+  projectId: "studio-3972799448-609d1",
+  storageBucket: "studio-3972799448-609d1.firebasestorage.app",
+  messagingSenderId: "210449601127",
+  appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.database();
-let userEmail="", userName="", selectedTask=null, selectedMsg=null;
-const ADMIN="yasindemirkan83@gmail.com";
+const auth = firebase.auth();
+const db = firebase.database();
 
-// Login
+// State
+let userEmail = "", userName = "", selectedTask = null, selectedMsg = null;
+const ADMIN = "yasindemirkan83@gmail.com";
+
+// ---------- Login (Google) ----------
 function login(){
-let provider=new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider).then(res=>{
-userEmail=res.user.email;
-userName=res.user.displayName || res.user.email.split('@')[0];
-// Giriş sonrası kartları göster
-document.getElementById("taskPanel").style.display="block";
-document.getElementById("messagePanel").style.display="block";
-document.getElementById("takvimSection").style.display="block";
-document.getElementById("loginLogo").style.display="none"; // logo kayboluyor
-if(userEmail==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>";}
-loadTasks(); loadMessages();
-});
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(res=>{
+      const user = res.user;
+      userEmail = user.email;
+      userName = user.displayName || user.email.split('@')[0];
+      // Giriş sonrası: logo ve video gizle, paneller göster
+      document.getElementById('loginLogo').style.display = 'none';
+      const vid = document.getElementById('bgVideo');
+      if(vid){ vid.pause(); vid.style.display='none'; }
+      document.getElementById('settingsIcon').style.display = 'block';
+      document.getElementById('appContent').setAttribute('aria-hidden','false');
+      showAppPanels();
+      if(userEmail === ADMIN) document.getElementById('adminPanel').innerHTML = "<b>ADMIN</b>";
+      loadTasks(); loadMessages();
+    })
+    .catch(err=>{
+      alert("Giriş sırasında hata: " + (err.message||err));
+      console.error(err);
+    });
 }
 
-// Service worker
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
-</script>
+// ---------- UI helpers ----------
+function showAppPanels(){
+  document.getElementById('tasksCard').style.display = 'block';
+  document.getElementById('messagesCard').style.display = 'block';
+  document.getElementById('calendarCard').style.display = 'block';
+}
+function hideAppPanels(){
+  document.getElementById('tasksCard').style.display = 'none';
+  document.getElementById('messagesCard').style.display = 'none';
+  document.getElementById('calendarCard').style.display = 'none';
+}
 
+// ---------- Tasks ----------
+function addTask(){
+  const title = (document.getElementById('title').value || "").toString().trim().toUpperCase();
+  const start = document.getElementById('start').value || "";
+  const end = document.getElementById('end').value || "";
+  if(!title) return alert("Görev başlığı gerekli.");
+  db.ref('tasks').push({ title, start, end, done:false, user:userName, createdAt: Date.now() });
+  document.getElementById('title').value=''; document.getElementById('start').value=''; document.getElementById('end').value='';
+}
+function loadTasks(){
+  const list = document.getElementById('taskList');
+  db.ref('tasks').off(); // temizle
+  db.ref('tasks').on('value', snap=>{
+    let html = "";
+    snap.forEach(child=>{
+      const t = child.val();
+      const key = child.key;
+      html += `<div class="task" data-key="${key}" onclick="selectTask('${key}')"><b>${t.title}</b><div style="font-weight:400;font-size:0.85rem;margin-top:6px">${t.start || ''} ${t.end? ' - ' + t.end : ''}</div><div style="font-weight:400;font-size:0.8rem;margin-top:6px">${t.user || ''}</div></div>`;
+    });
+    list.innerHTML = html;
+  });
+}
+function selectTask(key){ selectedTask = key; }
+// remove
+function deleteTask(){
+  if(!selectedTask) return alert("Önce görev seçin.");
+  db.ref('tasks/' + selectedTask).remove();
+  selectedTask = null;
+}
+function markDone(){
+  if(!selectedTask) return alert("Önce görev seçin.");
+  db.ref('tasks/' + selectedTask).update({ done:true });
+  selectedTask = null;
+}
+function setAlarm(){ alert("Alarm ayarlandı (tarayıcı açıkken çalışır)"); }
+
+// ---------- Messages ----------
+function sendMsg(){
+  const txt = (document.getElementById('msgText').value || "").trim().toUpperCase();
+  if(!txt) return;
+  db.ref('messages').push({ user: userName, msg: txt, createdAt: Date.now() });
+  document.getElementById('msgText').value = '';
+}
+function loadMessages(){
+  const node = document.getElementById('messages');
+  db.ref('messages').off();
+  db.ref('messages').on('value', snap=>{
+    let html = "";
+    snap.forEach(child=>{
+      const m = child.val();
+      const k = child.key;
+      const delBtn = (userEmail===ADMIN || m.user===userName) ? `<button style="margin-left:8px" onclick="delMsg('${k}')">Sil</button>` : "";
+      html += `<div class="message" data-key="${k}"><b>${m.user}</b>: ${m.msg} ${delBtn}</div>`;
+    });
+    node.innerHTML = html;
+  });
+}
+function delMsg(k){ db.ref('messages/' + k).remove(); }
+function deleteSelectedMsg(){ if(selectedMsg) db.ref('messages/' + selectedMsg).remove(); }
+function selectMsg(key){ selectedMsg = key; }
+
+// ---------- Feedback / Settings ----------
+function toggleSettings(){
+  const s = document.getElementById('settings');
+  s.style.display = (s.style.display==='block') ? 'none' : 'block';
+}
+function closeSettings(){ document.getElementById('settings').style.display='none'; }
+function toggleAlarmPanel(){
+  const p = document.getElementById('alarmPanel');
+  p.style.display = (p.style.display==='block') ? 'none' : 'block';
+}
+function sendFeedback(){
+  const f = (document.getElementById('feedback').value || "").trim().toUpperCase();
+  if(!f) return alert("Yorum boş.");
+  db.ref('feedback').push({ user: userName, msg: f, ts: Date.now() });
+  document.getElementById('feedback').value='';
+  alert("Gönderildi");
+}
+
+// ---------- TAKVİM basit gösterim ----------
+const BASE=new Date(Date.UTC(2026,0,1));
+let shiftSelected = 1;
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+
+document.addEventListener('click', function(e){
+  // kapatma davranışları gibi global
+});
+
+function vardiya(date){
+  const diff = Math.floor((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()) - Date.UTC(2026,0,1))/86400000);
+  const idx = ((diff%4)+4)%4;
+  const patterns = [
+    ['gece','izin','izin','gunduz'],
+    ['izin','izin','gunduz','gece'],
+    ['izin','gunduz','gece','izin'],
+    ['gunduz','gece','izin','izin']
+  ];
+  return patterns[idx];
+}
+function drawCalendar(){
+  const cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+  let g=0,n=0,o=0;
+  const today = new Date();
+  const firstDay = (new Date(currentYear,currentMonth,1).getDay()+6)%7;
+  const days = new Date(currentYear,currentMonth+1,0).getDate();
+  document.getElementById('monthTitle').innerText = new Date(currentYear,currentMonth,1).toLocaleDateString('tr-TR',{month:'long', year:'numeric'});
+  for(let i=0;i<firstDay;i++){ const el=document.createElement('div'); el.className='day'; cal.appendChild(el); }
+  for(let d=1; d<=days; d++){
+    const date = new Date(currentYear,currentMonth,d);
+    const v = vardiya(date)[shiftSelected-1];
+    const el = document.createElement('div');
+    el.className = 'day';
+    el.innerText = d;
+    if(v==='gunduz'){ el.style.background='rgba(16,185,129,0.35)'; g++; }
+    else if(v==='gece'){ el.style.background='rgba(56,189,248,0.35)'; n++; }
+    else { el.style.background='rgba(100,116,139,0.25)'; o++; }
+    if(date.toDateString()===today.toDateString()) el.style.outline='2px solid #38bdf8';
+    cal.appendChild(el);
+  }
+  document.getElementById('dayCount').innerText = g;
+  document.getElementById('nightCount').innerText = n;
+  document.getElementById('offCount').innerText = o;
+}
+function nextMonth(){ currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++; } drawCalendar(); }
+function prevMonth(){ currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; } drawCalendar(); }
+drawCalendar();
+
+// ---------- Başlangıç: servis worker kayıt (opsiyonel) ----------
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{ /* ignore */ });
+}
+
+</script>
 </body>
 </html>

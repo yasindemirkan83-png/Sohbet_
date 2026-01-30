@@ -9,7 +9,8 @@
 
 <style>
 :root{
---bg-primary:#ffffff;
+--bg-primary:#ffffff; /* kart arka planı */
+--bg-app:#000000;     /* uygulama içi arka plan */
 --color-primary:#000000;
 --color-text:#000000;
 }
@@ -18,6 +19,7 @@ body{
   min-height:100vh;
   padding:0;
   margin:0;
+  background:var(--bg-app);
   color:var(--color-text);
   overflow:hidden;
   position:relative;
@@ -50,8 +52,51 @@ body{
   object-fit:contain;
 }
 
-/* EKRANIN ÜSTTEKİ SAAT TARİH vs. */
-#date, #time{display:none;}
+/* KART STİLİ */
+.section{
+  background:var(--bg-primary);
+  color:black;
+  padding:15px;
+  border-radius:20px;
+  margin-bottom:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+  text-transform:uppercase;
+}
+.section-title{color:var(--color-primary);font-size:1.2rem;margin-bottom:10px}
+
+/* GÖREV & MESAJ PANELİ */
+.task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer;color:black;text-transform:uppercase; background:white;}
+.task.done{background:#d4edda;text-decoration:line-through;}
+.task.selected{outline:2px solid #2196F3;}
+#taskList{max-height:250px;overflow-y:auto;font-size:1rem;}
+#messages{max-height:250px;overflow-y:auto;font-size:1rem;background:white;padding:10px;border-radius:10px;}
+.message{padding:6px;margin:5px 0;background:#fff;border-radius:8px;cursor:pointer;text-transform:uppercase; color:black;}
+.message.selected{outline:2px solid #2196F3;}
+textarea{width:100%;border-radius:10px;padding:6px;margin-bottom:5px; text-transform:uppercase;}
+
+/* BUTONLAR */
+button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin-right:5px;}
+button:hover{background:#1976D2;}
+.action-buttons{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+
+/* AYARLAR PANELİ */
+#settings{position:absolute;top:10px;right:15px;background:white;width:300px;padding:10px;border-radius:10px;display:none;z-index:999;}
+#settings h3{margin-bottom:10px;}
+.toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px}
+
+/* TAKVİM */
+.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.vardiya-btn{background:var(--bg-primary);border:2px solid #e0e0e0;border-radius:12px;padding:10px;color:black}
+.vardiya-btn.active{border-color:#10b981}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:black}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{background:#e0e0e0;border-radius:8px;padding:6px;font-size:.8rem;text-align:center;}
+.work-day{background:rgba(16,185,129,.4)}
+.work-night{background:rgba(56,189,248,.4)}
+.off{background:rgba(100,116,139,.4)}
+.today{outline:2px solid #38bdf8}
+.summary{display:flex;justify-content:space-between;margin-top:10px}
+.summary-value{font-size:1.2rem;font-weight:800}
 </style>
 </head>
 
@@ -67,7 +112,7 @@ body{
   <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail ile Giriş">
 </div>
 
-<!-- UYGULAMA İÇİ KODLAR (DEĞİŞMEDİ) -->
+<!-- UYGULAMA İÇİ KODLAR -->
 <div class="section" id="welcomeCard" style="display:none;">
 <b id="welcomeText"></b>
 </div>
@@ -122,7 +167,6 @@ body{
 <div><div class="summary-value" id="offCount">0</div>İzin</div>
 </div>
 </div>
-</div>
 
 <div id="settings" style="display:none;">
 <h3>Ayarlar</h3>
@@ -146,7 +190,7 @@ body{
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// FIREBASE CONFIG
+// Firebase ve login, görev, mesaj, takvim fonksiyonları aynen önceki kod ile aynı
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
 authDomain: "studio-3972799448-609d1.firebaseapp.com",
@@ -163,15 +207,6 @@ const db=firebase.database();
 let userEmail="", userName="", selectedTask=null, selectedMsg=null;
 const ADMIN="yasindemirkan83@gmail.com";
 
-// SAAT
-function tick(){
-const n=new Date();
-document.getElementById("time").innerText=n.toLocaleTimeString("tr-TR");
-document.getElementById("date").innerText=n.toLocaleDateString("tr-TR",{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-}
-setInterval(tick,1000); tick();
-
-// GİRİŞ
 function login(){
 let provider=new firebase.auth.GoogleAuthProvider();
 auth.signInWithPopup(provider).then(res=>{
@@ -188,10 +223,7 @@ loadTasks(); loadMessages();
 });
 }
 
-// Diğer görev, mesaj, takvim ve ayarlar fonksiyonları önceki kod ile aynı
-</script>
-
-<script>
+// Service Worker
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
 </script>
 

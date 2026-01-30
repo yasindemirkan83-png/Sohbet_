@@ -6,96 +6,33 @@
 <title>ANFA Güvenlik</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-:root{
---bg-primary:#0f172a;
---bg-secondary:#1e293b;
---bg-tertiary:#334155;
---color-primary:#38bdf8;
---color-success:#10b981;
---color-warning:#fbbf24;
---color-text:#e2e8f0;
---color-list:#000000;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
-body{background:url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1500&q=80') no-repeat center center fixed; background-size:cover; color:var(--color-text); min-height:100vh;padding:15px;max-width:500px;margin:auto}
-
-/* HEADER */
-header{
-background:rgba(0,0,0,0.8);
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-font-size:20px;
-border-radius:12px;
-margin-bottom:10px;
-}
-#clock{font-weight:700;}
-.settings-btn{cursor:pointer; margin-left:10px;}
-
-/* KART */
-.card{
-background:rgba(255,255,255,0.95);
-padding:15px;
-margin-bottom:15px;
-border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.4)
-}
-.card h3{margin-bottom:10px;}
-#taskList, #messages, #alarmList, #userList{
-max-height:200px; overflow-y:auto; background:#fff; color:var(--color-list); padding:5px; border-radius:6px; margin-bottom:10px;
-}
-.task{
-border:1px solid #ccc;
-padding:10px;
-margin:5px 0;
-border-radius:8px;
-cursor:pointer;
-font-size:0.95rem;
-color:#000;
-text-transform:uppercase;
-display:flex; justify-content:space-between; align-items:center;
-}
-.task.done{text-decoration:line-through; background:#d4edda;}
-.msgItem{
-display:flex; justify-content:space-between; align-items:center;
-padding:5px; border-bottom:1px solid #ccc;
-color:#000; text-transform:uppercase;
-}
-button{
-padding:8px; border:none; border-radius:6px; background:#2196F3; color:white; cursor:pointer; margin:2px;
-}
-button:hover{background:#1976D2}
-
-/* SETTINGS PANEL */
-#settings{
-position:absolute; top:15px; right:15px;
-background:rgba(255,255,255,0.95);
-width:320px; padding:10px; border-radius:10px; display:none; z-index:999;
-max-height:90vh; overflow-y:auto;
-}
-#settings h3, #settings h4{margin-bottom:5px;}
-input, textarea{border-radius:6px; border:1px solid #ccc; padding:5px; width:100%; margin-bottom:5px; text-transform:uppercase;}
-.toggle-btn{
-width:100%; background:#334155; border:none; border-radius:12px; padding:10px; color:#38bdf8; font-weight:700; margin-bottom:10px
-}
-
-/* TAKVİM */
-.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px; margin-bottom:10px;}
-.vardiya-btn{background:var(--bg-primary); border:2px solid var(--bg-tertiary); border-radius:12px;padding:10px;color:white}
-.vardiya-btn.active{border-color:var(--color-success)}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr); font-size:.7rem;text-align:center;margin-bottom:5px;color:#94a3b8}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.day{background:var(--bg-tertiary); border-radius:8px; padding:6px; font-size:.8rem; text-align:center;}
-.work-day{background:rgba(16,185,129,.4)}
-.work-night{background:rgba(56,189,248,.4)}
-.off{background:rgba(100,116,139,.4)}
-.today{outline:2px solid #38bdf8}
-.summary{display:flex;justify-content:space-between;margin-top:10px}
-.summary-value{font-size:1.4rem;font-weight:800}
+body{margin:0;padding:15px;max-width:500px;margin:auto;font-family:'Segoe UI',sans-serif;background:url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1500&q=80') no-repeat center center fixed;background-size:cover;color:#000;}
+header{background:rgba(0,0,0,0.8);color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;border-radius:12px;margin-bottom:10px;}
+.settings-btn{cursor:pointer;}
+.card{background:#fff;color:#000;padding:15px;margin-bottom:15px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.4);}
+#taskList,#messages,#alarmList,#userList{max-height:200px;overflow-y:auto;padding:5px;border-radius:6px;margin-bottom:10px;color:#000;text-transform:uppercase;}
+.task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer;font-size:0.95rem;color:#000;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+.task.done{text-decoration:line-through;background:#d4edda;}
+.msgItem{display:flex;justify-content:space-between;align-items:center;padding:5px;border-bottom:1px solid #ccc;color:#000;text-transform:uppercase;}
+button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin:2px;}
+button:hover{background:#1976D2;}
+#settings{position:absolute;top:15px;right:15px;background:#fff;color:#000;width:350px;padding:10px;border-radius:10px;display:none;z-index:999;max-height:90vh;overflow-y:auto;}
+#settings h3,#settings h4{margin-bottom:5px;}
+input,textarea{border-radius:6px;border:1px solid #ccc;padding:5px;width:100%;margin-bottom:5px;text-transform:uppercase;}
+.toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px;}
+.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px;}
+.vardiya-btn{background:#0f172a;border:2px solid #334155;border-radius:12px;padding:10px;color:white;}
+.vardiya-btn.active{border-color:#10b981;}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:#94a3b8;}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.day{background:#334155;border-radius:8px;padding:6px;font-size:.8rem;text-align:center;}
+.work-day{background:rgba(16,185,129,.4);}
+.work-night{background:rgba(56,189,248,.4);}
+.off{background:rgba(100,116,139,.4);}
+.today{outline:2px solid #38bdf8;}
+.summary{display:flex;justify-content:space-between;margin-top:10px;}
+.summary-value{font-size:1.4rem;font-weight:800;}
 </style>
 </head>
 <body>
@@ -108,23 +45,37 @@ width:100%; background:#334155; border:none; border-radius:12px; padding:10px; c
 </div>
 </header>
 
+<!-- Hoşgeldin Mesajı -->
+<div id="welcomeCard" class="card" style="display:none">
+<b id="welcomeUser"></b> HOŞGELDİN
+</div>
+
 <div id="settings">
 <h3>Ayarlar</h3>
+<div>
+<button onclick="toggleAdminPanel()">ADMIN PANEL</button>
+<div id="adminPanelContent" style="display:none;margin-top:5px;">
 <div id="adminPanel"></div>
-<hr>
-<h4>Kullanıcı Yetkileri</h4>
 <div id="userList"></div>
+</div>
 <hr>
-<h4>Görüş & Öneri</h4>
+</div>
+<div>
+<button onclick="toggleAlarmPanel()">ALARMLAR</button>
+<div id="alarmPanel" style="display:none;margin-top:5px;">
+<button onclick="addAlarm()">➕ Alarm Ekle</button>
+<div><input type="checkbox" id="toggleAllAlarms" onclick="toggleAllAlarms(this)"> Tümünü Aç / Kapat</div>
+<div id="alarmList"></div>
+</div>
+<hr>
+</div>
+<div>
+<button onclick="toggleFeedbackPanel()">GÖRÜŞ & ÖNERİLER</button>
+<div id="feedbackPanel" style="display:none;margin-top:5px;">
 <textarea id="feedback"></textarea>
 <button onclick="sendFeedback()">Gönder</button>
-<hr>
-<h4>Alarmlar</h4>
-<button onclick="addAlarm()">➕ Alarm Ekle</button>
-<div style="margin-bottom:5px;">
-<input type="checkbox" id="toggleAllAlarms" onclick="toggleAllAlarms(this)"> Tümünü Aç / Kapat
 </div>
-<div id="alarmList"></div>
+</div>
 </div>
 
 <div class="card" id="loginCard">
@@ -134,8 +85,8 @@ width:100%; background:#334155; border:none; border-radius:12px; padding:10px; c
 <div class="card" id="taskPanel" style="display:none">
 <h3>Görev Panosu</h3>
 <div id="taskList"></div>
-<div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
-<input id="title" placeholder="Görev">
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">
+<input id="title" placeholder="GÖREV">
 <input type="datetime-local" id="start">
 <input type="datetime-local" id="end">
 <button onclick="addTask()">➕</button>
@@ -152,7 +103,6 @@ width:100%; background:#334155; border:none; border-radius:12px; padding:10px; c
 <button onclick="sendMsg()">Gönder</button>
 </div>
 
-<!-- ÇALIŞMA TAKVİMİ -->
 <div class="card">
 <button class="toggle-btn" onclick="toggleTakvim()">📅 ÇALIŞMA TAKVİMİ</button>
 <div id="takvimPanel" style="display:none">
@@ -163,7 +113,6 @@ width:100%; background:#334155; border:none; border-radius:12px; padding:10px; c
 <button class="vardiya-btn" data-v="3">3. Vardiya</button>
 <button class="vardiya-btn" data-v="4">4. Vardiya</button>
 </div>
-<br>
 <div style="display:flex;justify-content:space-between">
 <button onclick="prevMonth()">◀</button>
 <b id="monthTitle"></b>
@@ -183,9 +132,7 @@ width:100%; background:#334155; border:none; border-radius:12px; padding:10px; c
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
-// Firebase
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
 authDomain: "studio-3972799448-609d1.firebaseapp.com",
@@ -199,152 +146,69 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.database();
 const ADMIN="yasindemirkan83@gmail.com";
-
 let userEmail="";
 let selectedTask=null;
 let alarmCount=0;
 
-// Saat
 function clock(){document.getElementById("clock").innerText=new Date().toLocaleString("tr-TR");}
 setInterval(clock,1000); clock();
 
-// SETTINGS
-function toggleSettings(){document.getElementById("settings").style.display = document.getElementById("settings").style.display=="block"?"none":"block";}
+function toggleSettings(){let s=document.getElementById("settings"); s.style.display = s.style.display=="block"?"none":"block";}
+function toggleAdminPanel(){let e=document.getElementById("adminPanelContent"); e.style.display=e.style.display==="none"?"block":"none";}
+function toggleAlarmPanel(){let e=document.getElementById("alarmPanel"); e.style.display=e.style.display==="none"?"block":"none";}
+function toggleFeedbackPanel(){let e=document.getElementById("feedbackPanel"); e.style.display=e.style.display==="none"?"block":"none";}
 
 // LOGIN
 function login(){
 let provider=new firebase.auth.GoogleAuthProvider();
 auth.signInWithPopup(provider).then(res=>{
 userEmail=res.user.email;
+const uname=userEmail.split("@")[0].toUpperCase();
 document.getElementById("loginCard").style.display="none";
 document.getElementById("taskPanel").style.display="block";
 document.getElementById("messagePanel").style.display="block";
+document.getElementById("welcomeCard").style.display="block";
+document.getElementById("welcomeUser").innerText=uname;
 if(userEmail==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>"; loadUsers();}
-loadTasks();
-loadMessages();
+loadTasks(); loadMessages();
 });
 }
 
-// Görevler
-function addTask(){
-let title=document.getElementById("title").value.toUpperCase();
-let start=document.getElementById("start").value;
-let end=document.getElementById("end").value;
-if(!title || !start) return;
-db.ref("tasks").push({title,start,end,done:false});
-document.getElementById("title").value=""; document.getElementById("start").value=""; document.getElementById("end").value="";
-}
-function loadTasks(){
-db.ref("tasks").on("value",snap=>{
-let html="";
-snap.forEach(s=>{
-let t=s.val();
-html+=`<div class="task ${t.done?"done":""}" onclick="selectTask('${s.key}')">
-<span>${t.title} ${t.start} - ${t.end}</span>
-${userEmail==ADMIN?`<button onclick="deleteTask('${s.key}')">🗑️</button>`:""}
-</div>`;
-});
-document.getElementById("taskList").innerHTML=html;
-});
-}
+// TASKS
+function addTask(){let t=document.getElementById("title").value.toUpperCase(); let s=document.getElementById("start").value; let e=document.getElementById("end").value; if(!t||!s) return; db.ref("tasks").push({title:t,start:s,end:e,done:false}); document.getElementById("title").value=""; document.getElementById("start").value=""; document.getElementById("end").value="";}
+function loadTasks(){db.ref("tasks").on("value",snap=>{let html=""; snap.forEach(s=>{let t=s.val(); html+=`<div class="task ${t.done?"done":""}" onclick="selectTask('${s.key}')"><span>${t.title} ${t.start} - ${t.end}</span>${userEmail==ADMIN?`<button onclick="deleteTask('${s.key}')">🗑️</button>`:""}</div>`}); document.getElementById("taskList").innerHTML=html;});}
 function selectTask(key){selectedTask=key;}
 function deleteTask(key){if(userEmail!=ADMIN) return; db.ref("tasks/"+key).remove();}
 function markDone(){if(!selectedTask) return; db.ref("tasks/"+selectedTask+"/done").set(true);}
 function setAlarm(){if(Notification.permission!=="granted") Notification.requestPermission(); alert("Alarm ayarlandı (tarayıcı açıkken çalışır)");}
 
-// Mesajlar
-function sendMsg(){
-let text=document.getElementById("msgText").value.toUpperCase();
-if(!text) return;
-db.ref("messages").push({user:userEmail,msg:text});
-document.getElementById("msgText").value="";
-}
-function loadMessages(){
-db.ref("messages").on("value",snap=>{
-let html=""; let newCount=0;
-snap.forEach(s=>{
-let m=s.val();
-const uname=m.user.split("@")[0].toUpperCase();
-html+=`<div class="msgItem"><span>${uname}: ${m.msg}</span>${userEmail==ADMIN?`<button onclick="delMsg('${s.key}')">Sil</button>`:""}</div>`;
-newCount++;
-});
-document.getElementById("messages").innerHTML=html;
-document.getElementById("msgCount").innerText=newCount>0?`(${newCount})`:"";
-if(newCount>0 && Notification.permission==="granted"){ new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play(); }
-});
-}
+// MESSAGES
+function sendMsg(){let text=document.getElementById("msgText").value.toUpperCase(); if(!text) return; db.ref("messages").push({user:userEmail,msg:text}); document.getElementById("msgText").value="";}
+function loadMessages(){db.ref("messages").on("value",snap=>{let html=""; let newCount=0; snap.forEach(s=>{let m=s.val(); const uname=m.user.split("@")[0].toUpperCase(); html+=`<div class="msgItem"><span>${uname}: ${m.msg}</span>${userEmail==ADMIN?`<button onclick="delMsg('${s.key}')">Sil</button>`:""}</div>`; newCount++;}); document.getElementById("messages").innerHTML=html; document.getElementById("msgCount").innerText=newCount>0?`(${newCount})`:""; if(newCount>0 && Notification.permission==="granted"){ new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play(); } });}
 function delMsg(k){if(userEmail!=ADMIN) return; db.ref("messages/"+k).remove();}
 
 // Feedback
-function sendFeedback(){
-let f=document.getElementById("feedback").value;
-if(!f) return;
-db.ref("feedback").push({user:userEmail,msg:f});
-alert("Gönderildi"); document.getElementById("feedback").value="";
-}
+function sendFeedback(){let f=document.getElementById("feedback").value; if(!f) return; db.ref("feedback").push({user:userEmail,msg:f}); alert("Gönderildi"); document.getElementById("feedback").value="";}
 
 // Alarmlar
-function addAlarm(){
-alarmCount++;
-const container = document.getElementById("alarmList");
-const div = document.createElement("div");
-div.style.display="flex"; div.style.alignItems="center"; div.style.marginBottom="5px";
-div.innerHTML = `<input type="checkbox" class="alarmCheck" id="alarm_${alarmCount}"><label for="alarm_${alarmCount}" style="margin-left:5px;">ALARM ${alarmCount}</label>`;
-container.appendChild(div);
-}
+function addAlarm(){alarmCount++; const container=document.getElementById("alarmList"); const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.marginBottom="5px"; div.innerHTML=`<input type="checkbox" class="alarmCheck" id="alarm_${alarmCount}"><label for="alarm_${alarmCount}" style="margin-left:5px;">ALARM ${alarmCount}</label>`; container.appendChild(div);}
 function toggleAllAlarms(el){document.querySelectorAll(".alarmCheck").forEach(c=>c.checked=el.checked);}
 
 // Admin kullanıcı yetkileri
-function loadUsers(){
-db.ref("users").on("value",snap=>{
-let html="";
-snap.forEach(s=>{
-let u=s.val();
-html+=`<div style="display:flex; justify-content:space-between; align-items:center;">
-<span>${u.email.split("@")[0].toUpperCase()}</span>
-<button onclick="toggleAdmin('${s.key}', ${u.admin})">${u.admin?"Kısıtla":"Yetki Ver"}</button>
-</div>`;
-});
-document.getElementById("userList").innerHTML=html;
-});
-}
+function loadUsers(){db.ref("users").on("value",snap=>{let html=""; snap.forEach(s=>{let u=s.val(); html+=`<div style="display:flex; justify-content:space-between; align-items:center;"><span>${u.email.split("@")[0].toUpperCase()}</span><button onclick="toggleAdmin('${s.key}', ${u.admin})">${u.admin?"Kısıtla":"Yetki Ver"}</button></div>`;}); document.getElementById("userList").innerHTML=html;});}
 function toggleAdmin(key,current){db.ref("users/"+key+"/admin").set(!current);}
 
-// Çalışma takvimi
+// TAKVİM
 const BASLANGIC=new Date(Date.UTC(2026,0,1));
 let secilen=1, currentYear=new Date().getFullYear(), currentMonth=new Date().getMonth();
-document.querySelectorAll('.vardiya-btn').forEach(b=>{
-if(b.dataset.v==secilen) b.classList.add("active");
-b.onclick=()=>{
-document.querySelectorAll('.vardiya-btn').forEach(x=>x.classList.remove('active'));
-b.classList.add('active'); secilen=b.dataset.v; draw();
-}
-});
-function vardiya(t){
-const gunFarki=Math.floor((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())-BASLANGIC)/86400000)%4;
-const duzen=[['gece','izin','izin','gunduz'],['izin','izin','gunduz','gece'],['izin','gunduz','gece','izin'],['gunduz','gece','izin','izin']];
-return duzen[(gunFarki+4)%4];
-}
-function draw(){
-const calendar=document.getElementById("calendar");
-calendar.innerHTML=''; let g=0,n=0,o=0;
-const today=new Date(); const firstDay=(new Date(currentYear,currentMonth,1).getDay()+6)%7;
-const days=new Date(currentYear,currentMonth+1,0).getDate();
-document.getElementById("monthTitle").innerText=new Date(currentYear,currentMonth).toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
-for(let i=0;i<firstDay;i++){calendar.appendChild(document.createElement('div'))}
-for(let i=1;i<=days;i++){
-const date=new Date(currentYear,currentMonth,i);
-const v=vardiya(date)[secilen-1];
-const d=document.createElement('div');
-d.className='day '+(v==='gunduz'?'work-day':v==='gece'?'work-night':'off');
-if(date.toDateString()===today.toDateString()) d.classList.add('today');
-d.innerText=i; calendar.appendChild(d);
-v==='gunduz'?g++:v==='gece'?n++:o++;
-}
-document.getElementById("dayCount").innerText=g;
-document.getElementById("nightCount").innerText=n;
-document.getElementById("offCount").innerText=o;
-}
+document.querySelectorAll('.vardiya-btn').forEach(b=>{if(b.dataset.v==secilen) b.classList.add("active"); b.onclick=()=>{document.querySelectorAll('.vardiya-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); secilen=b.dataset.v; draw();}});
+function vardiya(t){const gunFarki=Math.floor((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())-BASLANGIC)/86400000)%4; const duzen=[['gece','izin','izin','gunduz'],['izin','izin','gunduz','gece'],['izin','gunduz','gece','izin'],['gunduz','gece','izin','izin']]; return duzen[(gunFarki+4)%4];}
+function draw(){const calendar=document.getElementById("calendar"); calendar.innerHTML=''; let g=0,n=0,o=0; const today=new Date(); const firstDay=(new Date(currentYear,currentMonth,1).getDay()+6)%7; const days=new Date(currentYear,currentMonth+1,0).getDate(); document.getElementById("monthTitle").innerText=new Date(currentYear,currentMonth).toLocaleDateString('tr-TR',{month:'long',year:'numeric'}); for(let i=0;i<firstDay;i++){calendar.appendChild(document.createElement('div'))} for(let i=1;i<=days;i++){const date=new Date(currentYear,currentMonth,i); const v=vardiya(date)[secilen-1]; const d=document.createElement('div'); d.className='day '+(v==='gunduz'?'work-day':v==='gece'?'work-night':'off'); if(date.toDateString()===today.toDateString()) d.classList.add('today'); d.innerText=i; calendar.appendChild(d); v==='gunduz'?g++:v==='gece'?n++:o++; } document.getElementById("dayCount").innerText=g; document.getElementById("nightCount").innerText=n; document.getElementById("offCount").innerText=o;}
 function nextMonth(){currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++} draw();}
 function prevMonth(){currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--} draw();}
-function toggleTakvim(){let t=document.getElementById("takvimPanel"); t
+function toggleTakvim(){let t=document.getElementById("takvimPanel"); t.style.display=t.style.display==='none'?'block':'none';}
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
+</script>
+</body>
+</html>

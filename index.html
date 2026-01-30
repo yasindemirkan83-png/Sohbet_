@@ -146,7 +146,7 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.database();
 const ADMIN="yasindemirkan83@gmail.com";
-let userEmail="";
+let username=""; // Kullanıcı adı @ öncesi
 let selectedTask=null;
 let alarmCount=0;
 
@@ -162,33 +162,33 @@ function toggleFeedbackPanel(){let e=document.getElementById("feedbackPanel"); e
 function login(){
 let provider=new firebase.auth.GoogleAuthProvider();
 auth.signInWithPopup(provider).then(res=>{
-userEmail=res.user.email;
-const uname=userEmail.split("@")[0].toUpperCase();
+let email=res.user.email;
+username=email.split("@")[0].toUpperCase();
+document.getElementById("welcomeCard").style.display="block";
+document.getElementById("welcomeUser").innerText=username;
 document.getElementById("loginCard").style.display="none";
 document.getElementById("taskPanel").style.display="block";
 document.getElementById("messagePanel").style.display="block";
-document.getElementById("welcomeCard").style.display="block";
-document.getElementById("welcomeUser").innerText=uname;
-if(userEmail==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>"; loadUsers();}
+if(email==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>"; loadUsers();}
 loadTasks(); loadMessages();
 });
 }
 
 // TASKS
-function addTask(){let t=document.getElementById("title").value.toUpperCase(); let s=document.getElementById("start").value; let e=document.getElementById("end").value; if(!t||!s) return; db.ref("tasks").push({title:t,start:s,end:e,done:false}); document.getElementById("title").value=""; document.getElementById("start").value=""; document.getElementById("end").value="";}
-function loadTasks(){db.ref("tasks").on("value",snap=>{let html=""; snap.forEach(s=>{let t=s.val(); html+=`<div class="task ${t.done?"done":""}" onclick="selectTask('${s.key}')"><span>${t.title} ${t.start} - ${t.end}</span>${userEmail==ADMIN?`<button onclick="deleteTask('${s.key}')">🗑️</button>`:""}</div>`}); document.getElementById("taskList").innerHTML=html;});}
+function addTask(){let t=document.getElementById("title").value.toUpperCase(); let s=document.getElementById("start").value; let e=document.getElementById("end").value; if(!t||!s) return; db.ref("tasks").push({user:username,title:t,start:s,end:e,done:false}); document.getElementById("title").value=""; document.getElementById("start").value=""; document.getElementById("end").value="";}
+function loadTasks(){db.ref("tasks").on("value",snap=>{let html=""; snap.forEach(s=>{let t=s.val(); html+=`<div class="task ${t.done?"done":""}" onclick="selectTask('${s.key}')"><span>${t.user}: ${t.title} ${t.start} - ${t.end}</span>${username==ADMIN?`<button onclick="deleteTask('${s.key}')">🗑️</button>`:""}</div>`;}); document.getElementById("taskList").innerHTML=html;});}
 function selectTask(key){selectedTask=key;}
-function deleteTask(key){if(userEmail!=ADMIN) return; db.ref("tasks/"+key).remove();}
+function deleteTask(key){if(username!=ADMIN) return; db.ref("tasks/"+key).remove();}
 function markDone(){if(!selectedTask) return; db.ref("tasks/"+selectedTask+"/done").set(true);}
 function setAlarm(){if(Notification.permission!=="granted") Notification.requestPermission(); alert("Alarm ayarlandı (tarayıcı açıkken çalışır)");}
 
 // MESSAGES
-function sendMsg(){let text=document.getElementById("msgText").value.toUpperCase(); if(!text) return; db.ref("messages").push({user:userEmail,msg:text}); document.getElementById("msgText").value="";}
-function loadMessages(){db.ref("messages").on("value",snap=>{let html=""; let newCount=0; snap.forEach(s=>{let m=s.val(); const uname=m.user.split("@")[0].toUpperCase(); html+=`<div class="msgItem"><span>${uname}: ${m.msg}</span>${userEmail==ADMIN?`<button onclick="delMsg('${s.key}')">Sil</button>`:""}</div>`; newCount++;}); document.getElementById("messages").innerHTML=html; document.getElementById("msgCount").innerText=newCount>0?`(${newCount})`:""; if(newCount>0 && Notification.permission==="granted"){ new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play(); } });}
-function delMsg(k){if(userEmail!=ADMIN) return; db.ref("messages/"+k).remove();}
+function sendMsg(){let text=document.getElementById("msgText").value.toUpperCase(); if(!text) return; db.ref("messages").push({user:username,msg:text}); document.getElementById("msgText").value="";}
+function loadMessages(){db.ref("messages").on("value",snap=>{let html=""; let newCount=0; snap.forEach(s=>{let m=s.val(); html+=`<div class="msgItem"><span>${m.user}: ${m.msg}</span>${username==ADMIN?`<button onclick="delMsg('${s.key}')">Sil</button>`:""}</div>`; newCount++;}); document.getElementById("messages").innerHTML=html; document.getElementById("msgCount").innerText=newCount>0?`(${newCount})`:""; if(newCount>0 && Notification.permission==="granted"){ new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();} });}
+function delMsg(k){if(username!=ADMIN) return; db.ref("messages/"+k).remove();}
 
 // Feedback
-function sendFeedback(){let f=document.getElementById("feedback").value; if(!f) return; db.ref("feedback").push({user:userEmail,msg:f}); alert("Gönderildi"); document.getElementById("feedback").value="";}
+function sendFeedback(){let f=document.getElementById("feedback").value; if(!f) return; db.ref("feedback").push({user:username,msg:f}); alert("Gönderildi"); document.getElementById("feedback").value="";}
 
 // Alarmlar
 function addAlarm(){alarmCount++; const container=document.getElementById("alarmList"); const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.marginBottom="5px"; div.innerHTML=`<input type="checkbox" class="alarmCheck" id="alarm_${alarmCount}"><label for="alarm_${alarmCount}" style="margin-left:5px;">ALARM ${alarmCount}</label>`; container.appendChild(div);}

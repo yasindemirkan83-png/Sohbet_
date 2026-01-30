@@ -38,8 +38,8 @@ z-index:-1;
 /* GİRİŞ LOGO */
 #loginLogo{
 position:absolute;
-top:15px; right:25px; /* biraz daha sağa kaydırıldı */
-width:96px; height:96px; /* yeni boyut */
+top:15px; right:25px;
+width:96px; height:96px;
 cursor:pointer;
 z-index:1000;
 }
@@ -99,7 +99,7 @@ button:hover{background:#1976D2;}
 </video>
 
 <!-- GİRİŞ LOGO -->
-<img src="https://img.icons8.com/color/96/google-logo.png" id="loginLogo" onclick="login()" title="Gmail ile giriş">
+<img src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/google-symbol.png" id="loginLogo" onclick="login()" title="Gmail ile giriş">
 
 <!-- UYGULAMA İÇİ KODLAR -->
 <div class="section" id="taskPanel" style="display:none;">
@@ -205,11 +205,9 @@ document.getElementById("loginLogo").style.display="none"; // logo kayboluyor
 if(userEmail==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>";}
 loadTasks(); loadMessages();
 });
+}
 
-// Görevler, mesajlar, takvim ve ayarlar fonksiyonları aynen önceki kod ile çalışır
-</script>
-
-<script>
+// Service worker
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
 </script>
 

@@ -1,189 +1,225 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANFA Güvenlik</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-body, html{
-  margin:0; padding:0; height:100%; width:100%; overflow:hidden; background:#000;
-  font-family:'Segoe UI', sans-serif;
-}
-/* Video arka plan */
-#bgVideo{
-  position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1;
-}
-/* Gmail login logosu */
-#loginLogo{
-  position:absolute; top:15px; right:15px; width:60px; height:60px; cursor:pointer; z-index:1000;
-}
-/* Kart tasarımı ve uygulama içi bölümler */
-.section{
-  background:#fff; padding:15px; border-radius:15px; margin-bottom:15px;
-  color:#000; box-shadow:0 4px 10px rgba(0,0,0,0.3); text-transform:uppercase;
-  font-weight:700; font-size:1rem;
-}
-.task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer;color:black;text-transform:uppercase;background:white;}
-.task.done{background:#d4edda;text-decoration:line-through;}
-.task.selected{outline:2px solid #2196F3;}
-#taskList{max-height:250px;overflow-y:auto;font-size:1rem;}
-#messages{max-height:250px;overflow-y:auto;font-size:1rem;background:white;padding:10px;border-radius:10px;}
-.message{padding:6px;margin:5px 0;background:#fff;border-radius:8px;cursor:pointer;text-transform:uppercase;color:black;}
-.message.selected{outline:2px solid #2196F3;}
-textarea{width:100%;border-radius:10px;padding:6px;margin-bottom:5px;}
-button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin-right:5px;}
-button:hover{background:#1976D2;}
-.action-buttons{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;}
-#settings{position:absolute;top:10px;right:15px;background:white;width:300px;padding:10px;border-radius:10px;display:none;z-index:999;}
-#settings h3{margin-bottom:10px;}
-.toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px;}
-.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.vardiya-btn{background:#fff;border:2px solid #e0e0e0;border-radius:12px;padding:10px;color:black;}
-.vardiya-btn.active{border-color:#10b981;}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:black;}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-.day{background:#e0e0e0;border-radius:8px;padding:6px;font-size:.8rem;text-align:center;}
-.work-day{background:rgba(16,185,129,.4);}
-.work-night{background:rgba(56,189,248,.4);}
-.off{background:rgba(100,116,139,.4);}
-.today{outline:2px solid #38bdf8;}
-.summary{display:flex;justify-content:space-between;margin-top:10px;}
-.summary-value{font-size:1.2rem;font-weight:800;}
-</style>
+  <meta charset="UTF-8">
+  <title>Tek Sayfa Uygulama</title>
+  <style>
+    body, html { margin:0; padding:0; height:100%; background:black; font-family:sans-serif; color:black; text-transform: uppercase; }
+    #loginScreen { position:relative; width:100%; height:100%; }
+    #loginScreen video { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
+    #googleBtn {
+      position:absolute; top:10px; right:10px; width:50px; height:50px; 
+      background-color:white; color:black; border:none; border-radius:25px;
+      font-size:24px; cursor:pointer;
+    }
+    #nav { display:none; background:#222; padding:5px; text-align:center; }
+    #nav button { margin:5px; padding:10px 15px; background:#fff; color:#000; border:none; cursor:pointer; }
+    .card {
+      display:none; background:white; padding:15px; margin:20px auto; max-width:500px;
+      border-radius:8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .card h2 { margin-top:0; }
+    .card input, .card textarea { width:100%; padding:5px; margin:5px 0; box-sizing:border-box; }
+    .card button { padding:10px 20px; background:#000; color:#fff; border:none; cursor:pointer; }
+    /* Takvim stili */
+    table { width:100%; border-collapse: collapse; margin-top:10px; }
+    th, td { width:14%; border:1px solid #ccc; text-align:center; padding:5px; }
+    th { background:#f0f0f0; }
+  </style>
 </head>
 <body>
+  <!-- Giriş Ekranı -->
+  <div id="loginScreen">
+    <video autoplay muted loop>
+      <source src="https://raw.githubusercontent.com/kullanici/videolar/main/arkaplan.mp4" type="video/mp4">
+      Tarayıcınız video etiketini desteklemiyor.
+    </video>
+    <button id="googleBtn">G</button>
+  </div>
 
-<!-- Video arka plan -->
-<video autoplay muted loop id="bgVideo">
-  <source src="https://github.com/yasindemirkan83-png/Sohbet_/blob/main/InShot_20260130_145437574.mp4?raw=true" type="video/mp4">
-</video>
+  <!-- Navigasyon (giriş sonrası) -->
+  <div id="nav">
+    <button onclick="showPanel('taskPanel')">Görevler</button>
+    <button onclick="showPanel('messagePanel')">Mesajlar</button>
+    <button onclick="showPanel('calendarPanel')">Takvim</button>
+    <button onclick="showPanel('settingsPanel')">Ayarlar</button>
+  </div>
 
-<!-- Gmail G Logosu -->
-<img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" id="loginLogo" title="Gmail ile Giriş" onclick="login()">
+  <!-- Görev Paneli -->
+  <div id="taskPanel" class="card">
+    <h2>Görevler</h2>
+    <input id="newTask" placeholder="Yeni görev ekle">
+    <button onclick="addTask()">Ekle</button>
+    <ul id="taskList"></ul>
+  </div>
 
-<!-- Uygulama içi bölümler -->
-<div id="appContent" style="display:none; padding:15px; max-width:500px; margin:auto;">
+  <!-- Mesaj Paneli -->
+  <div id="messagePanel" class="card">
+    <h2>Mesajlar</h2>
+    <input id="newMessage" placeholder="Yeni mesaj ekle">
+    <button onclick="addMessage()">Gönder</button>
+    <ul id="messageList"></ul>
+  </div>
 
-<!-- Hoşgeldin -->
-<div class="section" id="welcomeCard">
-  <b id="welcomeText"></b>
-</div>
+  <!-- Takvim Paneli -->
+  <div id="calendarPanel" class="card">
+    <h2>Takvim</h2>
+    <table id="calendar">
+      <thead><tr>
+        <th>Pzt</th><th>Sali</th><th>Çar</th><th>Per</th><th>Cum</th><th>Cmt</th><th>Paz</th>
+      </tr></thead>
+      <tbody id="calendarBody"></tbody>
+    </table>
+  </div>
 
-<!-- Görevler -->
-<div class="section" id="taskPanel">
-<h3>Görevler</h3>
-<div id="taskList"></div>
-<div class="action-buttons">
-<input id="title" placeholder="Görev">
-<input type="datetime-local" id="start">
-<input type="datetime-local" id="end">
-<button onclick="addTask()">Ekle</button>
-<button onclick="deleteTask()">Sil</button>
-<button onclick="markDone()">Tamamlandı</button>
-<button onclick="setAlarm()">Alarm</button>
-</div>
-</div>
+  <!-- Ayarlar Paneli -->
+  <div id="settingsPanel" class="card">
+    <h2>Ayarlar</h2>
+    <label>Alarm Saati: <input type="time" id="alarmTime"></label><br>
+    <label>Görüş-Öneri: <textarea id="feedback" rows="4" placeholder="Yorumunuzu yazın"></textarea></label><br>
+    <button id="backBtn">Geri Dön</button>
+    <button onclick="logout()">Çıkış Yap</button>
+  </div>
 
-<!-- Mesajlar -->
-<div class="section" id="messagePanel">
-<h3>Mesajlar</h3>
-<div id="messages"></div>
-<div class="action-buttons">
-<input id="msgText" placeholder="Mesaj">
-<button onclick="sendMsg()">Gönder</button>
-<button onclick="deleteSelectedMsg()">Sil</button>
-</div>
-</div>
+  <!-- Firebase SDK ve Ana JavaScript -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    // Firebase yapılandırması (kendi projenizle değiştirin)
+    var firebaseConfig = {
+      apiKey: "API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
 
-<!-- Takvim -->
-<div class="section" id="takvimSection">
-<button class="toggle-btn" onclick="toggleTakvim()">📅 ÇALIŞMA TAKVİMİ</button>
-<div id="takvimPanel" style="display:none;">
-<div class="section-title">Vardiya Seçimi</div>
-<div class="vardiya-buttons">
-<button class="vardiya-btn" data-v="1">1. Vardiya</button>
-<button class="vardiya-btn" data-v="2">2. Vardiya</button>
-<button class="vardiya-btn" data-v="3">3. Vardiya</button>
-<button class="vardiya-btn" data-v="4">4. Vardiya</button>
-</div>
-<br>
-<div style="display:flex;justify-content:space-between">
-<button onclick="prevMonth()">◀</button>
-<b id="monthTitle"></b>
-<button onclick="nextMonth()">▶</button>
-</div>
-<div class="weekdays">
-<div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
-</div>
-<div class="calendar-grid" id="calendar"></div>
-<div class="summary">
-<div><div class="summary-value" id="dayCount">0</div>Gündüz</div>
-<div><div class="summary-value" id="nightCount">0</div>Gece</div>
-<div><div class="summary-value" id="offCount">0</div>İzin</div>
-</div>
-</div>
+    // Eleman referansları
+    const loginScreen = document.getElementById('loginScreen');
+    const navBar = document.getElementById('nav');
+    const panels = {
+      taskPanel: document.getElementById('taskPanel'),
+      messagePanel: document.getElementById('messagePanel'),
+      calendarPanel: document.getElementById('calendarPanel'),
+      settingsPanel: document.getElementById('settingsPanel')
+    };
 
-<!-- Ayarlar -->
-<div id="settings">
-<h3>Ayarlar</h3>
-<div id="adminPanel"></div>
-<hr>
-<div>
-<button onclick="toggleAlarmPanel()">Alarmlar</button>
-<div id="alarmPanel" style="display:none;"></div>
-</div>
-<hr>
-<div>
-<h4>Görüş & Öneri</h4>
-<textarea id="feedback"></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-</div>
-<button onclick="closeSettings()">Geri</button>
-</div>
+    // Google ile giriş butonu
+    document.getElementById('googleBtn').onclick = () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).catch(err => console.error(err));
+    };
 
-</div>
+    // Oturum durumu dinleyicisi
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        // Giriş başarılı: Nav ve görev panelini göster
+        loginScreen.style.display = 'none';
+        navBar.style.display = 'block';
+        showPanel('taskPanel');
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+        // Veritabanı dinleyicileri
+        const tasksRef = firebase.database().ref('tasks/' + user.uid);
+        tasksRef.on('child_added', snapshot => {
+          const li = document.createElement('li');
+          li.textContent = snapshot.val().text;
+          document.getElementById('taskList').appendChild(li);
+        });
+        const msgsRef = firebase.database().ref('messages/' + user.uid);
+        msgsRef.on('child_added', snapshot => {
+          const li = document.createElement('li');
+          li.textContent = snapshot.val().text;
+          document.getElementById('messageList').appendChild(li);
+        });
+      } else {
+        // Oturum yok: Sadece giriş ekranı göster
+        loginScreen.style.display = 'block';
+        navBar.style.display = 'none';
+        hideAllPanels();
+      }
+    });
 
-<script>
-// Firebase config ve login
-const firebaseConfig = {
-apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
-authDomain: "studio-3972799448-609d1.firebaseapp.com",
-databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
-projectId: "studio-3972799448-609d1",
-storageBucket: "studio-3972799448-609d1.firebasestorage.app",
-messagingSenderId: "210449601127",
-appId: "1:210449601127:web:b3339666a09822b40c7ac2"
-};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(); const db=firebase.database();
-let userEmail="", userName="", selectedTask=null, selectedMsg=null;
-const ADMIN="yasindemirkan83@gmail.com";
+    // Paneller arası geçiş fonksiyonu
+    function showPanel(id) {
+      Object.values(panels).forEach(p => p.style.display = 'none');
+      panels[id].style.display = 'block';
+    }
+    function hideAllPanels() {
+      Object.values(panels).forEach(p => p.style.display = 'none');
+    }
 
-function login(){
-  let provider=new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).then(res=>{
-    const user=res.user;
-    userEmail=user.email;
-    userName=user.displayName || user.email.split('@')[0];
-    document.getElementById("loginLogo").style.display="none";
-    document.getElementById("appContent").style.display="block";
-    document.getElementById("welcomeText").innerText=`HOŞGELDİN ${userName.toUpperCase()}`;
-    if(userEmail==ADMIN) document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>";
-    loadTasks(); loadMessages();
-  }).catch(err=>alert("Giriş hatası: "+err.message));
-}
+    // Görev ekleme
+    function addTask() {
+      const text = document.getElementById('newTask').value.trim();
+      const user = firebase.auth().currentUser;
+      if (user && text) {
+        firebase.database().ref('tasks/' + user.uid).push({ text: text });
+        document.getElementById('newTask').value = '';
+      }
+    }
 
-// Buradaki tüm görev, mesaj, takvim, ayarlar fonksiyonları önceki kod ile aynı
-</script>
+    // Mesaj ekleme
+    function addMessage() {
+      const text = document.getElementById('newMessage').value.trim();
+      const user = firebase.auth().currentUser;
+      if (user && text) {
+        firebase.database().ref('messages/' + user.uid).push({ text: text });
+        document.getElementById('newMessage').value = '';
+      }
+    }
 
-<script>
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
-</script>
+    // Takvim gösterimi (mevcut ay)
+    function showCalendar(month, year) {
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month+1, 0).getDate();
+      const tbl = document.getElementById('calendarBody');
+      tbl.innerHTML = '';
+      let date = 1;
+      for (let i = 0; i < 6; i++) {
+        let row = document.createElement('tr');
+        for (let j = 0; j < 7; j++) {
+          let cell = document.createElement('td');
+          if (i === 0 && j < firstDay) {
+            cell.textContent = '';
+          } else if (date > daysInMonth) {
+            cell.textContent = '';
+          } else {
+            cell.textContent = date;
+            date++;
+          }
+          row.appendChild(cell);
+        }
+        tbl.appendChild(row);
+      }
+    }
+    // Şu anki ayı göster
+    const today = new Date();
+    showCalendar(today.getMonth(), today.getFullYear());
 
+    // Ayarlar bölümü: Geri Dön ve Çıkış
+    document.getElementById('backBtn').onclick = () => showPanel('taskPanel');
+    function logout() {
+      firebase.auth().signOut().then(() => location.reload());
+    }
+
+    // Alarm zamanı kaydet (Realtime Database)
+    document.getElementById('alarmTime').addEventListener('change', function() {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        firebase.database().ref('alarms/' + user.uid).set({ time: this.value });
+      }
+    });
+    // Görüş-öneri kaydet (sayfa dışına tıklandığında)
+    document.getElementById('feedback').addEventListener('blur', function() {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        firebase.database().ref('feedback/' + user.uid).set({ text: this.value });
+      }
+    });
+  </script>
 </body>
 </html>

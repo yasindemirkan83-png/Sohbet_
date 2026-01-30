@@ -9,7 +9,7 @@
 
 <style>
 :root{
---color-text:#000000;
+  --color-text:#000000;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
 body{min-height:100vh;color:var(--color-text);}
@@ -25,23 +25,21 @@ body{min-height:100vh;color:var(--color-text);}
   z-index:-1;
 }
 
-/* GİRİŞ LOGO */
-#loginCard{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  z-index:10;
-}
+/* GİRİŞ LOGO SAĞ ÜSTE */
 #loginLogo{
-  width:100px;
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:60px;
   cursor:pointer;
+  z-index:10;
   transition: transform 0.2s;
 }
 #loginLogo:hover{
   transform: scale(1.1);
 }
 
-/* Uygulama içi tüm paneller (hiç değişmeyecek) */
+/* Uygulama içi tüm paneller (hiç değişmedi) */
 .section{background:rgba(255,255,255,0.95);padding:15px;border-radius:20px;margin-bottom:15px;color:black;box-shadow:0 4px 10px rgba(0,0,0,0.3);}
 .section-title{color:var(--color-text);font-size:1.2rem;margin-bottom:10px}
 .task{border:1px solid #ccc;padding:10px;margin:5px 0;border-radius:8px;cursor:pointer;color:black;text-transform:uppercase; background:white;}
@@ -75,15 +73,13 @@ button:hover{background:#1976D2;}
 
 <body>
 
-<!-- GİRİŞ EKRANI (SADECE VIDEO + LOGO) -->
+<!-- GİRİŞ EKRANI (SADECE VIDEO + GMAIL LOGO SAĞ ÜSTE) -->
 <video autoplay muted loop id="bgVideo">
   <source src="https://github.com/yasindemirkan83-png/Sohbet_/blob/main/InShot_20260130_145437574.mp4?raw=true" type="video/mp4">
   Tarayıcınız video etiketini desteklemiyor.
 </video>
 
-<div id="loginCard">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Google_Logo.png" id="loginLogo" onclick="login()" alt="Gmail ile Giriş">
-</div>
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Google_Logo.png" id="loginLogo" onclick="login()" alt="Gmail ile Giriş">
 
 <!-- Uygulama içi tüm paneller (hiç değişmedi) -->
 <div class="section" id="welcomeCard" style="display:none;">
@@ -186,7 +182,7 @@ function login(){
   auth.signInWithPopup(provider).then(res=>{
     userEmail=res.user.email;
     userName=res.user.displayName || res.user.email.split('@')[0];
-    document.getElementById("loginCard").style.display="none";
+    document.getElementById("loginLogo").style.display="none";
     document.getElementById("welcomeCard").style.display="block";
     document.getElementById("welcomeText").innerText=`HOŞGELDİN ${userName.toUpperCase()}`;
     document.getElementById("taskPanel").style.display="block";

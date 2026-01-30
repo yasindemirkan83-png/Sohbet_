@@ -2,34 +2,19 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ANFA Güvenlik</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui}
 body{
-background:#000;
+margin:0;
+font-family:Arial, sans-serif;
+background:black;
 color:white;
-min-height:100vh;
-max-width:500px;
-margin:auto;
-padding:10px;
 overflow:hidden;
 }
 
-/* LOGIN */
-#loginLogo{
-position:fixed;
-top:20px;
-right:20px;
-width:80px;
-height:80px;
-cursor:pointer;
-z-index:9999;
-}
-
-/* VIDEO */
+/* Video */
 #bgVideo{
 position:fixed;
 top:0;left:0;
@@ -40,37 +25,71 @@ z-index:-1;
 display:none;
 }
 
-/* KART */
+/* Google Logo */
+#loginLogo{
+position:fixed;
+top:20px;
+right:20px;
+width:90px;
+height:90px;
+cursor:pointer;
+z-index:10;
+}
+
+/* Kartlar */
 .section{
 background:white;
 color:black;
-padding:12px;
+margin:15px;
+padding:15px;
 border-radius:12px;
-margin-bottom:10px;
+display:none;
+}
+
+button{
+padding:8px 12px;
+margin-top:5px;
+border:none;
+border-radius:6px;
+background:#2196F3;
+color:white;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN LOGO -->
-<img id="loginLogo"
-src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png"
-onclick="login()">
-
 <!-- VIDEO -->
-<video id="bgVideo" autoplay muted loop playsinline>
-<source src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/InShot_20260130_145437574.mp4" type="video/mp4">
+<video autoplay muted loop playsinline id="bgVideo">
+<source src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/InShot_20260130_145437574.mp4" type="video/mp4">
 </video>
 
-<!-- APP -->
-<div id="app" style="display:none">
-<div class="section"><h3>GÖREVLER</h3></div>
-<div class="section"><h3>MESAJLAR</h3></div>
-<div class="section"><h3>TAKVİM</h3></div>
-<div class="section"><h3>AYARLAR</h3></div>
+<!-- GOOGLE LOGO -->
+<img id="loginLogo"
+src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/google-symbol.png"
+onclick="login()">
+
+<!-- KARTLAR -->
+<div class="section" id="taskPanel">
+<h3>Görevler</h3>
+<input id="taskInput" placeholder="Görev yaz">
+<button onclick="addTask()">Ekle</button>
+<ul id="taskList"></ul>
 </div>
 
+<div class="section" id="messagePanel">
+<h3>Mesajlar</h3>
+<input id="msgInput" placeholder="Mesaj yaz">
+<button onclick="sendMsg()">Gönder</button>
+<ul id="msgList"></ul>
+</div>
+
+<div class="section" id="calendarPanel">
+<h3>Takvim</h3>
+<p>Buraya ileride vardiya koyarsın</p>
+</div>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
@@ -81,21 +100,39 @@ authDomain: "studio-3972799448-609d1.firebaseapp.com",
 projectId: "studio-3972799448-609d1",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const provider = new firebase.auth.GoogleAuthProvider();
 
 function login(){
-auth.signInWithPopup(provider).then(res=>{
-afterLogin();
+const provider = new firebase.auth.GoogleAuthProvider();
+auth.signInWithPopup(provider)
+.then(res=>{
+document.getElementById("loginLogo").style.display="none";
+document.getElementById("bgVideo").style.display="block";
+
+document.getElementById("taskPanel").style.display="block";
+document.getElementById("messagePanel").style.display="block";
+document.getElementById("calendarPanel").style.display="block";
+})
+.catch(err=>{
+alert("Login hatası: " + err.message);
 });
 }
 
-function afterLogin(){
-document.getElementById("loginLogo").style.display="none";
-document.getElementById("app").style.display="block";
-document.getElementById("bgVideo").style.display="block";
-document.getElementById("bgVideo").play();
+/* Basit local görev/mesaj */
+function addTask(){
+let t = taskInput.value;
+if(!t) return;
+taskList.innerHTML += "<li>"+t+"</li>";
+taskInput.value="";
+}
+
+function sendMsg(){
+let m = msgInput.value;
+if(!m) return;
+msgList.innerHTML += "<li>"+m+"</li>";
+msgInput.value="";
 }
 </script>
 

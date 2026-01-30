@@ -4,10 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ANFA Güvenlik</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
-body{background:#000;color:#fff;overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui}
+body{
+background:#000;
+color:white;
+min-height:100vh;
+max-width:500px;
+margin:auto;
+padding:10px;
+overflow:hidden;
+}
+
+/* LOGIN */
+#loginLogo{
+position:fixed;
+top:20px;
+right:20px;
+width:80px;
+height:80px;
+cursor:pointer;
+z-index:9999;
+}
 
 /* VIDEO */
 #bgVideo{
@@ -20,161 +40,64 @@ z-index:-1;
 display:none;
 }
 
-/* LOGIN */
-#loginScreen{
-position:fixed;
-top:0;left:0;
-width:100%;
-height:100%;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-background:#000;
-}
-
-#loginLogo{
-width:110px;
-cursor:pointer;
-}
-
-/* APP */
-#app{
-display:none;
-padding:15px;
-}
-
-.card{
-background:#fff;
-color:#000;
+/* KART */
+.section{
+background:white;
+color:black;
 padding:12px;
 border-radius:12px;
-margin-bottom:12px;
+margin-bottom:10px;
 }
-
-button{padding:8px 12px;border:0;border-radius:8px;background:#1976d2;color:#fff}
-input{width:100%;padding:6px;margin-top:6px}
 </style>
 </head>
 
 <body>
+
+<!-- LOGIN LOGO -->
+<img id="loginLogo"
+src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png"
+onclick="login()">
 
 <!-- VIDEO -->
 <video id="bgVideo" autoplay muted loop playsinline>
 <source src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/InShot_20260130_145437574.mp4" type="video/mp4">
 </video>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-<img id="loginLogo"
-src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png"
-onclick="login()">
-<p style="margin-top:15px">Gmail ile giriş</p>
-</div>
-
 <!-- APP -->
-<div id="app">
-
-<div class="card">
-<h3>Görevler</h3>
-<input id="taskInput" placeholder="Görev">
-<button onclick="addTask()">Ekle</button>
-<div id="tasks"></div>
+<div id="app" style="display:none">
+<div class="section"><h3>GÖREVLER</h3></div>
+<div class="section"><h3>MESAJLAR</h3></div>
+<div class="section"><h3>TAKVİM</h3></div>
+<div class="section"><h3>AYARLAR</h3></div>
 </div>
 
-<div class="card">
-<h3>Mesajlar</h3>
-<input id="msgInput" placeholder="Mesaj">
-<button onclick="sendMsg()">Gönder</button>
-<div id="msgs"></div>
-</div>
-
-<div class="card">
-<h3>Takvim</h3>
-<p>Takvim aktif</p>
-</div>
-
-</div>
-
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
 authDomain: "studio-3972799448-609d1.firebaseapp.com",
-databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
 projectId: "studio-3972799448-609d1",
-storageBucket: "studio-3972799448-609d1.firebasestorage.app",
-messagingSenderId: "210449601127",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.database();
-
-let user="";
-
-/* LOGIN */
-function login(){
 const provider = new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider).catch(()=>{
-auth.signInWithRedirect(provider);
+
+function login(){
+auth.signInWithPopup(provider).then(res=>{
+afterLogin();
 });
 }
 
-auth.getRedirectResult().then(res=>{
-if(res.user){ onLogin(res.user); }
-});
-
-auth.onAuthStateChanged(u=>{
-if(u){ onLogin(u); }
-});
-
-function onLogin(u){
-user = u.displayName || u.email;
-document.getElementById("loginScreen").style.display="none";
+function afterLogin(){
+document.getElementById("loginLogo").style.display="none";
 document.getElementById("app").style.display="block";
 document.getElementById("bgVideo").style.display="block";
 document.getElementById("bgVideo").play();
-loadTasks();
-loadMsgs();
-}
-
-/* TASKS */
-function addTask(){
-let v = taskInput.value;
-db.ref("tasks").push({user:user,text:v});
-taskInput.value="";
-}
-
-function loadTasks(){
-db.ref("tasks").on("value",s=>{
-tasks.innerHTML="";
-s.forEach(c=>{
-tasks.innerHTML+=`<div>${c.val().user}: ${c.val().text}</div>`;
-});
-});
-}
-
-/* MSG */
-function sendMsg(){
-let v = msgInput.value;
-db.ref("msgs").push({user:user,text:v});
-msgInput.value="";
-}
-
-function loadMsgs(){
-db.ref("msgs").on("value",s=>{
-msgs.innerHTML="";
-s.forEach(c=>{
-msgs.innerHTML+=`<div>${c.val().user}: ${c.val().text}</div>`;
-});
-});
 }
 </script>
+
 </body>
 </html>

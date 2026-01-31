@@ -14,122 +14,106 @@
 --color-success:#10b981;
 --color-warning:#fbbf24;
 --color-text:#000000;
+--card-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
-body{background:#000000;color:var(--color-text);min-height:100vh;max-width:500px;margin:auto;padding:0;position:relative;overflow-x:hidden;}
-
-/* SPLASH */
-#splashVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1000;}
-
-/* ARKA PLAN */
-#bgVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;display:none;}
-
-/* GİRİŞ LOGO */
-#loginLogo{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:96px;height:96px;cursor:pointer;z-index:1001;display:none;}
-
-/* KART TASARIMI */
-.section{background:var(--bg-primary);padding:15px;border-radius:15px;margin:15px;color:black;box-shadow:0 4px 10px rgba(0,0,0,0.3);text-transform:uppercase;}
-#taskPanel,#messagePanel,#takvimSection{display:none;}
-#taskList,#messages{max-height:200px;overflow-y:auto;}
+body{background:#000;color:white;min-height:100vh;max-width:500px;margin:auto;position:relative;padding:10px;overflow-x:hidden;}
+#splashVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:999;}
+#bgVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
+#loginLogo{position:absolute;top:15px;right:15px;width:96px;height:96px;cursor:pointer;z-index:1000;}
+.section{background:var(--bg-primary);padding:15px;border-radius:15px;margin-bottom:15px;color:black;box-shadow:var(--card-shadow);text-transform:uppercase;}
+#taskList, #messages{max-height:250px;overflow-y:auto;font-size:1rem;}
+.task, .message{padding:10px;margin:5px 0;border-radius:8px;background:#fff;color:black;text-transform:uppercase;cursor:pointer;}
+.task.done{background:#d4edda;text-decoration:line-through;}
+.task.selected, .message.selected{outline:2px solid #2196F3;}
 textarea{width:100%;border-radius:10px;padding:6px;margin-bottom:5px;}
-
-/* BUTON İKONLARI */
-.action-buttons{display:flex;gap:10px;margin-top:5px;flex-wrap:wrap;justify-content:center;}
-.action-buttons button{border:none;border-radius:50%;width:50px;height:50px;font-size:1.2rem;background:#2196F3;color:white;cursor:pointer;}
-.action-buttons button:hover{background:#1976D2;}
-
-/* TAKVİM */
-.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.vardiya-btn{background:var(--bg-primary);border:2px solid var(--bg-tertiary);border-radius:12px;padding:10px;color:black;}
-.vardiya-btn.active{border-color:var(--color-success);}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:black;}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+button{padding:8px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;margin-right:5px;}
+button:hover{background:#1976D2;}
+.action-buttons{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;}
+#settings{position:absolute;top:15px;right:15px;background:white;width:300px;padding:10px;border-radius:10px;display:none;z-index:999;}
+.toggle-btn{width:100%;background:#334155;border:none;border-radius:12px;padding:10px;color:#38bdf8;font-weight:700;margin-bottom:10px;}
+/* Takvim */
+.vardiya-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.vardiya-btn{background:var(--bg-primary);border:2px solid var(--bg-tertiary);border-radius:12px;padding:10px;color:black}
+.vardiya-btn.active{border-color:var(--color-success)}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;text-align:center;margin-bottom:5px;color:black}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .day{background:var(--bg-tertiary);border-radius:8px;padding:6px;font-size:.8rem;text-align:center;}
-.work-day{background:rgba(16,185,129,.4);}
-.work-night{background:rgba(56,189,248,.4);}
-.off{background:rgba(100,116,139,.4);}
-.today{outline:2px solid #38bdf8;}
-.summary{display:flex;justify-content:space-between;margin-top:10px;}
-.summary-value{font-size:1.2rem;font-weight:800;}
-
-/* AYARLAR İKONU */
-#settingsIcon{position:absolute;top:10px;right:10px;color:white;font-size:2rem;cursor:pointer;z-index:1000;}
-#settings{position:fixed;top:0;right:0;width:300px;height:100%;background:white;display:none;flex-direction:column;overflow-y:auto;padding:15px;z-index:1001;}
-#settings h3{margin-bottom:10px;}
-#settings button{width:100%;margin-top:10px;padding:10px;border-radius:8px;background:#2196F3;color:white;border:none;}
+.work-day{background:rgba(16,185,129,.4)}
+.work-night{background:rgba(56,189,248,.4)}
+.off{background:rgba(100,116,139,.4)}
+.today{outline:2px solid #38bdf8}
+.summary{display:flex;justify-content:space-between;margin-top:10px}
+.summary-value{font-size:1.2rem;font-weight:800}
 </style>
 </head>
 <body>
 
-<!-- Açılış Splash Video -->
+<!-- Splash Video -->
 <video autoplay muted playsinline id="splashVideo">
 <source src="splash.mp4" type="video/mp4">
 </video>
 
-<!-- Arka plan duvar kağıdı -->
-<video autoplay muted loop playsinline id="bgVideo">
+<!-- Gmail Logo -->
+<img src="google-symbol.png" id="loginLogo" onclick="login()" title="Gmail ile giriş">
+
+<!-- Arka plan video (giriş sonrası) -->
+<video autoplay muted loop playsinline id="bgVideo" style="display:none">
 <source src="bg.mp4" type="video/mp4">
 </video>
 
-<!-- Gmail Login Logo -->
-<img src="google-symbol.png" id="loginLogo" title="Gmail ile giriş" onclick="login()">
-
-<!-- Ayarlar ikonu -->
-<i class="fas fa-cog" id="settingsIcon" onclick="openSettings()"></i>
-
 <!-- Görevler -->
-<div class="section" id="taskPanel">
-<h3>Görevler</h3>
+<div class="section" id="taskPanel" style="display:none">
+<h3>GöREVLER</h3>
 <div id="taskList"></div>
 <div class="action-buttons">
-<button title="Ekle" onclick="addTask()"><i class="fas fa-plus"></i></button>
-<button title="Sil" onclick="deleteTask()"><i class="fas fa-trash"></i></button>
-<button title="Düzenle" onclick="editTask()"><i class="fas fa-edit"></i></button>
-<button title="Alarm" onclick="setAlarm()"><i class="fas fa-bell"></i></button>
-</div>
-<input id="taskTitle" placeholder="Görev başlığı">
+<input id="title" placeholder="Görev">
 <input type="datetime-local" id="start">
 <input type="datetime-local" id="end">
+<button title="Ekle" onclick="addTask()"><i class="fa fa-plus"></i></button>
+<button title="Sil" onclick="deleteTask()"><i class="fa fa-trash"></i></button>
+<button title="Düzenle" onclick="editTask()"><i class="fa fa-edit"></i></button>
+<button title="Alarm" onclick="setAlarm()"><i class="fa fa-bell"></i></button>
+</div>
 </div>
 
 <!-- Mesajlar -->
-<div class="section" id="messagePanel">
+<div class="section" id="messagePanel" style="display:none">
 <h3>Mesajlar</h3>
 <div id="messages"></div>
 <div class="action-buttons">
-<button title="Mesaj Gönder" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
-<button title="Sil" onclick="deleteSelectedMsg()"><i class="fas fa-trash"></i></button>
-<button title="Resim Ekle" onclick="addImage()"><i class="fas fa-image"></i></button>
+<input id="msgText" placeholder="Mesaj">
+<button title="Gönder" onclick="sendMsg()"><i class="fa fa-paper-plane"></i></button>
+<button title="Resim" onclick="sendImage()"><i class="fa fa-image"></i></button>
+<button title="Sil" onclick="deleteSelectedMsg()"><i class="fa fa-trash"></i></button>
 </div>
-<input id="msgText" placeholder="Mesajınız">
 </div>
 
 <!-- Takvim -->
-<div class="section" id="takvimSection">
-<button onclick="toggleTakvim()">📅 ÇALIŞMA TAKVİMİ</button>
-<div id="takvimPanel" style="display:none;">
-<!-- Takvim HTML içeriğini buraya koy -->
+<div class="section" id="takvimSection" style="display:none">
+<button class="toggle-btn" onclick="toggleTakvim()">📅 ÇALIŞMA TAKVİMİ</button>
+<div id="takvimPanel" style="display:none">
+<!-- Takvim HTML kodu buraya entegre edilecek -->
 </div>
 </div>
 
-<!-- Ayarlar Paneli -->
+<!-- Ayarlar -->
 <div id="settings">
 <h3>Ayarlar</h3>
 <div id="adminPanel"></div>
 <hr>
 <h4>Görüş & Öneri</h4>
-<textarea id="feedback" placeholder="Yorumunuzu yazın"></textarea>
+<textarea id="feedback"></textarea>
 <button onclick="sendFeedback()">Gönder</button>
 <button onclick="closeSettings()">Geri</button>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Firebase config
+// Firebase Config
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
 authDomain: "studio-3972799448-609d1.firebaseapp.com",
@@ -145,32 +129,25 @@ const db=firebase.database();
 let userEmail="", userName="";
 const ADMIN="yasindemirkan83@gmail.com";
 
-// Splash sonrası login göster
-setTimeout(()=>{
-document.getElementById('splashVideo').style.display='none';
-document.getElementById('loginLogo').style.display='block';
-},3000);
+// Splash timeout
+setTimeout(()=>{document.getElementById("splashVideo").style.display="none";},3000);
 
 // Login
 function login(){
-let provider = new firebase.auth.GoogleAuthProvider();
+let provider=new firebase.auth.GoogleAuthProvider();
 auth.signInWithPopup(provider).then(res=>{
 userEmail=res.user.email;
 userName=res.user.displayName || res.user.email.split('@')[0];
-document.getElementById("loginLogo").style.display="none";
-document.getElementById("bgVideo").style.display="block";
 document.getElementById("taskPanel").style.display="block";
 document.getElementById("messagePanel").style.display="block";
 document.getElementById("takvimSection").style.display="block";
+document.getElementById("bgVideo").style.display="block";
+document.getElementById("loginLogo").style.display="none";
 if(userEmail==ADMIN){document.getElementById("adminPanel").innerHTML="<b>ADMIN</b>";}
-// Burada loadTasks(), loadMessages() ve takvim yüklemesini yap
-});
-
-// Task, Message, Takvim ve Ayarlar fonksiyonları buraya eklenecek
-function openSettings(){document.getElementById('settings').style.display='flex';}
-function closeSettings(){document.getElementById('settings').style.display='none';}
-function toggleTakvim(){let panel=document.getElementById('takvimPanel');panel.style.display=panel.style.display==='none'?'block':'none';}
-function sendFeedback(){alert("Görüş gönderildi!");}
+// Buraya loadTasks(), loadMessages(), loadCalendar() gibi fonksiyonlar eklenebilir
+}).catch(e=>{alert("Login Hatası: "+e)});
+}
 </script>
+
 </body>
 </html>

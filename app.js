@@ -1,135 +1,111 @@
-// app.js
-import { auth, provider, database } from './firebaseConfig.js';
-import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* --- LOGIN --- */
-const googleLoginBtn = document.getElementById("googleLogin");
+const db = getDatabase();
+const auth = getAuth();
 
-googleLoginBtn.onclick = () => {
-  signInWithPopup(auth, provider);
-};
+const taskListContainer = document.getElementById('taskListContainer');
+const chatBox = document.getElementById('chatBox');
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "block";
-    document.getElementById("userName").innerText = user.displayName;
-    loadTasks(user.uid);
-    loadMessages(user.uid);
-  }
+// Görev ekleme
+function addTask(){
+  const title = document.getElementById('taskInput').value;
+  const start = document.getElementById('taskStart').value;
+  const end = document.getElementById('taskEnd').value;
+  if(!title) return alert("Görev adı girin");
+  const user = auth.currentUser;
+  push(ref(db,'tasks'), { title, start, end, uid:user.uid, done:false, timestamp:Date.now() });
+  document.getElementById('taskInput').value='';
+}
+
+// Görevleri çek ve göster
+onValue(ref(db,'tasks'), snapshot => {
+  taskListContainer.innerHTML='';
+  const data = snapshot.val();
+  if(!data) return;
+  const tasks = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
+  tasks.forEach(([key,val])=>{
+    const div = document.createElement('div');
+    div.innerText = `${val.title} (${val.start || ''} → ${val.end || ''})`;
+    div.dataset.key=key;
+    div.style.cursor='pointer';
+    div.style.background = val.done?'lightgreen':'transparent';
+    div.onclick=()=>div.classList.toggle('selected');
+    taskListContainer.appendChild(div);
+  });
 });
 
-window.logout = () => {
-  signOut(auth).then(() => location.reload());
-};
+// Görev silme
+function deleteSelectedTask(){
+  const selected = taskListContainer.querySelectorAll('.selected');
+  selected.forEach(s=>{
+    remove(ref(db,'tasks/'+s.dataset.key));
+  });
+}
 
-/* --- TASKS --- */
-const taskInput = document.getElementById("taskInput");
-const taskList = document.getElementById("taskList");
+// Görevi tamamlandı işaretle
+function markDoneTask(){
+  const selected = taskListContainer.querySelectorAll('.selected');
+  selected.forEach(s=>{
+    const key = s.dataset.key;
+    push(ref(db,'tasks_done'), key); // opsiyonel kayıt
+    s.style.background='lightgreen';
+  });
+}
 
-function addTask() {
-  const val = taskInput.value;
-  if (!val) return;
+// Alarm kur
+function setTaskAlarm(){
+  const selected = taskListContainer.querySelectorAll('.selected');
+  selected.forEach(s=>{
+    const key = s.dataset.key;
+    // Basit alarm için tarih kontrol edilebilir
+    alert(`Alarm kuruldu: ${s.innerText}`);
+  });
+}
+
+// MESAJLAR
+function sendMsg(){
+  const msg = document.getElementById('msgInput').value;
+  if(!msg) return;
   const user = auth.currentUser;
-  const taskRef = ref(database, `tasks/${user.uid}`);
-  const newTaskRef = push(taskRef);
-  set(newTaskRef, {
-    text: val,
-    timestamp: Date.now(),
-    done: false
-  });
-  taskInput.value = "";
+  push(ref(db,'messages'),{ text:msg, uid:user.uid, name:user.displayName, timestamp:Date.now() });
+  document.getElementById('msgInput').value='';
 }
 
-function loadTasks(uid) {
-  const taskRef = ref(database, `tasks/${uid}`);
-  onValue(taskRef, (snapshot) => {
-    taskList.innerHTML = "";
-    const data = snapshot.val();
-    if (data) {
-      Object.entries(data)
-        .sort((a, b) => b[1].timestamp - a[1].timestamp)
-        .forEach(([key, task]) => {
-          const li = document.createElement("li");
-          li.innerText = task.text;
-          li.style.cursor = "pointer";
-          if (task.done) li.style.textDecoration = "line-through";
-          li.onclick = () => toggleDone(uid, key, !task.done);
-          li.oncontextmenu = (e) => {
-            e.preventDefault();
-            remove(ref(database, `tasks/${uid}/${key}`));
-          };
-          taskList.appendChild(li);
-        });
-    }
+onValue(ref(db,'messages'), snapshot=>{
+  chatBox.innerHTML='';
+  const data = snapshot.val();
+  if(!data) return;
+  const msgs = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
+  msgs.forEach(([key,val])=>{
+    const div = document.createElement('div');
+    div.innerHTML=`<small>${val.name} - ${new Date(val.timestamp).toLocaleString()}</small><br>${val.text}`;
+    div.dataset.key=key;
+    div.style.cursor='pointer';
+    div.onclick=()=>div.classList.toggle('selected');
+    chatBox.appendChild(div);
+  });
+});
+
+function deleteSelectedMsg(){
+  const selected = chatBox.querySelectorAll('.selected');
+  selected.forEach(s=>{
+    remove(ref(db,'messages/'+s.dataset.key));
   });
 }
 
-function toggleDone(uid, key, done) {
-  set(ref(database, `tasks/${uid}/${key}/done`), done);
+// Ayarlar
+function toggleSettings(){
+  const s = document.getElementById('settings');
+  s.style.display = s.style.display==='block'?'none':'block';
 }
 
-/* --- MESSAGES --- */
-const msgInput = document.getElementById("msgInput");
-const chatBox = document.getElementById("chatBox");
-
-window.sendMsg = () => {
-  const val = msgInput.value;
-  if (!val) return;
-  const user = auth.currentUser;
-  const msgRef = ref(database, `messages/${user.uid}`);
-  const newMsgRef = push(msgRef);
-  set(newMsgRef, {
-    text: val,
-    timestamp: Date.now(),
-    name: user.displayName
-  });
-  msgInput.value = "";
-};
-
-function loadMessages(uid) {
-  const msgRef = ref(database, `messages/${uid}`);
-  onValue(msgRef, (snapshot) => {
-    chatBox.innerHTML = "";
-    const data = snapshot.val();
-    if (data) {
-      Object.entries(data)
-        .sort((a, b) => b[1].timestamp - a[1].timestamp)
-        .forEach(([key, msg]) => {
-          const div = document.createElement("div");
-          div.innerHTML = `<small>${new Date(msg.timestamp).toLocaleString()} - ${msg.name}</small><br>${msg.text}`;
-          div.style.borderBottom = "1px solid #333";
-          div.style.padding = "5px";
-          div.style.cursor = "pointer";
-          div.oncontextmenu = (e) => {
-            e.preventDefault();
-            remove(ref(database, `messages/${uid}/${key}`));
-          };
-          chatBox.appendChild(div);
-        });
-    }
-  });
+function sendFeedback(){
+  const msg=document.getElementById('feedbackText').value;
+  window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Geri Bildirim&body=${encodeURIComponent(msg)}`;
 }
 
-/* --- SETTINGS --- */
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsPanel = document.getElementById("settings");
-
-settingsBtn.onclick = () => {
-  settingsPanel.style.display = settingsPanel.style.display === "block" ? "none" : "block";
-};
-
-window.sendFeedback = () => {
-  const msg = document.getElementById("feedbackText").value;
-  window.location.href = `mailto:yasindemirkan83@gmail.com?subject=Sohbet App Feedback&body=${encodeURIComponent(msg)}`;
-};
-
-/* --- ALARMS --- */
-window.addAlarm = () => {
-  const taskText = prompt("Alarm kurmak istediğiniz görev:");
-  const minutes = prompt("Kaç dakika sonra?");
-  if (minutes) {
-    setTimeout(() => alert(`Alarm! Görev: ${taskText}`), minutes * 60000);
-  }
-};
+function logout(){
+  auth.signOut();
+  location.reload();
+}

@@ -3,123 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet App</title>
-
-<!-- Font Awesome -->
+<title>Sohbet App - ANFA Güvenlik</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 /* GENEL */
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
-body,html{width:100%;height:100%;background:#000;color:#fff;overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 
 /* SPLASH */
-#splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;background:#000;}
-#splash video{width:100%;height:100%;object-fit:cover;}
+#splash{position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:100}
+#splash video{width:100%;height:100%;object-fit:cover}
 
 /* LOGIN */
-#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:99;
+display:flex;justify-content:center;align-items:center;flex-direction:column}
 #login img{width:120px;cursor:pointer;margin-top:20px}
 
 /* APP */
-#app{display:none;position:fixed;top:0;left:0;width:100%;height:100%;overflow:auto;}
-#bgVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
+#app{display:none;width:100%;height:100%;position:relative}
+#bgVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1}
 
 /* HEADER */
-#header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
-#settingsBtn{font-size:28px;cursor:pointer}
+#header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6)}
+#settingsBtn{font-size:24px;cursor:pointer}
 
-/* CARD */
-.card{margin:10px;background:rgba(0,0,0,0.6);border-radius:12px;padding:15px;}
-.card h3{margin-bottom:10px;}
+/* CARDS */
+.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7)}
+#taskList,#chatBox{max-height:200px;overflow-y:auto}
 
-/* GÖREV PANELI */
-#taskList{max-height:200px;overflow-y:auto;margin-bottom:5px;}
-.task-item{padding:6px;margin:5px 0;background:#111;border-radius:8px;display:flex;justify-content:space-between;align-items:center;}
-
-/* MESAJ PANELI */
-#chatBox{height:150px;overflow-y:auto;margin-bottom:5px;}
-.message-item{padding:6px;margin:5px 0;background:#111;border-radius:8px;display:flex;justify-content:space-between;align-items:center;}
-
-/* TAKVIM */
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px;}
-.day{background:#222;padding:10px;border-radius:8px;text-align:center;position:relative;}
-.today{outline:2px solid #38bdf8;box-shadow:0 0 8px #38bdf8;}
-.work-day{background:rgba(16,185,129,0.4);}
-.work-night{background:rgba(56,189,248,0.4);}
-.off{background:rgba(100,116,139,0.4);}
+/* BUTON İKONLARI */
+.icon-btn{background:none;border:none;color:white;font-size:18px;cursor:pointer;margin:0 5px}
+.task-actions,.msg-actions{display:flex;justify-content:flex-end;gap:5px;margin-top:5px}
 
 /* SETTINGS */
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);padding:20px;overflow:auto;}
-.settings-panel button{margin:5px 0;padding:10px;width:100%;border:none;border-radius:8px;background:#38bdf8;color:#000;font-weight:700;cursor:pointer;}
-.settings-panel textarea{width:100%;height:80px;padding:5px;border-radius:8px;border:none;margin-bottom:5px;}
+#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto;z-index:200}
+.settings-section{margin-bottom:15px}
+.settings-section button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:8px;background:#1abc9c;color:black;font-weight:700;cursor:pointer}
+
+/* TAKVİM */
+:root{
+--bg-primary:#0f172a;--bg-secondary:#1e293b;--bg-tertiary:#334155;
+--color-primary:#38bdf8;--color-success:#10b981;--color-warning:#fbbf24;--color-text:#e2e8f0
+}
+.calendar-container{background:var(--bg-secondary);padding:15px;border-radius:15px;margin:10px 0}
+.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.day{padding:8px;border-radius:8px;background:var(--bg-tertiary)}
+.work-day{background:rgba(16,185,129,.4)}
+.work-night{background:rgba(56,189,248,.4)}
+.off{background:rgba(100,116,139,.4)}
+.today{outline:2px solid #38bdf8;box-shadow:0 0 5px #38bdf8}
+.holiday{outline:2px solid #fbbf24}
+.summary{display:flex;justify-content:space-between;margin-top:10px}
+.summary-value{font-size:1.2rem;font-weight:800}
+.settings-btn{position:fixed;top:10px;right:10px;font-size:24px;cursor:pointer}
 </style>
 </head>
+
 <body>
 
 <!-- SPLASH -->
 <div id="splash">
-<video src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/acilis.mp4" autoplay muted></video>
+<video src="acilis.mp4" autoplay muted></video>
 </div>
 
 <!-- LOGIN -->
 <div id="login">
-<h2>Giriş Yap</h2>
-<img src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png" id="googleLogin">
+<img src="google-symbol.png" id="googleLogin" title="Gmail ile giriş">
 </div>
 
 <!-- APP -->
 <div id="app">
-<video id="bgVideo" src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/uygulamaici.mp4" autoplay muted loop></video>
+<video id="bgVideo" src="uygulamaici.mp4" autoplay muted loop></video>
 
 <div id="header">
 <div id="userName">Hoşgeldin</div>
 <div id="settingsBtn">⚙️</div>
 </div>
 
-<!-- GÖREV PANELI -->
+<!-- GÖREV PANELİ -->
 <div class="card">
 <h3>Görevler</h3>
-<input type="text" id="taskInput" placeholder="Görev başlığı">
-<input type="datetime-local" id="taskStart">
-<input type="datetime-local" id="taskEnd">
-<div style="display:flex;gap:5px;margin-top:5px;">
-<button onclick="addTask()">➕</button>
-<button onclick="deleteSelectedTask()">🗑️</button>
-<button onclick="markDoneTask()">✅</button>
-<button onclick="setAlarmTask()">⏰</button>
+<input id="taskInput" placeholder="Görev ekle">
+<div class="task-actions">
+<button class="icon-btn" onclick="addTask()"><i class="fas fa-plus"></i></button>
+<button class="icon-btn" onclick="deleteTask()"><i class="fas fa-trash"></i></button>
+<button class="icon-btn" onclick="markDone()"><i class="fas fa-check"></i></button>
+<button class="icon-btn" onclick="setAlarm()"><i class="fas fa-bell"></i></button>
 </div>
 <ul id="taskList"></ul>
 </div>
 
-<!-- MESAJ PANELI -->
+<!-- MESAJ PANELİ -->
 <div class="card">
 <h3>Mesajlar</h3>
 <div id="chatBox"></div>
-<input type="text" id="msgInput" placeholder="Mesaj yaz">
-<div style="display:flex;gap:5px;margin-top:5px;">
-<button onclick="sendMsg()">📩</button>
-<button onclick="deleteSelectedMsg()">🗑️</button>
-<button onclick="addImg()">🖼️</button>
+<input id="msgInput" placeholder="Mesaj yaz">
+<div class="msg-actions">
+<button class="icon-btn" onclick="sendMsg()"><i class="fab fa-whatsapp"></i></button>
+<button class="icon-btn" onclick="deleteSelectedMsg()"><i class="fas fa-trash"></i></button>
 </div>
 </div>
 
-<!-- TAKVIM PANELI -->
-<div class="card">
-<h3>Takvim</h3>
-<div id="calendar"></div>
+<!-- TAKVİM -->
+<div class="card calendar-container">
+<div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+<button onclick="prevMonth()">◀</button>
+<span id="monthTitle"></span>
+<button onclick="nextMonth()">▶</button>
+</div>
+<div class="weekdays">
+<div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
+</div>
+<div class="calendar-grid" id="calendar"></div>
+<div class="summary">
+<div><div class="summary-value" id="dayCount">0</div>Gündüz</div>
+<div><div class="summary-value" id="nightCount">0</div>Gece</div>
+<div><div class="summary-value" id="offCount">0</div>İzin</div>
+</div>
 </div>
 
 <!-- SETTINGS -->
 <div id="settings">
-<h2>Ayarlar</h2>
-<div class="settings-panel">
-<button onclick="toggleSettings()">⬅ Geri</button>
-<button onclick="sendFeedback()">📩 Görüş & Öneri</button>
-<button onclick="logout()">🚪 Çıkış</button>
-<hr>
-<b>Admin Panel</b>
-<div id="adminPanel"></div>
+<div class="settings-section"><b>Admin Panel</b></div>
+<div class="settings-section"><button onclick="logout()">Çıkış</button></div>
+<div class="settings-section"><b>Geri Bildirim</b><br>
+<textarea id="feedbackText" placeholder="Görüş ve önerileriniz..."></textarea>
+<button onclick="sendFeedback()">Gönder</button>
+<small>Mail: yasindemirkan83@gmail.com</small>
 </div>
 </div>
 
@@ -127,7 +138,7 @@ body,html{width:100%;height:100%;background:#000;color:#fff;overflow:hidden}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
@@ -139,13 +150,10 @@ messagingSenderId: "210449601127",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const appFirebase = initializeApp(firebaseConfig);
+const auth = getAuth(appFirebase);
 const provider = new GoogleAuthProvider();
-const db = getDatabase(app);
-
-let currentUser = null;
-const ADMIN="yasindemirkan83@gmail.com";
+const db = getDatabase(appFirebase);
 
 /* SPLASH -> LOGIN */
 setTimeout(()=>{
@@ -158,102 +166,141 @@ document.getElementById("googleLogin").onclick=()=>{
 signInWithPopup(auth,provider);
 };
 
-/* AUTH STATE */
+/* AUTH */
 onAuthStateChanged(auth,(user)=>{
 if(user){
-currentUser=user;
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
 document.getElementById("userName").innerText=user.displayName;
-if(user.email===ADMIN) document.getElementById("adminPanel").innerHTML="<b>Admin yetkili</b>";
 loadTasks();
 loadMessages();
 }
 });
 
 /* LOGOUT */
-function logout(){signOut(auth); location.reload();}
+function logout(){
+signOut(auth);
+location.reload();
+}
 
-/* SETTINGS */
-const settingsBtn=document.getElementById("settingsBtn");
-settingsBtn.onclick=()=>{toggleSettings();}
-function toggleSettings(){let s=document.getElementById("settings"); s.style.display=s.style.display==="block"?"none":"block"}
-
-/* TASK FUNCTIONS */
+/* TASKS */
 function addTask(){
-const title=document.getElementById("taskInput").value;
-const start=document.getElementById("taskStart").value;
-const end=document.getElementById("taskEnd").value;
-if(!title) return;
-const tRef=push(ref(db,"tasks"));
-set(tRef,{uid:currentUser.uid,title,start,end,done:false});
-document.getElementById("taskInput").value="";
-document.getElementById("taskStart").value="";
-document.getElementById("taskEnd").value="";
+const val=taskInput.value.trim();
+if(!val)return;
+const userId=auth.currentUser.uid;
+const tRef=push(ref(db,'tasks/'+userId));
+set(tRef,{title:val,done:false});
+taskInput.value="";
+}
+function deleteTask(){
+const userId=auth.currentUser.uid;
+onValue(ref(db,'tasks/'+userId),snapshot=>{
+snapshot.forEach(child=>{
+remove(ref(db,'tasks/'+userId+'/'+child.key));
+});
+});
+}
+function markDone(){
+const userId=auth.currentUser.uid;
+onValue(ref(db,'tasks/'+userId),snapshot=>{
+snapshot.forEach(child=>{
+set(ref(db,'tasks/'+userId+'/'+child.key+'/done'),true);
+});
+});
+}
+function setAlarm(){
+const t=prompt("Dakika gir:");
+if(t) setTimeout(()=>alert("Alarm!"),t*60000);
 }
 function loadTasks(){
-const tRef=ref(db,"tasks");
-onValue(tRef,(snap)=>{
-const ul=document.getElementById("taskList");
-ul.innerHTML="";
-snap.forEach(child=>{
-const li=document.createElement("li");
-li.className="task-item";
-li.innerText=child.val().title + " ("+child.val().start+"→"+child.val().end+")";
-if(child.val().done) li.style.textDecoration="line-through";
-li.onclick=()=>{li.dataset.key=child.key; li.classList.toggle("selected");};
-ul.prepend(li);
+const userId=auth.currentUser.uid;
+const list=document.getElementById('taskList');
+list.innerHTML='';
+onValue(ref(db,'tasks/'+userId),snapshot=>{
+list.innerHTML='';
+snapshot.forEach(child=>{
+const li=document.createElement('li');
+li.innerText=child.val().title;
+if(child.val().done) li.style.textDecoration='line-through';
+list.prepend(li);
 });
 });
 }
-function deleteSelectedTask(){document.querySelectorAll(".task-item.selected").forEach(li=>{remove(ref(db,"tasks/"+li.dataset.key))});}
-function markDoneTask(){document.querySelectorAll(".task-item.selected").forEach(li=>{update(ref(db,"tasks/"+li.dataset.key),{done:true})});}
-function setAlarmTask(){let t=prompt("Dakika gir:"); if(t) setTimeout(()=>alert("Alarm!"),t*60000);}
 
-/* MESSAGE FUNCTIONS */
+/* MESSAGES */
 function sendMsg(){
-const msg=document.getElementById("msgInput").value; if(!msg) return;
-push(ref(db,"messages"),{uid:currentUser.uid,name:currentUser.displayName,text:msg});
-document.getElementById("msgInput").value="";
+const val=msgInput.value.trim();
+if(!val)return;
+const userId=auth.currentUser.uid;
+const mRef=push(ref(db,'messages/'+userId));
+set(mRef,{msg:val});
+msgInput.value="";
+}
+function deleteSelectedMsg(){
+const userId=auth.currentUser.uid;
+onValue(ref(db,'messages/'+userId),snapshot=>{
+snapshot.forEach(child=>{
+remove(ref(db,'messages/'+userId+'/'+child.key));
+});
+});
 }
 function loadMessages(){
-const mRef=ref(db,"messages");
-onValue(mRef,(snap)=>{
-const box=document.getElementById("chatBox"); box.innerHTML="";
-snap.forEach(child=>{
-const div=document.createElement("div");
-div.className="message-item"; div.innerText=child.val().name+": "+child.val().text;
+const userId=auth.currentUser.uid;
+const box=document.getElementById('chatBox');
+box.innerHTML='';
+onValue(ref(db,'messages/'+userId),snapshot=>{
+box.innerHTML='';
+snapshot.forEach(child=>{
+const div=document.createElement('div');
+div.innerText=child.val().msg;
 box.appendChild(div);
 });
 });
 }
-function deleteSelectedMsg(){document.querySelectorAll(".message-item.selected").forEach(div=>{remove(ref(db,"messages/"+div.dataset.key))});}
-function addImg(){alert("Resim ekleme modu");}
+
+/* SETTINGS */
+document.getElementById('settingsBtn').onclick=()=>{
+const s=document.getElementById('settings');
+s.style.display=(s.style.display==='block')?'none':'block';
+};
 
 /* FEEDBACK */
 function sendFeedback(){
-const msg=document.getElementById("feedbackText").value;
-if(!msg) return;
+const msg=document.getElementById('feedbackText').value;
 window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Geri Bildirim&body=${encodeURIComponent(msg)}`;
 }
-</script>
 
-<!-- TAKVIM -->
-<script>
-/* TAKVIM */
-const today=new Date(2026,0,31); // 31.01.2026 Cumartesi
-const calendar=document.getElementById("calendar");
-function drawCalendar(){
-calendar.innerHTML="";
-const firstDay=(new Date(today.getFullYear(),today.getMonth(),1).getDay()+6)%7;
-const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
-for(let i=0;i<firstDay;i++){let empty=document.createElement("div");calendar.appendChild(empty);}
-for(let d=1;d<=daysInMonth;d++){
-const div=document.createElement("div"); div.className="day"; div.innerText=d;
-if(d===31) div.classList.add("today");
-calendar.appendChild(div);
-}}
-drawCalendar();
+/* TAKVİM - VARDİYA */
+const BASLANGIC=new Date(Date.UTC(2026,0,1)),secilen=1,currentDate=new Date(2026,0,31);
+const tatiller={"1-1":"🎉 Yılbaşı","4-23":"🇹🇷 23 Nisan","5-1":"👷 1 Mayıs","5-19":"🇹🇷 19 Mayıs","7-15":"🇹🇷 15 Temmuz","8-30":"🇹🇷 30 Ağustos","10-29":"🇹🇷 29 Ekim"};
+let currentMonth=currentDate.getMonth(),currentYear=currentDate.getFullYear();
+function vardiya(t){const gunFarki=Math.floor((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())-Date.UTC(2026,0,1))/86400000)%4;const duzen=[['gece','izin','izin','gunduz'],['izin','izin','gunduz','gece'],['izin','gunduz','gece','izin'],['gunduz','gece','izin','izin']];return duzen[(gunFarki+4)%4]}
+function draw(){
+const cal=document.getElementById('calendar');
+cal.innerHTML='';
+let g=0,n=0,o=0;
+const firstDay=(new Date(currentYear,currentMonth,1).getDay()+6)%7;
+const days=new Date(currentYear,currentMonth+1,0).getDate();
+document.getElementById('monthTitle').innerText=new Date(currentYear,currentMonth).toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+for(let i=0;i<firstDay;i++){cal.appendChild(document.createElement('div'))}
+for(let i=1;i<=days;i++){
+const date=new Date(currentYear,currentMonth,i);
+const v=vardiya(date)[secilen-1];
+const d=document.createElement('div');
+d.className='day '+(v==='gunduz'?'work-day':v==='gece'?'work-night':'off');
+if(date.toDateString()===currentDate.toDateString())d.classList.add('today');
+if(tatiller[(currentMonth+1)+'-'+i])d.classList.add('holiday');
+d.innerText=i;
+cal.appendChild(d);
+v==='gunduz'?g++:v==='gece'?n++:o++;
+}
+document.getElementById('dayCount').innerText=g;
+document.getElementById('nightCount').innerText=n;
+document.getElementById('offCount').innerText=o;
+}
+function nextMonth(){currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}draw()}
+function prevMonth(){currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}draw()}
+draw();
 </script>
 
 </body>

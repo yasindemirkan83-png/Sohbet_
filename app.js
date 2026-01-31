@@ -30,41 +30,36 @@ let currentUser = null;
 setTimeout(()=>{splash.style.display="none"; login.style.display="flex"},5000);
 
 // Login
-document.getElementById("googleLogin").onclick=()=>{
-signInWithPopup(auth,provider);
-};
+document.getElementById("googleLogin").onclick=()=>signInWithPopup(auth,provider);
 
-// Auth state
+// Auth
 onAuthStateChanged(auth,(user)=>{
 if(user){
-currentUser = user;
+currentUser=user;
 login.style.display="none";
 appDiv.style.display="block";
 userName.innerText=user.displayName;
 
 // Load tasks
-const taskRef = ref(db, 'users/'+user.uid+'/tasks');
+const taskRef = ref(db,'tasks');
 onChildAdded(taskRef,(data)=>{
-const li = document.createElement("li");
-li.innerText = data.val();
+const li=document.createElement("li");
+li.innerText=data.val().text;
 document.getElementById("taskList").appendChild(li);
 });
 
 // Load messages
-const msgRef = ref(db,'users/'+user.uid+'/messages');
+const msgRef = ref(db,'messages');
 onChildAdded(msgRef,(data)=>{
-const div = document.createElement("div");
-div.innerText = data.val();
+const div=document.createElement("div");
+div.innerText=data.val().text;
 document.getElementById("chatBox").appendChild(div);
 });
 }
 });
 
 // Logout
-window.logout=()=>{
-signOut(auth);
-location.reload();
-}
+window.logout=()=>{signOut(auth); location.reload()}
 
 // Settings
 settingsBtn.onclick=()=>{appDiv.style.display="none"; settings.style.display="block"}
@@ -73,30 +68,27 @@ window.backHome=()=>{settings.style.display="none"; appDiv.style.display="block"
 // Task
 window.addTask=()=>{
 let val=document.getElementById("taskInput").value;
-if(!val || !currentUser) return;
-const taskRef = ref(db,'users/'+currentUser.uid+'/tasks');
-push(taskRef,val);
+if(!val) return;
+push(ref(db,'tasks'),{text:val});
 document.getElementById("taskInput").value="";
 }
 
 // Message
 window.sendMsg=()=>{
 let val=document.getElementById("msgInput").value;
-if(!val || !currentUser) return;
-const msgRef = ref(db,'users/'+currentUser.uid+'/messages');
-push(msgRef,val);
+if(!val) return;
+push(ref(db,'messages'),{text:val});
 document.getElementById("msgInput").value="";
 }
 
 // Alarm
 window.addAlarm=()=>{
 let t=prompt("Dakika gir:");
-if(t){
-setTimeout(()=>alert("Alarm!"),t*60000);
+if(t) setTimeout(()=>alert("Alarm!"),t*60000);
 }
 
 // Feedback
 window.sendFeedback=()=>{
-const msg = prompt("Mesajınızı yazın:");
+const msg=prompt("Mesajınızı yazın:");
 if(msg) window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Görüş & Öneri&body=${encodeURIComponent(msg)}`;
 }

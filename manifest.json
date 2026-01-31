@@ -1,0 +1,21 @@
+{
+"name": "Sohbet App",
+"short_name": "Sohbet",
+"start_url": "index.html",
+"display": "standalone",
+"background_color": "#000000",
+"description": "PWA Sohbet ve Görev Uygulaması",
+"theme_color": "#1abc9c",
+"icons": [
+  {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
+}

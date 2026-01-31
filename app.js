@@ -1,153 +1,135 @@
 // app.js
-import { app, firebaseConfig } from './firebaseConfig.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { auth, provider, database } from './firebaseConfig.js';
+import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-const db = getDatabase(app);
+/* --- LOGIN --- */
+const googleLoginBtn = document.getElementById("googleLogin");
 
-/* SPLASH -> LOGIN */
-setTimeout(()=>{
-  document.getElementById("splash").style.display="none";
-  document.getElementById("login").style.display="flex";
-},5000);
-
-/* LOGIN */
-document.getElementById("googleLogin").onclick=()=>{
-  signInWithPopup(auth,provider);
+googleLoginBtn.onclick = () => {
+  signInWithPopup(auth, provider);
 };
 
-/* AUTH */
-onAuthStateChanged(auth,(user)=>{
-  if(user){
-    document.getElementById("login").style.display="none";
-    document.getElementById("app").style.display="flex";
-    document.getElementById("userName").innerText=user.displayName;
-    loadTasks();
-    loadMessages();
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    document.getElementById("userName").innerText = user.displayName;
+    loadTasks(user.uid);
+    loadMessages(user.uid);
   }
 });
 
-/* LOGOUT */
-window.logout=()=>{
-  signOut(auth);
-  location.reload();
+window.logout = () => {
+  signOut(auth).then(() => location.reload());
+};
+
+/* --- TASKS --- */
+const taskInput = document.getElementById("taskInput");
+const taskList = document.getElementById("taskList");
+
+function addTask() {
+  const val = taskInput.value;
+  if (!val) return;
+  const user = auth.currentUser;
+  const taskRef = ref(database, `tasks/${user.uid}`);
+  const newTaskRef = push(taskRef);
+  set(newTaskRef, {
+    text: val,
+    timestamp: Date.now(),
+    done: false
+  });
+  taskInput.value = "";
 }
 
-/* SETTINGS */
+function loadTasks(uid) {
+  const taskRef = ref(database, `tasks/${uid}`);
+  onValue(taskRef, (snapshot) => {
+    taskList.innerHTML = "";
+    const data = snapshot.val();
+    if (data) {
+      Object.entries(data)
+        .sort((a, b) => b[1].timestamp - a[1].timestamp)
+        .forEach(([key, task]) => {
+          const li = document.createElement("li");
+          li.innerText = task.text;
+          li.style.cursor = "pointer";
+          if (task.done) li.style.textDecoration = "line-through";
+          li.onclick = () => toggleDone(uid, key, !task.done);
+          li.oncontextmenu = (e) => {
+            e.preventDefault();
+            remove(ref(database, `tasks/${uid}/${key}`));
+          };
+          taskList.appendChild(li);
+        });
+    }
+  });
+}
+
+function toggleDone(uid, key, done) {
+  set(ref(database, `tasks/${uid}/${key}/done`), done);
+}
+
+/* --- MESSAGES --- */
+const msgInput = document.getElementById("msgInput");
+const chatBox = document.getElementById("chatBox");
+
+window.sendMsg = () => {
+  const val = msgInput.value;
+  if (!val) return;
+  const user = auth.currentUser;
+  const msgRef = ref(database, `messages/${user.uid}`);
+  const newMsgRef = push(msgRef);
+  set(newMsgRef, {
+    text: val,
+    timestamp: Date.now(),
+    name: user.displayName
+  });
+  msgInput.value = "";
+};
+
+function loadMessages(uid) {
+  const msgRef = ref(database, `messages/${uid}`);
+  onValue(msgRef, (snapshot) => {
+    chatBox.innerHTML = "";
+    const data = snapshot.val();
+    if (data) {
+      Object.entries(data)
+        .sort((a, b) => b[1].timestamp - a[1].timestamp)
+        .forEach(([key, msg]) => {
+          const div = document.createElement("div");
+          div.innerHTML = `<small>${new Date(msg.timestamp).toLocaleString()} - ${msg.name}</small><br>${msg.text}`;
+          div.style.borderBottom = "1px solid #333";
+          div.style.padding = "5px";
+          div.style.cursor = "pointer";
+          div.oncontextmenu = (e) => {
+            e.preventDefault();
+            remove(ref(database, `messages/${uid}/${key}`));
+          };
+          chatBox.appendChild(div);
+        });
+    }
+  });
+}
+
+/* --- SETTINGS --- */
 const settingsBtn = document.getElementById("settingsBtn");
-settingsBtn.onclick = ()=>{
-  document.getElementById("app").style.display="none";
-  document.getElementById("settings").style.display="block";
-}
-window.backHome=()=>{
-  document.getElementById("settings").style.display="none";
-  document.getElementById("app").style.display="flex";
-}
-window.sendFeedback=()=>{
-  const msg=document.createElement('textarea').value;
-  window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Görüş&body=${encodeURIComponent(msg)}`;
-}
+const settingsPanel = document.getElementById("settings");
 
-/* TASKS */
-const taskListEl = document.getElementById("taskList");
-const taskInputEl = document.getElementById("taskInput");
-const taskStartEl = document.getElementById("taskStart");
-const taskEndEl = document.getElementById("taskEnd");
+settingsBtn.onclick = () => {
+  settingsPanel.style.display = settingsPanel.style.display === "block" ? "none" : "block";
+};
 
-window.addTask = ()=>{
-  const val = taskInputEl.value.trim();
-  const start = taskStartEl.value;
-  const end = taskEndEl.value;
-  if(!val || !start || !end) return alert("Tüm alanları doldur!");
-  const userId = auth.currentUser.uid;
-  push(ref(db,'tasks/'+userId),{
-    text: val,
-    start,
-    end,
-    done:false,
-    timestamp: Date.now()
-  });
-  taskInputEl.value='';
-  taskStartEl.value='';
-  taskEndEl.value='';
-}
+window.sendFeedback = () => {
+  const msg = document.getElementById("feedbackText").value;
+  window.location.href = `mailto:yasindemirkan83@gmail.com?subject=Sohbet App Feedback&body=${encodeURIComponent(msg)}`;
+};
 
-/* Load tasks */
-function loadTasks(){
-  const userId = auth.currentUser.uid;
-  const tasksRef = ref(db,'tasks/'+userId);
-  onValue(tasksRef,(snapshot)=>{
-    taskListEl.innerHTML='';
-    const data = snapshot.val();
-    if(!data) return;
-    const arr = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
-    arr.forEach(([key,val])=>{
-      const li = document.createElement('div');
-      li.className='list-item'+(val.done?' done':'');
-      li.innerHTML=`<span>${val.text} <br><small>${val.start} → ${val.end}</small></span>
-        <div>
-          <button onclick="markDone('${key}')"><i class="fas fa-check"></i></button>
-          <button onclick="deleteTask('${key}')"><i class="fas fa-trash"></i></button>
-          <button onclick="setAlarm('${val.start}','${val.text}')"><i class="fas fa-bell"></i></button>
-        </div>`;
-      taskListEl.appendChild(li);
-    });
-  });
-}
-
-window.markDone=(key)=>{
-  const userId = auth.currentUser.uid;
-  update(ref(db,'tasks/'+userId+'/'+key),{done:true});
-}
-
-window.deleteTask=(key)=>{
-  const userId = auth.currentUser.uid;
-  remove(ref(db,'tasks/'+userId+'/'+key));
-}
-
-/* Alarm */
-window.setAlarm=(time,text)=>{
-  const t = new Date(time).getTime() - Date.now();
-  if(t>0) setTimeout(()=>alert("Alarm: "+text),t);
-}
-
-/* CHAT */
-const chatBoxEl = document.getElementById("chatBox");
-const msgInputEl = document.getElementById("msgInput");
-
-window.sendMsg=()=>{
-  const val = msgInputEl.value.trim();
-  if(!val) return;
-  const userId = auth.currentUser.uid;
-  push(ref(db,'messages'),{
-    user: auth.currentUser.displayName,
-    text: val,
-    timestamp: Date.now()
-  });
-  msgInputEl.value='';
-}
-
-function loadMessages(){
-  const messagesRef = ref(db,'messages');
-  onValue(messagesRef,(snapshot)=>{
-    chatBoxEl.innerHTML='';
-    const data = snapshot.val();
-    if(!data) return;
-    const arr = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
-    arr.forEach(([key,val])=>{
-      const li = document.createElement('div');
-      li.className='list-item';
-      li.innerHTML=`<span><b>${val.user}</b> <small>${new Date(val.timestamp).toLocaleString()}</small><br>${val.text}</span>
-        <div>
-          <button onclick="deleteMsg('${key}')"><i class="fas fa-trash"></i></button>
-        </div>`;
-      chatBoxEl.appendChild(li);
-    });
-  });
-}
-
-window.deleteMsg=(key)=>{
-  remove(ref(db,'messages/'+key));
-}
+/* --- ALARMS --- */
+window.addAlarm = () => {
+  const taskText = prompt("Alarm kurmak istediğiniz görev:");
+  const minutes = prompt("Kaç dakika sonra?");
+  if (minutes) {
+    setTimeout(() => alert(`Alarm! Görev: ${taskText}`), minutes * 60000);
+  }
+};

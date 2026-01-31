@@ -3,95 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet PWA</title>
+<title>Sohbet & Görev Uygulaması</title>
+
+<!-- CSS -->
+<link rel="stylesheet" href="style.css">
+
+<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
-body, html{width:100%;height:100%;overflow:hidden;background:black;color:white;}
-#splash, #login, #app{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-#splash video, #bgVideo{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:-1;}
-#login img{width:120px;cursor:pointer;margin-top:20px;}
-.card{background:rgba(0,0,0,0.7);border-radius:12px;padding:15px;margin:10px;overflow:auto;}
-#tasks,#chatBox{max-height:200px;overflow-y:auto;}
-.task-buttons, .msg-buttons{display:flex;gap:10px;margin-top:5px;}
-.task-buttons button, .msg-buttons button{flex:1;padding:5px;border:none;border-radius:6px;cursor:pointer;background:#1abc9c;color:black;font-weight:bold;}
-#settingsBtn{position:fixed;top:10px;right:10px;font-size:24px;cursor:pointer;color:#38bdf8;}
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto;}
-#settings h2{margin-bottom:15px;}
-.user-item{background:#1e293b;padding:8px;border-radius:8px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
-</style>
+<meta name="theme-color" content="#000000">
+
 </head>
 <body>
 
-<!-- SPLASH -->
+<!-- Açılış Splash Video -->
 <div id="splash">
-<video src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/a%C3%A7%C4%B1l%C4%B1%C5%9F%20.mp4" autoplay muted></video>
+  <video src="acilis.mp4" autoplay muted></video>
 </div>
 
-<!-- LOGIN -->
+<!-- Login -->
 <div id="login">
-<h2>Giriş Yap</h2>
-<img src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png" id="googleLogin">
+  <h2>Google ile Giriş</h2>
+  <img src="google-symbol.png" id="googleLogin">
 </div>
 
-<!-- APP -->
+<!-- Ana Uygulama -->
 <div id="app">
-<video id="bgVideo" src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/uygulamaici.mp4" autoplay muted loop></video>
+  <video autoplay muted loop src="uygulamaici.mp4" class="bgVideo"></video>
 
-<div id="settingsBtn"><i class="fas fa-cog"></i></div>
+  <div id="header">
+    <div id="userName">Hoşgeldin</div>
+    <div id="settingsBtn">⚙️</div>
+  </div>
 
-<div class="card">
-<h3>Görevler</h3>
-<div id="tasks"></div>
-<input type="text" id="taskInput" placeholder="Görev yaz">
-<input type="datetime-local" id="taskStart">
-<input type="datetime-local" id="taskEnd">
-<div class="task-buttons">
-<button onclick="addTask()">Ekle</button>
-<button onclick="deleteTask()">Sil</button>
-<button onclick="completeTask()">Tamamlandı</button>
-<button onclick="setAlarm()">Alarm Kur</button>
-</div>
+  <div id="mainPanels">
+    <!-- Görev Kartı -->
+    <div class="card" id="tasksCard">
+      <h3>Görevler</h3>
+      <div class="task-inputs">
+        <input type="text" id="taskInput" placeholder="Görev adı">
+        <input type="datetime-local" id="taskStart">
+        <input type="datetime-local" id="taskEnd">
+      </div>
+      <div class="icon-buttons">
+        <button onclick="addTask()">Ekle</button>
+        <button onclick="deleteTask()">Sil</button>
+        <button onclick="completeTask()">Tamamlandı</button>
+        <button onclick="setAlarm()">Alarm Kur</button>
+      </div>
+      <div id="tasks"></div>
+    </div>
+
+    <!-- Mesaj Kartı -->
+    <div class="card" id="chatCard">
+      <h3>Mesajlar</h3>
+      <div id="chatBox"></div>
+      <div class="task-inputs">
+        <input type="text" id="msgInput" placeholder="Mesaj yaz">
+      </div>
+      <div class="icon-buttons">
+        <button onclick="sendMsg()">Gönder</button>
+        <button onclick="deleteMsg()">Sil</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="card">
-<h3>Mesajlar</h3>
-<div id="chatBox"></div>
-<input type="text" id="msgInput" placeholder="Mesaj yaz">
-<div class="msg-buttons">
-<button onclick="sendMsg()">Gönder</button>
-<button onclick="deleteMsg()">Sil</button>
-</div>
-</div>
-
-</div>
-
-<!-- SETTINGS PANEL -->
+<!-- Ayarlar ve Admin Paneli -->
 <div id="settings">
-<h2>Ayarlar</h2>
-<button onclick="backHome()">⬅ Geri</button>
-<h3>Yönetici Paneli</h3>
-<div id="usersList"></div>
-<h3>Görüş & Öneri</h3>
-<textarea id="feedbackText" placeholder="Mesajınızı yazın..."></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-<br><br>
-<button onclick="logout()">Çıkış</button>
+  <h2>Ayarlar / Yönetici Paneli</h2>
+  <button onclick="backHome()">⬅ Geri</button>
+
+  <h3>Kullanıcılar</h3>
+  <div id="usersList"></div>
+
+  <h3>Görüş & Öneri</h3>
+  <textarea id="feedbackText" placeholder="Mesajınızı yazın..."></textarea>
+  <button onclick="sendFeedback()">Gönder</button>
+
+  <button onclick="logout()">Çıkış</button>
 </div>
 
-<script type="module" src="firebaseConfig.js"></script>
-<script type="module" src="app.js"></script>
-<script>
-/* SPLASH */
-setTimeout(()=>{
-  document.getElementById("splash").style.display="none";
-  document.getElementById("login").style.display="flex";
-},5000);
-document.getElementById("settingsBtn").onclick=()=>{document.getElementById("settings").style.display="block";document.getElementById("app").style.display="none";}
-function backHome(){document.getElementById("settings").style.display="none";document.getElementById("app").style.display="block";}
-</script>
+<!-- Firebase Config -->
+<script src="firebaseConfig.js"></script>
+
+<!-- Ana JS -->
+<script src="app.js"></script>
 
 </body>
 </html>

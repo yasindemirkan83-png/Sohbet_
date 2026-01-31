@@ -1,12 +1,11 @@
 {
-  "name": "Sohbet App",
-  "short_name": "Sohbet",
-  "description": "Görev ve mesaj yönetimi uygulaması",
-  "start_url": "./index.html",
+  "name": "ANFA Vardiya & Sohbet",
+  "short_name": "ANFA App",
+  "description": "Görev, mesaj ve admin kontrol uygulaması",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#1e293b",
-  "orientation": "portrait-primary",
+  "background_color": "#000000",
+  "theme_color": "#1abc9c",
   "icons": [
     {
       "src": "icon-192.png",

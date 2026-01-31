@@ -1,13 +1,21 @@
 {
-"name":"Sohbet App",
-"short_name":"Sohbet",
-"start_url":"index.html",
-"display":"standalone",
-"background_color":"#000000",
-"description":"PWA Sohbet ve Görev Uygulaması",
-"theme_color":"#1abc9c",
-"icons":[
-  {"src":"https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/icon-192.png","sizes":"192x192","type":"image/png"},
-  {"src":"https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/icon-512.png","sizes":"512x512","type":"image/png"}
-]
+  "name": "Sohbet & Görev PWA",
+  "short_name": "SohbetPWA",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#1abc9c",
+  "description": "Görev ve mesaj yönetimi uygulaması",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }

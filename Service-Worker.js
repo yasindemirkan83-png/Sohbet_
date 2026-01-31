@@ -1,26 +1,24 @@
-const CACHE_NAME='anfa-pwa-cache-v1';
-const urlsToCache=[
-  '/',
-  '/index.html',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/açılış .mp4',
-  '/uygulamaici.mp4',
-  '/google-symbol.png',
-  'https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js',
-  'https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js'
+const cacheName = 'sohbet-pwa-v1';
+const assets = [
+  './',
+  './index.html',
+  './app.js',
+  './firebaseConfig.js',
+  './açılış .mp4',
+  './uygulamaici.mp4',
+  './icon-192.png',
+  './icon-512.png',
+  './google-symbol.png'
 ];
 
-self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(urlsToCache)));
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(cacheName).then(cache => cache.addAll(assets))
+  );
 });
 
-self.addEventListener('fetch',event=>{
-  event.respondWith(caches.match(event.request).then(resp=>resp || fetch(event.request)));
-});
-
-self.addEventListener('activate',event=>{
-  const whitelist=[CACHE_NAME];
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>!whitelist.includes(k)?caches.delete(k):null))));
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(response => response || fetch(e.request))
+  );
 });

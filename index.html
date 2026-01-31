@@ -3,88 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet & Görev</title>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+<title>Sohbet App</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial;}
-body,html{width:100%;height:100%;background:#000;color:#fff;overflow:hidden;display:flex;flex-direction:column;}
-#splash{position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:10;}
-#splash video{width:100%;height:100%;object-fit:cover;}
-#login{display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;background:black;z-index:9;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+body,html{width:100%;height:100%;overflow:hidden;background:black;color:white;}
+#splash, #login, #app{position:fixed;top:0;left:0;width:100%;height:100%;}
+#splash video,#bgVideo{width:100%;height:100%;object-fit:cover;}
+#login{display:none;flex-direction:column;align-items:center;justify-content:center;}
 #login img{width:120px;cursor:pointer;margin-top:20px;}
-#app{display:none;flex:1;flex-direction:column;position:relative;}
-#bgVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
-#header{display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
+#app{display:none;}
+#header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
 #settingsBtn{font-size:24px;cursor:pointer;}
-.container{display:flex;flex:1;overflow:hidden;padding:10px;gap:10px;}
-.card{background:rgba(0,0,0,0.7);border-radius:12px;padding:10px;flex:1;display:flex;flex-direction:column;max-height:100%;}
-.card h3{margin-bottom:10px;}
-.list{flex:1;overflow-y:auto;margin-bottom:10px;}
-.list-item{padding:8px;margin-bottom:5px;border-radius:8px;background:#111;display:flex;justify-content:space-between;align-items:center;}
-.list-item.done{background:green;}
-.list-item button{margin-left:5px;background:none;border:none;color:white;cursor:pointer;}
-.input-group{display:flex;gap:5px;margin-top:5px;}
-.input-group input{flex:1;padding:5px;border-radius:5px;border:none;}
-.input-group button{padding:5px 8px;border-radius:5px;border:none;background:#1abc9c;color:black;font-weight:bold;cursor:pointer;}
+.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);overflow:auto;}
+.card h3{margin-bottom:5px;}
+#taskList,#chatBox{max-height:200px;overflow:auto;}
+input,button{padding:8px;margin:5px;border-radius:6px;border:none;}
+#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto;}
 </style>
 </head>
-
 <body>
 
-<!-- SPLASH -->
 <div id="splash">
-<video src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/a%C3%A7%C4%B1l%C4%B1%C5%9F%20.mp4" autoplay muted></video>
+<video src="açılış .mp4" autoplay muted></video>
 </div>
 
-<!-- LOGIN -->
 <div id="login">
 <h2>Giriş Yap</h2>
-<img src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png" id="googleLogin">
+<img src="google-symbol.png" id="googleLogin">
 </div>
 
-<!-- APP -->
 <div id="app">
-<video id="bgVideo" src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/uygulamaici.mp4" autoplay muted loop></video>
+<video id="bgVideo" src="uygulamaici.mp4" autoplay muted loop></video>
+
 <div id="header">
 <div id="userName">Hoşgeldin</div>
 <div id="settingsBtn">⚙️</div>
 </div>
 
-<div class="container">
-  <!-- Görevler -->
-  <div class="card">
-    <h3>Görevler</h3>
-    <div class="list" id="taskList"></div>
-    <div class="input-group">
-      <input type="text" id="taskInput" placeholder="Görev yaz">
-      <input type="datetime-local" id="taskStart">
-      <input type="datetime-local" id="taskEnd">
-      <button onclick="addTask()">Ekle</button>
-    </div>
-  </div>
-
-  <!-- Mesajlar -->
-  <div class="card">
-    <h3>Mesajlar</h3>
-    <div class="list" id="chatBox"></div>
-    <div class="input-group">
-      <input type="text" id="msgInput" placeholder="Mesaj yaz">
-      <button onclick="sendMsg()">Gönder</button>
-    </div>
-  </div>
-</div>
+<div class="card">
+<h3>Görevler</h3>
+<input id="taskInput" placeholder="Görev ekle">
+<button onclick="addTask()">Ekle</button>
+<ul id="taskList"></ul>
+<button onclick="addAlarm()">Alarm Kur</button>
 </div>
 
-<!-- SETTINGS -->
-<div id="settings" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;z-index:20;">
+<div class="card">
+<h3>Mesajlar</h3>
+<div id="chatBox"></div>
+<input id="msgInput" placeholder="Mesaj yaz">
+<button onclick="sendMsg()">Gönder</button>
+</div>
+
+<div id="settings">
 <h2>Ayarlar</h2>
-<button onclick="backHome()">⬅ Geri</button>
-<button onclick="sendFeedback()">Görüş & Öneri</button>
+<textarea id="feedbackText" placeholder="Görüş ve önerileriniz..."></textarea>
+<button onclick="sendFeedback()">Gönder</button>
 <button onclick="logout()">Çıkış</button>
 </div>
 
 <script type="module" src="app.js"></script>
+<script>
+setTimeout(()=>{document.getElementById("splash").style.display="none";document.getElementById("login").style.display="flex";},5000);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js');}
+</script>
 </body>
 </html>

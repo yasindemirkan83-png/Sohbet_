@@ -84,7 +84,6 @@ body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 
 <script type="module" src="app.js"></script>
 <script>
-// Register Service Worker
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('service-worker.js').then(()=>console.log('SW Registered'));
 }

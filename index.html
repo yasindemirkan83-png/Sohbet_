@@ -26,14 +26,22 @@ body,html{margin:0;padding:0;width:100%;height:100%;font-family:Arial;background
 #settingsBtn{font-size:24px;cursor:pointer}
 
 /* CARDS */
-.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);overflow:auto;max-height:300px}
+.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);overflow:auto;color:white}
+#taskCard{max-height:350px}
+
+/* TASK BUTTONS */
+.task-buttons{display:flex;justify-content:space-around;margin-top:10px}
+.task-buttons button{flex:1;margin:0 5px;font-size:18px;padding:10px;border:none;border-radius:8px;cursor:pointer;background:#1abc9c;color:black}
 
 /* SETTINGS */
 #settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto}
 .btn{padding:10px;margin:5px 0;background:#1abc9c;border:none;border-radius:8px;width:100%}
 
-/* TASK & CHAT BUTTONS */
-button{cursor:pointer}
+/* TASK & CHAT */
+ul#taskList{list-style:none;padding:0;margin:0;max-height:200px;overflow-y:auto}
+#chatBox{height:150px;overflow:auto;border:1px solid #555;padding:5px;border-radius:8px;margin-bottom:5px}
+#chatBox div{padding:3px;margin:2px 0;border-radius:5px}
+#chatBox div.selected{outline:2px solid #1abc9c;cursor:pointer}
 </style>
 </head>
 <body>
@@ -58,21 +66,23 @@ button{cursor:pointer}
 <div id="settingsBtn">⚙️</div>
 </div>
 
-<div class="card">
+<div class="card" id="taskCard">
 <h3>Görevler</h3>
 <input id="taskInput" placeholder="Görev ekle">
 <input type="datetime-local" id="startTime">
 <input type="datetime-local" id="endTime">
+<div class="task-buttons">
 <button title="Ekle" onclick="addTask()"><i class="fa fa-plus"></i></button>
 <button title="Sil" onclick="deleteTask()"><i class="fa fa-trash"></i></button>
 <button title="Düzenle" onclick="editTask()"><i class="fa fa-edit"></i></button>
 <button title="Alarm" onclick="addAlarm()"><i class="fa fa-bell"></i></button>
+</div>
 <ul id="taskList"></ul>
 </div>
 
 <div class="card">
 <h3>Mesajlar</h3>
-<div id="chatBox" style="height:150px;overflow:auto"></div>
+<div id="chatBox"></div>
 <input id="msgInput" placeholder="Mesaj yaz">
 <button onclick="sendMsg()"><i class="fa fa-paper-plane"></i></button>
 <button onclick="sendImage()"><i class="fa fa-image"></i></button>
@@ -95,22 +105,25 @@ button{cursor:pointer}
 </div>
 
 <!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
+<script>
+// Firebase
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
 authDomain: "studio-3972799448-609d1.firebaseapp.com",
+databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
 projectId: "studio-3972799448-609d1",
 storageBucket: "studio-3972799448-609d1.firebasestorage.app",
 messagingSenderId: "210449601127",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.database();
+let currentUser=null;
 
 // Splash -> Login
 setTimeout(()=>{
@@ -120,28 +133,115 @@ document.getElementById("login").style.display="flex";
 
 // Login
 document.getElementById("googleLogin").onclick=()=>{
-signInWithPopup(auth,provider);
+const provider=new firebase.auth.GoogleAuthProvider();
+auth.signInWithPopup(provider);
 };
 
 // Auth state
-onAuthStateChanged(auth,(user)=>{
+auth.onAuthStateChanged(user=>{
 if(user){
+currentUser=user;
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
 document.getElementById("bgVideo").style.display="block";
-document.getElementById("userName").innerText=user.displayName||user.email.split("@")[0];
+document.getElementById("userName").innerText=user.displayName || user.email.split("@")[0];
+loadTasks();
+loadMessages();
 }
 });
 
 // Logout
-window.logout=()=>{
-signOut(auth);
-location.reload();
-}
-</script>
+function logout(){auth.signOut(); location.reload();}
 
-<script>
 // TASKS
 function addTask(){
-let val=taskInput.value;
-let start=start
+let val=taskInput.value,start=startTime.value,end=endTime.value;
+if(!val) return;
+let task={text:val,start,end};
+db.ref('tasks/'+currentUser.uid).push(task);
+taskInput.value=""; startTime.value=""; endTime.value="";
+}
+function deleteTask(){
+let selected=taskList.querySelector('li.selected');
+if(selected){
+let key=selected.dataset.key;
+db.ref('tasks/'+currentUser.uid+'/'+key).remove();
+}
+}
+function editTask(){
+let selected=taskList.querySelector('li.selected');
+if(selected){
+let newVal=prompt("Yeni görev:",selected.innerText);
+if(newVal){
+let key=selected.dataset.key;
+db.ref('tasks/'+currentUser.uid+'/'+key).update({text:newVal});
+}
+}
+}
+function loadTasks(){
+taskList.innerHTML="";
+db.ref('tasks/'+currentUser.uid).on('value',snap=>{
+taskList.innerHTML="";
+snap.forEach(child=>{
+let li=document.createElement('li');
+li.innerText=`${child.val().text} [${child.val().start} → ${child.val().end}]`;
+li.dataset.key=child.key;
+li.onclick=()=>li.classList.toggle('selected');
+taskList.appendChild(li);
+});
+});
+}
+
+// CHAT
+function sendMsg(){
+let val=msgInput.value; if(!val) return;
+let msg={text:val,time:Date.now()};
+db.ref('messages/'+currentUser.uid).push(msg);
+msgInput.value="";
+}
+function sendImage(){
+let val=prompt("Resim URL gir:");
+if(val) db.ref('messages/'+currentUser.uid).push({img:val,time:Date.now()});
+}
+function deleteSelectedMsg(){
+let selected=chatBox.querySelector('div.selected');
+if(selected){
+let key=selected.dataset.key;
+db.ref('messages/'+currentUser.uid+'/'+key).remove();
+}
+}
+function loadMessages(){
+chatBox.innerHTML="";
+db.ref('messages/'+currentUser.uid).on('value',snap=>{
+chatBox.innerHTML="";
+snap.forEach(child=>{
+let div=document.createElement('div');
+if(child.val().img){
+div.innerHTML=`🖼 <img src="${child.val().img}" style="max-width:100%">`;
+}else{
+div.innerText=`👤 ${child.val().text}`;
+}
+div.dataset.key=child.key;
+div.onclick=()=>div.classList.toggle('selected');
+chatBox.appendChild(div);
+});
+chatBox.scrollTop=chatBox.scrollHeight;
+});
+}
+
+// SETTINGS
+settingsBtn.onclick=()=>{
+app.style.display="none";
+settings.style.display="block";
+}
+function backHome(){settings.style.display="none"; app.style.display="block";}
+
+// ALARM
+function addAlarm(){let t=prompt("Dakika gir:"); if(t) setTimeout(()=>alert("Alarm!"),t*60000);}
+
+// MAIL
+function sendMail(){location.href="mailto:yasindemirkan83@gmail.com?subject=Görüş&body=Mesajım:";}
+</script>
+
+</body>
+</html>

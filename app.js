@@ -68,7 +68,7 @@ location.reload();
 
 // Settings
 settingsBtn.onclick=()=>{appDiv.style.display="none"; settings.style.display="block"}
-function backHome(){settings.style.display="none"; appDiv.style.display="block"}
+window.backHome=()=>{settings.style.display="none"; appDiv.style.display="block"}
 
 // Task
 window.addTask=()=>{

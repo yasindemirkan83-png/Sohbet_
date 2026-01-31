@@ -2,7 +2,7 @@ import { db, auth, provider } from "./firebaseConfig.js";
 import { ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
 import { signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js";
 
-// Açılış videosu 5 sn sonra login
+// Açılış videosu 5 sn
 window.addEventListener('load',()=>{
   setTimeout(()=>{
     document.getElementById('splash').style.display='none';
@@ -10,12 +10,14 @@ window.addEventListener('load',()=>{
   },5000);
 });
 
+// Gmail login
 window.login = function(){
   signInWithPopup(auth,provider)
   .then(()=>{document.getElementById('login').style.display='none'; document.getElementById('app').style.display='flex';})
   .catch(console.error);
 };
 
+// Logout
 window.logout = function(){
   signOut(auth).then(()=>{
     document.getElementById('app').style.display='none';
@@ -23,6 +25,7 @@ window.logout = function(){
   });
 };
 
+// Auth state
 onAuthStateChanged(auth,user=>{
   if(user){
     document.getElementById('userName').innerText='Hoşgeldin, '+user.displayName;
@@ -31,7 +34,7 @@ onAuthStateChanged(auth,user=>{
   }
 });
 
-// Görev Fonksiyonları
+// Görev fonksiyonları
 window.addTask = async function(){
   const tInput = document.getElementById('taskInput');
   const tStart = document.getElementById('taskStart');
@@ -68,7 +71,7 @@ window.loadTasks = function(){
   });
 };
 
-// Mesaj Fonksiyonları
+// Mesaj fonksiyonları
 window.addMsg = async function(){
   const mInput = document.getElementById('msgInput');
   const user = auth.currentUser;
@@ -97,7 +100,7 @@ window.loadMsgs = function(){
   });
 };
 
-// Ayarlar Paneli
+// Ayarlar paneli
 window.openSettings = ()=>{document.getElementById('settings').style.display='block'};
 window.closeSettings = ()=>{document.getElementById('settings').style.display='none'};
 window.sendFeedback = ()=>{
@@ -106,7 +109,7 @@ window.sendFeedback = ()=>{
   document.getElementById('feedbackText').value='';
 };
 
-// Alarm, Sil, Tamamlandı butonları placeholder
+// Alarm, Sil, Tamamlandı placeholder
 window.deleteTask=()=>alert("Görev silme eklenecek");
 window.completeTask=()=>alert("Görev tamamlandı eklenecek");
 window.setAlarm=()=>alert("Alarm kurulacak");

@@ -3,98 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet & Takvim App</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<title>Sohbet App</title>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
-body,html{width:100%;height:100%;background:black;color:white;overflow:hidden}
-video{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:-1;}
-#splash{position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:100;}
-#splash video{object-fit:cover;width:100%;height:100%;}
-#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:101;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;flex-direction:column;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
+body,html{width:100%;height:100%;overflow:hidden;background:black;color:white;}
+
+/* SPLASH */
+#splash{position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:10;}
+#splash video{width:100%;height:100%;object-fit:cover;}
+
+/* LOGIN */
+#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 #login img{width:120px;cursor:pointer;margin-top:20px;}
-#app{display:none;width:100%;height:100%;position:relative;z-index:1;overflow:auto;}
-.header{display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
-#settingsBtn{font-size:28px;cursor:pointer;}
-.card{background:rgba(0,0,0,0.7);border-radius:12px;margin:10px;padding:15px;}
+
+/* APP */
+#app{display:none;position:fixed;top:0;left:0;width:100%;height:100%;}
+#bgVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
+
+/* HEADER */
+#header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
+#settingsBtn{font-size:24px;cursor:pointer}
+
+/* CARDS */
+.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);overflow:auto;}
 .card h3{margin-bottom:10px;}
-#taskList,#chatBox{max-height:200px;overflow-y:auto;padding:5px;border-radius:10px;background:rgba(255,255,255,0.05);}
-.taskItem,.msgItem{padding:6px;margin:5px 0;border-radius:8px;}
-.taskItem.done{text-decoration:line-through;background:rgba(16,185,129,0.4);}
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);padding:20px;overflow:auto;z-index:200;}
-.settings-panel textarea{width:100%;height:80px;border-radius:10px;padding:6px;margin-bottom:10px;}
-.settings-panel button{width:100%;padding:8px;border:none;border-radius:8px;background:#38bdf8;color:black;font-weight:700;margin-bottom:8px;}
-.actionButtons{display:flex;justify-content:space-around;margin-top:10px;}
-.actionButtons button{flex:1;margin:0 3px;}
-input,textarea,button{font-family:'Segoe UI',sans-serif;}
+
+/* GÖREVLER */
+#taskList li{padding:5px;margin-bottom:5px;background:rgba(255,255,255,0.1);border-radius:5px;}
+
+/* MESAJLAR */
+#chatBox div{margin-bottom:5px;padding:5px;border-radius:5px;background:rgba(255,255,255,0.1);}
+#chatBox{height:150px;overflow-y:auto;}
+
+/* TAKVİM */
+#calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.day{padding:8px;background:rgba(255,255,255,0.1);border-radius:5px;text-align:center;}
+.today{outline:2px solid #38bdf8;box-shadow:0 0 10px #38bdf8;}
+.work-day{background:rgba(16,185,129,0.4);}
+.work-night{background:rgba(56,189,248,0.4);}
+.off{background:rgba(100,116,139,0.4);}
+.holiday{outline:2px solid #fbbf24;}
+
+/* SETTINGS */
+#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto;z-index:20;}
+.btn{padding:10px;margin:5px 0;background:#1abc9c;border:none;border-radius:8px;width:100%;cursor:pointer;}
 </style>
 </head>
+
 <body>
 
 <!-- SPLASH -->
-<div id="splash"><video src="acilis.mp4" autoplay muted></video></div>
+<div id="splash">
+<video src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/acilis.mp4" autoplay muted></video>
+</div>
 
 <!-- LOGIN -->
 <div id="login">
-<h2>Giriş yapmak için tıkla</h2>
-<img src="google-symbol.png" id="googleLogin" title="Google ile giriş">
+<h2>Giriş Yap</h2>
+<img src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png" id="googleLogin">
 </div>
 
 <!-- APP -->
 <div id="app">
-<video src="uygulamaici.mp4" autoplay muted loop></video>
-<div class="header">
+<video id="bgVideo" src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/uygulamaici.mp4" autoplay muted loop></video>
+
+<div id="header">
 <div id="userName">Hoşgeldin</div>
 <div id="settingsBtn">⚙️</div>
 </div>
 
-<!-- Görevler -->
 <div class="card">
 <h3>Görevler</h3>
-<input id="taskInput" placeholder="Görev başlığı">
-<input type="datetime-local" id="taskStart">
-<input type="datetime-local" id="taskEnd">
-<div class="actionButtons">
-<button onclick="addTask()"><i class="fas fa-plus"></i></button>
-<button onclick="deleteTask()"><i class="fas fa-trash"></i></button>
-<button onclick="markDone()"><i class="fas fa-check"></i></button>
-<button onclick="setAlarm()"><i class="fas fa-bell"></i></button>
-</div>
 <ul id="taskList"></ul>
+<input id="taskInput" placeholder="Görev ekle">
+<input type="datetime-local" id="taskDate">
+<button onclick="addTask()">Ekle</button>
 </div>
 
-<!-- Mesajlar -->
 <div class="card">
 <h3>Mesajlar</h3>
 <div id="chatBox"></div>
 <input id="msgInput" placeholder="Mesaj yaz">
-<div class="actionButtons">
-<button onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
-<button onclick="deleteSelectedMsg()"><i class="fas fa-trash"></i></button>
-<button onclick="addImage()"><i class="fas fa-image"></i></button>
-</div>
+<input type="file" id="msgFile">
+<button onclick="sendMsg()">Gönder</button>
 </div>
 
-<!-- Takvim -->
-<div class="card" id="takvimCard">
+<div class="card">
 <h3>Takvim</h3>
 <div id="calendar"></div>
-<div class="summary">
-<div>Gündüz: <span id="dayCount">0</span></div>
-<div>Gece: <span id="nightCount">0</span></div>
-<div>İzin: <span id="offCount">0</span></div>
 </div>
 </div>
 
-<!-- Ayarlar -->
-<div id="settings" class="settings-panel">
+<!-- SETTINGS -->
+<div id="settings">
 <h2>Ayarlar</h2>
-<button onclick="logout()">Çıkış</button>
-<b>📩 Geri Bildirim</b>
-<textarea id="feedbackText" placeholder="Mesajınız..."></textarea>
-<button onclick="sendFeedback()">Gönder</button>
-<b>👑 Admin Panel</b>
-<div id="adminPanel"></div>
+<button class="btn" onclick="backHome()">⬅ Geri</button>
+<button class="btn" onclick="addAlarm()">Alarm ekle</button>
+<button class="btn" onclick="sendFeedback()">Görüş & Öneri</button>
+<button class="btn" onclick="logout()">Çıkış</button>
+<h3>Admin Paneli</h3>
+<div id="userList"></div>
 </div>
 
 <!-- FIREBASE -->
@@ -112,125 +121,176 @@ storageBucket: "studio-3972799448-609d1.firebasestorage.app",
 messagingSenderId: "210449601127",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
-const ADMIN="yasindemirkan83@gmail.com";
-
-let userEmail="", userName="";
+const db = getDatabase(app);
 
 /* SPLASH -> LOGIN */
-setTimeout(()=>{document.getElementById("splash").style.display="none";document.getElementById("login").style.display="flex";},5000);
+setTimeout(()=>{
+document.getElementById("splash").style.display="none";
+document.getElementById("login").style.display="flex";
+},5000);
 
 /* LOGIN */
-document.getElementById("googleLogin").onclick=()=>signInWithPopup(auth,provider);
+document.getElementById("googleLogin").onclick=()=>{
+signInWithPopup(auth,provider);
+};
 
 /* AUTH */
 onAuthStateChanged(auth,(user)=>{
 if(user){
-userEmail=user.email;
-userName=user.displayName||user.email.split('@')[0];
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
-document.getElementById("userName").innerText=userName;
-if(userEmail===ADMIN){
-document.getElementById("adminPanel").innerHTML="<i>Admin yetkileri aktif</i>";
-}
-loadTasks();
-loadMessages();
+document.getElementById("userName").innerText=user.displayName;
+
+// Kullanıcı listesi admin paneli için
+const usersRef = ref(db, "users");
+set(ref(db,"users/"+user.uid),{name:user.displayName,email:user.email});
+onValue(usersRef,(snapshot)=>{
+let list="";snapshot.forEach(u=>{list+=u.val().name+"<br>";});
+document.getElementById("userList").innerHTML=list;
+});
+
+// Görevleri dinle
+const tasksRef = ref(db, "tasks/"+user.uid);
+onValue(tasksRef,(snap)=>{
+taskList.innerHTML="";
+snap.forEach(t=>{
+let li=document.createElement("li");
+li.innerText=t.val().text+" ("+t.val().date+")";
+taskList.prepend(li);
+});
+});
+
+// Mesajları dinle
+const chatRef = ref(db,"chat");
+onValue(chatRef,(snap)=>{
+chatBox.innerHTML="";
+snap.forEach(c=>{
+let div=document.createElement("div");
+div.innerText=c.val().user+": "+c.val().text;
+chatBox.appendChild(div);
+});
+});
+
 }
 });
 
 /* LOGOUT */
-function logout(){signOut(auth);location.reload();}
+window.logout=()=>{
+signOut(auth);
+location.reload();
+}
+</script>
 
-/* Görevler */
+<script>
+/* GÖREV EKLE */
 function addTask(){
-let val=document.getElementById("taskInput").value;
-let start=document.getElementById("taskStart").value;
-let end=document.getElementById("taskEnd").value;
-if(!val)return;
-let taskRef=push(ref(db,"tasks"));
-set(taskRef,{user:userName,title:val,start,end,done:false});
-document.getElementById("taskInput").value="";
-}
-function loadTasks(){
-const list=document.getElementById("taskList");
-onValue(ref(db,"tasks"),snapshot=>{
-list.innerHTML="";
-snapshot.forEach(s=>{
-let t=s.val();
-let li=document.createElement("li");
-li.className="taskItem";
-li.innerText=`${t.title} [${t.start||''} - ${t.end||''}]`;
-if(t.done)li.classList.add("done");
-list.appendChild(li);
-li.onclick=()=>{s.ref.update({done:!t.done})};
-});
-});
-}
-function deleteTask(){
-const list=document.getElementById("taskList");
-list.innerHTML="";
-set(ref(db,"tasks"),null);
-}
-function markDone(){
-/* İşaretleme click ile zaten yapılıyor */
-}
-/* Alarm */
-function setAlarm(){
-let t=prompt("Dakika gir:");
-if(t) setTimeout(()=>alert("Alarm!"),t*60000);
+let val=taskInput.value;
+let date=taskDate.value;
+if(!val) return;
+const userId = firebase.auth().currentUser.uid;
+const taskRef = firebase.database().ref("tasks/"+userId);
+taskRef.push({text:val,date:date});
+taskInput.value="";
+taskDate.value="";
 }
 
-/* Mesaj */
+/* MESAJ GÖNDER */
 function sendMsg(){
-let val=document.getElementById("msgInput").value;
-if(!val)return;
-push(ref(db,"messages"),{user:userName,text:val});
-document.getElementById("msgInput").value="";
+let val=msgInput.value;
+if(!val) return;
+const file = msgFile.files[0];
+const userName = firebase.auth().currentUser.displayName;
+const chatRef = firebase.database().ref("chat");
+if(file){
+let reader = new FileReader();
+reader.onload = function(e){
+chatRef.push({user:userName,text:"[RESİM] "+file.name});
+};
+reader.readAsDataURL(file);
+}else{
+chatRef.push({user:userName,text:val});
 }
-function loadMessages(){
-const box=document.getElementById("chatBox");
-onValue(ref(db,"messages"),snapshot=>{
-box.innerHTML="";
-snapshot.forEach(s=>{
-let m=s.val();
-let div=document.createElement("div");
-div.className="msgItem";
-div.innerText=`${m.user}: ${m.text}`;
-box.appendChild(div);
-});
-});
+msgInput.value="";
+msgFile.value="";
 }
-function deleteSelectedMsg(){
-set(ref(db,"messages"),null);
-}
-function addImage(){alert("Resim ekleme opsiyonu yakında!");}
 
-/* Takvim (31 Ocak 2026 Cumartesi) */
+/* SETTINGS */
+settingsBtn.onclick=()=>{
+app.style.display="none";
+settings.style.display="block";
+}
+function backHome(){
+settings.style.display="none";
+app.style.display="block";
+}
+
+/* ALARM */
+function addAlarm(){
+let t=prompt("Dakika gir:");
+if(t){setTimeout(()=>alert("Alarm!"),t*60000);}
+}
+
+/* GÖRÜŞ & ÖNERİ */
+function sendFeedback(){
+const msg=document.getElementById('feedbackText').value;
+window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Geri Bildirim&body=${encodeURIComponent(msg)}`;
+}
+</script>
+
+<script>
+/* TAKVİM 4 VARDİYA + ÖZEL GÜNLER */
+const today = new Date(2026,0,31); // 31 Ocak 2026 Cumartesi
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth();
+
+const calendar = document.getElementById("calendar");
+const tatiller={
+"1-1":"🎉 Yılbaşı",
+"4-23":"🇹🇷 23 Nisan Ulusal Egemenlik ve Çocuk Bayramı",
+"5-1":"👷 1 Mayıs Emek ve Dayanışma Günü",
+"5-19":"🇹🇷 19 Mayıs Atatürk'ü Anma",
+"7-15":"🇹🇷 15 Temmuz Demokrasi ve Milli Birlik",
+"8-30":"🇹🇷 30 Ağustos Zafer Bayramı",
+"10-29":"🇹🇷 29 Ekim Cumhuriyet Bayramı"
+};
+
+function vardiya(t){
+const gunFarki=Math.floor((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())-Date.UTC(2026,0,1))/86400000)%4;
+const duzen=[
+['gece','izin','izin','gunduz'],
+['izin','izin','gunduz','gece'],
+['izin','gunduz','gece','izin'],
+['gunduz','gece','izin','izin']
+];
+return duzen[(gunFarki+4)%4];
+}
+
 function drawCalendar(){
-const calendar=document.getElementById("calendar");
-calendar.innerHTML="";
-let daysInMonth=31; // Ocak
-for(let i=1;i<=daysInMonth;i++){
-let d=document.createElement("div");
-d.className="day";
-if(i===31)d.style.border="2px solid #38bdf8"; // Bugün Cumartesi
+calendar.innerHTML='';
+const firstDay=(new Date(currentYear,currentMonth,1).getDay()+6)%7;
+const days=new Date(currentYear,currentMonth+1,0).getDate();
+for(let i=0;i<firstDay;i++){calendar.appendChild(document.createElement('div'));}
+for(let i=1;i<=days;i++){
+const date=new Date(currentYear,currentMonth,i);
+const d=document.createElement('div');
+d.className='day';
+const v=vardiya(date)[0];
+if(v==='gunduz') d.classList.add('work-day');
+else if(v==='gece') d.classList.add('work-night');
+else d.classList.add('off');
+if(date.toDateString()===today.toDateString()) d.classList.add('today');
+let key=(currentMonth+1)+'-'+i;
+if(tatiller[key]) d.classList.add('holiday');
 d.innerText=i;
 calendar.appendChild(d);
 }
 }
 drawCalendar();
-
-/* Ayarlar */
-document.getElementById("settingsBtn").onclick=()=>{document.getElementById("settings").style.display="block";}
-function sendFeedback(){
-let msg=document.getElementById("feedbackText").value;
-window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Geri Bildirim&body=${encodeURIComponent(msg)}`;
-}
-
 </script>
+
 </body>
 </html>

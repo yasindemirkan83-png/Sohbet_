@@ -1,4 +1,3 @@
-// Firebase Config ve Başlatma
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
 import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js";

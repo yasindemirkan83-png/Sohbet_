@@ -1,6 +1,7 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
-import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js";
+// Firebase config senin verdiğin bilgilerle
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
@@ -12,7 +13,7 @@ const firebaseConfig = {
   appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
 
-export const app = initializeApp(firebaseConfig);
-export const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getDatabase(app);
 export const provider = new GoogleAuthProvider();

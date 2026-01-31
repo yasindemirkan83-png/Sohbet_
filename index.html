@@ -4,44 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sohbet App</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-*{box-sizing:border-box}
-body,html{margin:0;padding:0;width:100%;height:100%;font-family:Arial;background:black;color:white;overflow:hidden}
-
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
+html,body{width:100%;height:100%;background:black;color:white;overflow:hidden;}
 /* SPLASH */
-#splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10}
-#splash video{width:100%;height:100%;object-fit:cover}
-
+#splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;background:black;display:flex;justify-content:center;align-items:center;}
+#splash video{width:100%;height:100%;object-fit:cover;}
 /* LOGIN */
-#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:9;display:flex;align-items:center;justify-content:center;flex-direction:column}
-#login img{width:120px;cursor:pointer;margin-top:20px}
-
+#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9;background:black;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#login img{width:120px;cursor:pointer;margin-top:20px;}
 /* APP */
-#app{display:none;position:fixed;top:0;left:0;width:100%;height:100%}
-#bgVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1}
-
-/* HEADER */
-#header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6)}
-#settingsBtn{font-size:24px;cursor:pointer}
-
+#app{display:none;width:100%;height:100%;position:fixed;top:0;left:0;}
+#bgVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
+#header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
+#settingsBtn{font-size:28px;cursor:pointer;}
 /* CARDS */
-.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);overflow:auto;color:white}
-#taskCard{max-height:350px}
-
-/* TASK BUTTONS */
-.task-buttons{display:flex;justify-content:space-around;margin-top:10px}
-.task-buttons button{flex:1;margin:0 5px;font-size:18px;padding:10px;border:none;border-radius:8px;cursor:pointer;background:#1abc9c;color:black}
-
+.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);overflow:auto;}
+#taskList,#chatBox{max-height:200px;overflow-y:auto;margin-top:10px;}
+.task-icons{display:flex;justify-content:space-around;margin-top:10px;}
+.task-icons button, .chat-icons button{flex:1;margin:0 2px;padding:8px;border:none;border-radius:6px;background:#1abc9c;color:black;cursor:pointer;}
+.task-icons button:hover, .chat-icons button:hover{background:#16a085;}
+.chat-icons{display:flex;justify-content:space-around;margin-top:5px;}
 /* SETTINGS */
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto}
-.btn{padding:10px;margin:5px 0;background:#1abc9c;border:none;border-radius:8px;width:100%}
-
-/* TASK & CHAT */
-ul#taskList{list-style:none;padding:0;margin:0;max-height:200px;overflow-y:auto}
-#chatBox{height:150px;overflow:auto;border:1px solid #555;padding:5px;border-radius:8px;margin-bottom:5px}
-#chatBox div{padding:3px;margin:2px 0;border-radius:5px}
-#chatBox div.selected{outline:2px solid #1abc9c;cursor:pointer}
+#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto;}
+.btn{padding:10px;margin:5px 0;background:#1abc9c;border:none;border-radius:8px;width:100%;cursor:pointer;}
+.btn:hover{background:#16a085;}
 </style>
 </head>
 <body>
@@ -59,40 +46,43 @@ ul#taskList{list-style:none;padding:0;margin:0;max-height:200px;overflow-y:auto}
 
 <!-- APP -->
 <div id="app">
-<video id="bgVideo" src="bg.mp4" autoplay muted loop style="display:none"></video>
-
+<video id="bgVideo" src="bg.mp4" autoplay muted loop></video>
 <div id="header">
 <div id="userName">Hoşgeldin</div>
 <div id="settingsBtn">⚙️</div>
 </div>
 
-<div class="card" id="taskCard">
+<!-- Görevler -->
+<div class="card">
 <h3>Görevler</h3>
 <input id="taskInput" placeholder="Görev ekle">
-<input type="datetime-local" id="startTime">
-<input type="datetime-local" id="endTime">
-<div class="task-buttons">
-<button title="Ekle" onclick="addTask()"><i class="fa fa-plus"></i></button>
-<button title="Sil" onclick="deleteTask()"><i class="fa fa-trash"></i></button>
-<button title="Düzenle" onclick="editTask()"><i class="fa fa-edit"></i></button>
-<button title="Alarm" onclick="addAlarm()"><i class="fa fa-bell"></i></button>
+<div class="task-icons">
+<button onclick="addTask()">➕ Ekle</button>
+<button onclick="deleteTask()">🗑️ Sil</button>
+<button onclick="editTask()">✏️ Düzenle</button>
+<button onclick="setAlarm()">⏰ Alarm</button>
 </div>
 <ul id="taskList"></ul>
 </div>
 
+<!-- Mesajlar -->
 <div class="card">
 <h3>Mesajlar</h3>
 <div id="chatBox"></div>
 <input id="msgInput" placeholder="Mesaj yaz">
-<button onclick="sendMsg()"><i class="fa fa-paper-plane"></i></button>
-<button onclick="sendImage()"><i class="fa fa-image"></i></button>
-<button onclick="deleteSelectedMsg()"><i class="fa fa-trash"></i></button>
+<div class="chat-icons">
+<button onclick="sendMsg()">📩 Gönder</button>
+<button onclick="deleteMsg()">🗑️ Sil</button>
+<button onclick="sendImage()">🖼️ Resim</button>
+</div>
 </div>
 
+<!-- Takvim -->
 <div class="card">
 <h3>Takvim</h3>
 <div id="calendar"></div>
 </div>
+
 </div>
 
 <!-- SETTINGS -->
@@ -102,15 +92,15 @@ ul#taskList{list-style:none;padding:0;margin:0;max-height:200px;overflow-y:auto}
 <button class="btn" onclick="addAlarm()">Alarm ekle</button>
 <button class="btn" onclick="sendMail()">Görüş & Öneri</button>
 <button class="btn" onclick="logout()">Çıkış</button>
+<div id="adminPanel"></div>
 </div>
 
 <!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<script>
-// Firebase
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
 authDomain: "studio-3972799448-609d1.firebaseapp.com",
@@ -120,126 +110,100 @@ storageBucket: "studio-3972799448-609d1.firebasestorage.app",
 messagingSenderId: "210449601127",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.database();
-let currentUser=null;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+const db = getDatabase(app);
 
-// Splash -> Login
+/* SPLASH -> LOGIN */
 setTimeout(()=>{
 document.getElementById("splash").style.display="none";
 document.getElementById("login").style.display="flex";
 },3000);
 
-// Login
+/* LOGIN */
 document.getElementById("googleLogin").onclick=()=>{
-const provider=new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider);
+signInWithPopup(auth,provider);
 };
 
-// Auth state
-auth.onAuthStateChanged(user=>{
+/* AUTH */
+onAuthStateChanged(auth,(user)=>{
 if(user){
-currentUser=user;
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
-document.getElementById("bgVideo").style.display="block";
-document.getElementById("userName").innerText=user.displayName || user.email.split("@")[0];
+document.getElementById("userName").innerText=user.displayName || user.email.split('@')[0];
+document.getElementById("adminPanel").innerText = (user.email=="yasindemirkan83@gmail.com") ? "ADMIN PANEL" : "";
 loadTasks();
 loadMessages();
 }
 });
 
-// Logout
-function logout(){auth.signOut(); location.reload();}
+/* LOGOUT */
+window.logout=()=>{
+signOut(auth);
+location.reload();
+}
 
-// TASKS
+/* TASK */
 function addTask(){
-let val=taskInput.value,start=startTime.value,end=endTime.value;
-if(!val) return;
-let task={text:val,start,end};
-db.ref('tasks/'+currentUser.uid).push(task);
-taskInput.value=""; startTime.value=""; endTime.value="";
+let val=taskInput.value;
+if(!val)return;
+let newTask=push(ref(db,"tasks"),{task:val,user:auth.currentUser.email});
+taskInput.value="";
 }
 function deleteTask(){
-let selected=taskList.querySelector('li.selected');
-if(selected){
-let key=selected.dataset.key;
-db.ref('tasks/'+currentUser.uid+'/'+key).remove();
-}
+taskList.innerHTML="";
 }
 function editTask(){
-let selected=taskList.querySelector('li.selected');
-if(selected){
-let newVal=prompt("Yeni görev:",selected.innerText);
-if(newVal){
-let key=selected.dataset.key;
-db.ref('tasks/'+currentUser.uid+'/'+key).update({text:newVal});
+alert("Görev düzenleme hazır değil");
 }
+
+/* CHAT */
+function sendMsg(){
+let val=msgInput.value;
+if(!val)return;
+push(ref(db,"messages"),{msg:val,user:auth.currentUser.email});
+msgInput.value="";
 }
-}
+function deleteMsg(){chatBox.innerHTML="";}
+function sendImage(){alert("Resim gönderme hazır değil");}
+
+/* LOAD */
 function loadTasks(){
+const tRef=ref(db,"tasks");
+onValue(tRef,(snap)=>{
 taskList.innerHTML="";
-db.ref('tasks/'+currentUser.uid).on('value',snap=>{
-taskList.innerHTML="";
-snap.forEach(child=>{
-let li=document.createElement('li');
-li.innerText=`${child.val().text} [${child.val().start} → ${child.val().end}]`;
-li.dataset.key=child.key;
-li.onclick=()=>li.classList.toggle('selected');
+snap.forEach(s=>{
+let li=document.createElement("li");
+li.innerText=s.val().task + " (" + s.val().user + ")";
 taskList.appendChild(li);
 });
 });
 }
-
-// CHAT
-function sendMsg(){
-let val=msgInput.value; if(!val) return;
-let msg={text:val,time:Date.now()};
-db.ref('messages/'+currentUser.uid).push(msg);
-msgInput.value="";
-}
-function sendImage(){
-let val=prompt("Resim URL gir:");
-if(val) db.ref('messages/'+currentUser.uid).push({img:val,time:Date.now()});
-}
-function deleteSelectedMsg(){
-let selected=chatBox.querySelector('div.selected');
-if(selected){
-let key=selected.dataset.key;
-db.ref('messages/'+currentUser.uid+'/'+key).remove();
-}
-}
 function loadMessages(){
+const mRef=ref(db,"messages");
+onValue(mRef,(snap)=>{
 chatBox.innerHTML="";
-db.ref('messages/'+currentUser.uid).on('value',snap=>{
-chatBox.innerHTML="";
-snap.forEach(child=>{
-let div=document.createElement('div');
-if(child.val().img){
-div.innerHTML=`🖼 <img src="${child.val().img}" style="max-width:100%">`;
-}else{
-div.innerText=`👤 ${child.val().text}`;
-}
-div.dataset.key=child.key;
-div.onclick=()=>div.classList.toggle('selected');
-chatBox.appendChild(div);
+snap.forEach(s=>{
+chatBox.innerHTML+=`<div>👤 ${s.val().user}: ${s.val().msg}</div>`;
 });
-chatBox.scrollTop=chatBox.scrollHeight;
 });
 }
 
-// SETTINGS
+/* SETTINGS */
 settingsBtn.onclick=()=>{
-app.style.display="none";
-settings.style.display="block";
+document.getElementById("app").style.display="none";
+document.getElementById("settings").style.display="block";
 }
-function backHome(){settings.style.display="none"; app.style.display="block";}
+function backHome(){
+document.getElementById("settings").style.display="none";
+document.getElementById("app").style.display="block";
+}
 
-// ALARM
-function addAlarm(){let t=prompt("Dakika gir:"); if(t) setTimeout(()=>alert("Alarm!"),t*60000);}
+/* ALARM */
+function addAlarm(){let t=prompt("Dakika gir:");if(t){setTimeout(()=>alert("Alarm!"),t*60000);}}
 
-// MAIL
+/* MAIL */
 function sendMail(){location.href="mailto:yasindemirkan83@gmail.com?subject=Görüş&body=Mesajım:";}
 </script>
 

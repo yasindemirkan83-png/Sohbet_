@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet App</title>
+<title>ANFA PWA</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
 body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
 #splash,#login,#app,#settings{position:fixed;top:0;left:0;width:100%;height:100%;}
 #splash video,#app video{width:100%;height:100%;object-fit:cover;}
-#login{display:none;align-items:center;justify-content:center;flex-direction:column;background:black;z-index:10;}
+#login{display:flex;align-items:center;justify-content:center;flex-direction:column;background:black;z-index:10;display:none;}
 #login img{width:120px;cursor:pointer;margin-top:20px;}
 #app{display:none;z-index:5;display:flex;flex-direction:column;}
 #header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
@@ -29,31 +29,133 @@ body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
 #settings{display:none;background:black;z-index:15;padding:20px;overflow-y:auto;}
 .user-item{margin:2px;padding:4px;background:#222;border-radius:6px;}
 </style>
-</head>
 
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
+import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
+  authDomain: "studio-3972799448-609d1.firebaseapp.com",
+  databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
+  projectId: "studio-3972799448-609d1",
+  storageBucket: "studio-3972799448-609d1.firebasestorage.app",
+  messagingSenderId: "210449601127",
+  appId: "1:210449601127:web:b3339666a09822b40c7ac2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase();
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
+
+window.addTask = async function(){
+  const taskInput = document.getElementById('taskInput');
+  const taskStart = document.getElementById('taskStart');
+  const taskEnd = document.getElementById('taskEnd');
+  const user = auth.currentUser;
+  if(!user || !taskInput.value) return alert("Giriş yapın ve görev adı girin!");
+  const newTaskRef = push(ref(db,'tasks'));
+  await set(newTaskRef,{
+    name: taskInput.value,
+    start: taskStart.value,
+    end: taskEnd.value,
+    user: user.uid,
+    completed:false
+  });
+  taskInput.value=''; taskStart.value=''; taskEnd.value='';
+};
+
+window.addMsg = async function(){
+  const msgInput = document.getElementById('msgInput');
+  const user = auth.currentUser;
+  if(!user || !msgInput.value) return alert("Giriş yapın ve mesaj yazın!");
+  const newMsgRef = push(ref(db,'messages'));
+  await set(newMsgRef,{
+    text: msgInput.value,
+    user:user.displayName,
+    time: new Date().toISOString()
+  });
+  msgInput.value='';
+};
+
+window.loadTasks = function(){
+  const tasksDiv = document.getElementById('tasks');
+  const user = auth.currentUser;
+  if(!user) return;
+  onValue(ref(db,'tasks'),snapshot=>{
+    tasksDiv.innerHTML='';
+    snapshot.forEach(snap=>{
+      const t = snap.val();
+      if(t.user===user.uid){
+        const div = document.createElement('div');
+        div.className='task-item';
+        div.innerText=`${t.name} [${t.start} - ${t.end}] ${t.completed?'✔':'❌'}`;
+        div.onclick=()=>{div.classList.toggle('selected')};
+        tasksDiv.appendChild(div);
+      }
+    });
+  });
+};
+
+window.loadMsgs = function(){
+  const chatDiv = document.getElementById('chatBox');
+  onValue(ref(db,'messages'),snapshot=>{
+    chatDiv.innerHTML='';
+    snapshot.forEach(snap=>{
+      const m = snap.val();
+      const div = document.createElement('div');
+      div.className='msg-item';
+      div.innerHTML=`<span>${m.user}: ${m.text}</span><span class="msg-meta">${new Date(m.time).toLocaleString()}</span>`;
+      div.onclick=()=>{div.remove()};
+      chatDiv.appendChild(div);
+    });
+  });
+};
+
+window.login = function(){
+  signInWithPopup(auth,provider)
+  .then(()=>{document.getElementById('login').style.display='none'; document.getElementById('app').style.display='flex';})
+  .catch(console.error);
+};
+
+window.logout = function(){
+  signOut(auth).then(()=>{document.getElementById('app').style.display='none'; document.getElementById('login').style.display='flex';});
+};
+
+onAuthStateChanged(auth,user=>{
+  if(user){
+    document.getElementById('userName').innerText = 'Hoşgeldin, '+user.displayName;
+    loadTasks();
+    loadMsgs();
+  }
+});
+</script>
+</head>
 <body>
 
-<!-- SPLASH -->
+<!-- Açılış Videosu -->
 <div id="splash">
-  <video src="açılış.mp4" autoplay muted></video>
+  <video autoplay muted src="açılış .mp4" style="width:100%;height:100%;object-fit:cover;"></video>
 </div>
 
-<!-- LOGIN -->
+<!-- Gmail Login -->
 <div id="login">
-<h2>Gmail ile giriş</h2>
-<img src="google-symbol.png" id="googleLogin">
+  <h2>Giriş Yap</h2>
+  <img src="google-symbol.png" onclick="login()">
 </div>
 
-<!-- APP -->
+<!-- Uygulama Ana Ekran -->
 <div id="app">
-  <video autoplay muted loop src="açılış.mp4" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;"></video>
+  <video autoplay muted loop src="açılış .mp4" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;"></video>
   <div id="header">
     <div id="userName">Hoşgeldin</div>
-    <div id="settingsBtn">⚙️</div>
+    <div id="settingsBtn" onclick="document.getElementById('settings').style.display='block'">⚙️</div>
   </div>
 
   <div id="mainPanels">
-    <!-- Görev Kartı -->
     <div class="card" id="tasksCard">
       <h3>Görevler</h3>
       <div class="task-inputs">
@@ -70,7 +172,6 @@ body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
       <div id="tasks"></div>
     </div>
 
-    <!-- Mesaj Kartı -->
     <div class="card" id="chatCard">
       <h3>Mesajlar</h3>
       <div id="chatBox"></div>
@@ -78,227 +179,24 @@ body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
         <input type="text" id="msgInput" placeholder="Mesaj yaz">
       </div>
       <div class="icon-buttons">
-        <button onclick="sendMsg()">Gönder</button>
+        <button onclick="addMsg()">Gönder</button>
         <button onclick="deleteMsg()">Sil</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- AYARLAR -->
+<!-- Ayarlar ve Admin Panel -->
 <div id="settings">
-  <h2>Ayarlar / Yönetici Paneli</h2>
-  <button onclick="backHome()">⬅ Geri</button>
-  
+  <h2>Ayarlar / Admin Panel</h2>
+  <button onclick="document.getElementById('settings').style.display='none'">⬅ Geri</button>
   <h3>Kullanıcılar</h3>
   <div id="usersList"></div>
-
   <h3>Görüş & Öneri</h3>
   <textarea id="feedbackText" placeholder="Mesajınızı yazın..."></textarea>
   <button onclick="sendFeedback()">Gönder</button>
-
   <button onclick="logout()">Çıkış</button>
 </div>
-
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
-authDomain: "studio-3972799448-609d1.firebaseapp.com",
-databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
-projectId: "studio-3972799448-609d1",
-storageBucket: "studio-3972799448-609d1.firebasestorage.app",
-messagingSenderId: "210449601127",
-appId: "1:210449601127:web:b3339666a09822b40c7ac2"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const provider = new GoogleAuthProvider();
-
-/* SPLASH -> LOGIN */
-setTimeout(()=>{
-  document.getElementById("splash").style.display="none";
-  document.getElementById("login").style.display="flex";
-},5000);
-
-/* LOGIN */
-document.getElementById("googleLogin").onclick=()=>{
-  signInWithPopup(auth,provider);
-};
-
-/* AUTH */
-onAuthStateChanged(auth,(user)=>{
-  if(user){
-    document.getElementById("login").style.display="none";
-    document.getElementById("app").style.display="flex";
-    document.getElementById("userName").innerText=user.displayName;
-    loadTasks();
-    loadMessages();
-    loadUsers();
-  }
-});
-
-/* LOGOUT */
-window.logout=()=>{
-  signOut(auth);
-  document.getElementById("settings").style.display="none";
-  document.getElementById("app").style.display="none";
-  document.getElementById("login").style.display="flex";
-}
-
-/* AYARLAR */
-document.getElementById("settingsBtn").onclick=()=>{
-  document.getElementById("app").style.display="none";
-  document.getElementById("settings").style.display="block";
-}
-function backHome(){
-  document.getElementById("settings").style.display="none";
-  document.getElementById("app").style.display="flex";
-}
-
-/* FEEDBACK */
-function sendFeedback(){
-  const msg=document.getElementById('feedbackText').value;
-  window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Görüş & Öneri&body=${encodeURIComponent(msg)}`;
-}
-
-/* GÖREVLER */
-function addTask(){
-  const taskInput = document.getElementById('taskInput');
-  const taskStart = document.getElementById('taskStart');
-  const taskEnd = document.getElementById('taskEnd');
-  const user = auth.currentUser;
-  if(!taskInput.value || !user) return;
-  const taskRef = ref(db, 'tasks');
-  const newTaskRef = push(taskRef);
-  set(newTaskRef,{
-    name: taskInput.value,
-    start: taskStart.value,
-    end: taskEnd.value,
-    user: user.uid,
-    completed: false
-  });
-  taskInput.value=''; taskStart.value=''; taskEnd.value='';
-}
-
-/* LOAD TASKS */
-function loadTasks(){
-  const tasksDiv = document.getElementById('tasks');
-  const tasksRef = ref(db,'tasks');
-  tasksDiv.innerHTML='';
-  onValue(tasksRef,(snapshot)=>{
-    tasksDiv.innerHTML='';
-    snapshot.forEach(snap=>{
-      const data = snap.val();
-      const div = document.createElement('div');
-      div.className='task-item';
-      div.dataset.key=snap.key;
-      div.innerText=`${data.name} [${data.start} → ${data.end}] ${data.completed?'✅':''}`;
-      div.onclick=()=>{ div.classList.toggle('selected'); }
-      tasksDiv.prepend(div);
-    });
-  });
-}
-
-function deleteTask(){
-  const selected = document.querySelectorAll('.task-item.selected');
-  selected.forEach(div=>{
-    remove(ref(db,'tasks/'+div.dataset.key));
-  });
-}
-
-function completeTask(){
-  const selected = document.querySelectorAll('.task-item.selected');
-  selected.forEach(div=>{
-    update(ref(db,'tasks/'+div.dataset.key),{completed:true});
-  });
-}
-
-/* MESAJLAR */
-function sendMsg(){
-  const input = document.getElementById('msgInput');
-  const user = auth.currentUser;
-  if(!input.value || !user) return;
-  const chatRef = ref(db,'messages');
-  const newRef = push(chatRef);
-  set(newRef,{
-    user:user.displayName,
-    text: input.value,
-    time: new Date().toISOString()
-  });
-  input.value='';
-}
-
-function loadMessages(){
-  const chatBox = document.getElementById('chatBox');
-  const chatRef = ref(db,'messages');
-  chatBox.innerHTML='';
-  onValue(chatRef,(snapshot)=>{
-    chatBox.innerHTML='';
-    const msgs = [];
-    snapshot.forEach(snap=>{
-      msgs.push({...snap.val(),key:snap.key});
-    });
-    msgs.sort((a,b)=> new Date(b.time) - new Date(a.time));
-    msgs.forEach(msg=>{
-      const div = document.createElement('div');
-      div.className='msg-item';
-      div.dataset.key=msg.key;
-      div.innerHTML=`<span>${msg.user}: ${msg.text}</span> <span class="msg-meta">${new Date(msg.time).toLocaleString()}</span>`;
-      div.onclick=()=>{ div.classList.toggle('selected'); }
-      chatBox.appendChild(div);
-    });
-  });
-}
-
-function deleteMsg(){
-  const selected = document.querySelectorAll('.msg-item.selected');
-  selected.forEach(div=>{
-    remove(ref(db,'messages/'+div.dataset.key));
-  });
-}
-
-/* USERS */
-function loadUsers(){
-  const usersList = document.getElementById('usersList');
-  usersList.innerHTML='';
-  const usersRef = ref(db,'tasks'); // Basit olarak uid ve name listele
-  onValue(usersRef,(snapshot)=>{
-    usersList.innerHTML='';
-    snapshot.forEach(snap=>{
-      const data = snap.val();
-      const div = document.createElement('div');
-      div.className='user-item';
-      div.innerText=`${data.user || 'Anonim'}`;
-      usersList.appendChild(div);
-    });
-  });
-}
-
-/* ALARM */
-function setAlarm(){
-  const selected = document.querySelectorAll('.task-item.selected');
-  selected.forEach(div=>{
-    const key = div.dataset.key;
-    const taskRef = ref(db,'tasks/'+key);
-    onValue(taskRef,(snap)=>{
-      const data = snap.val();
-      if(data.start){
-        const ms = new Date(data.start).getTime() - Date.now();
-        if(ms>0){
-          setTimeout(()=>alert(`Alarm: ${data.name}`),ms);
-        }
-      }
-    },{onlyOnce:true});
-  });
-}
-</script>
 
 </body>
 </html>

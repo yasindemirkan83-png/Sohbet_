@@ -1,157 +1,153 @@
 // app.js
+import { app, firebaseConfig } from './firebaseConfig.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded, remove, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { app } from "./firebaseConfig.js";
+import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const db = getDatabase(app);
 
-// Elements
-const splash = document.getElementById("splash");
-const login = document.getElementById("login");
-const appDiv = document.getElementById("app");
-const userName = document.getElementById("userName");
-const settings = document.getElementById("settings");
-const settingsBtn = document.getElementById("settingsBtn");
-
-const taskInput = document.getElementById("taskInput");
-const taskStart = document.getElementById("taskStart");
-const taskEnd = document.getElementById("taskEnd");
-const taskList = document.getElementById("taskList");
-
-const msgInput = document.getElementById("msgInput");
-const chatBox = document.getElementById("chatBox");
-
-// Splash -> Login
+/* SPLASH -> LOGIN */
 setTimeout(()=>{
-    splash.style.display="none";
-    login.style.display="flex";
+  document.getElementById("splash").style.display="none";
+  document.getElementById("login").style.display="flex";
 },5000);
 
-// Google Login
-document.getElementById("googleLogin").onclick = () => {
-    signInWithPopup(auth, provider);
+/* LOGIN */
+document.getElementById("googleLogin").onclick=()=>{
+  signInWithPopup(auth,provider);
 };
 
-// Auth
-onAuthStateChanged(auth, (user)=>{
-    if(user){
-        login.style.display="none";
-        appDiv.style.display="block";
-        userName.innerText = user.displayName;
-        loadTasks(user.uid);
-        loadMessages(user.uid);
-    }
+/* AUTH */
+onAuthStateChanged(auth,(user)=>{
+  if(user){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="flex";
+    document.getElementById("userName").innerText=user.displayName;
+    loadTasks();
+    loadMessages();
+  }
 });
 
-// Logout
-window.logout = () => {
-    signOut(auth);
-    location.reload();
-};
-
-// SETTINGS
-settingsBtn.onclick = () => {
-    settings.style.display = settings.style.display==='block'?'none':'block';
-};
-window.backHome = () => {
-    settings.style.display = 'none';
-};
-
-// FIREBASE TASKS
-function addTask(){
-    const desc = taskInput.value.trim();
-    const start = taskStart.value;
-    const end = taskEnd.value;
-    if(!desc || !start || !end) return alert("Tüm alanları doldurun!");
-    const user = auth.currentUser;
-    const taskRef = ref(db,'tasks/'+user.uid);
-    push(taskRef,{
-        desc,start,end,done:false
-    });
-    taskInput.value=''; taskStart.value=''; taskEnd.value='';
+/* LOGOUT */
+window.logout=()=>{
+  signOut(auth);
+  location.reload();
 }
 
-// Load tasks
-function loadTasks(uid){
-    const taskRef = ref(db,'tasks/'+uid);
-    taskList.innerHTML='';
-    onChildAdded(taskRef, (snap)=>{
-        const task = snap.val();
-        const li = document.createElement("li");
-        li.dataset.key = snap.key;
-        li.className = task.done ? 'selected':'';
-        li.innerHTML = `<b>${task.desc}</b><br>
-        <small>${task.start} - ${task.end}</small>
-        <div style="margin-top:5px;">
-        <button onclick="toggleDone('${snap.key}')">✔</button>
-        <button onclick="deleteTask('${snap.key}')">🗑️</button>
-        <button onclick="addAlarm('${snap.key}')">⏰</button>
+/* SETTINGS */
+const settingsBtn = document.getElementById("settingsBtn");
+settingsBtn.onclick = ()=>{
+  document.getElementById("app").style.display="none";
+  document.getElementById("settings").style.display="block";
+}
+window.backHome=()=>{
+  document.getElementById("settings").style.display="none";
+  document.getElementById("app").style.display="flex";
+}
+window.sendFeedback=()=>{
+  const msg=document.createElement('textarea').value;
+  window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Görüş&body=${encodeURIComponent(msg)}`;
+}
+
+/* TASKS */
+const taskListEl = document.getElementById("taskList");
+const taskInputEl = document.getElementById("taskInput");
+const taskStartEl = document.getElementById("taskStart");
+const taskEndEl = document.getElementById("taskEnd");
+
+window.addTask = ()=>{
+  const val = taskInputEl.value.trim();
+  const start = taskStartEl.value;
+  const end = taskEndEl.value;
+  if(!val || !start || !end) return alert("Tüm alanları doldur!");
+  const userId = auth.currentUser.uid;
+  push(ref(db,'tasks/'+userId),{
+    text: val,
+    start,
+    end,
+    done:false,
+    timestamp: Date.now()
+  });
+  taskInputEl.value='';
+  taskStartEl.value='';
+  taskEndEl.value='';
+}
+
+/* Load tasks */
+function loadTasks(){
+  const userId = auth.currentUser.uid;
+  const tasksRef = ref(db,'tasks/'+userId);
+  onValue(tasksRef,(snapshot)=>{
+    taskListEl.innerHTML='';
+    const data = snapshot.val();
+    if(!data) return;
+    const arr = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
+    arr.forEach(([key,val])=>{
+      const li = document.createElement('div');
+      li.className='list-item'+(val.done?' done':'');
+      li.innerHTML=`<span>${val.text} <br><small>${val.start} → ${val.end}</small></span>
+        <div>
+          <button onclick="markDone('${key}')"><i class="fas fa-check"></i></button>
+          <button onclick="deleteTask('${key}')"><i class="fas fa-trash"></i></button>
+          <button onclick="setAlarm('${val.start}','${val.text}')"><i class="fas fa-bell"></i></button>
         </div>`;
-        taskList.prepend(li);
+      taskListEl.appendChild(li);
     });
+  });
 }
 
-// Toggle done
-window.toggleDone = (key)=>{
-    const user = auth.currentUser;
-    const tRef = ref(db,'tasks/'+user.uid+'/'+key);
-    update(tRef,{done:true});
-};
+window.markDone=(key)=>{
+  const userId = auth.currentUser.uid;
+  update(ref(db,'tasks/'+userId+'/'+key),{done:true});
+}
 
-// Delete task
-window.deleteTask = (key)=>{
-    const user = auth.currentUser;
-    const tRef = ref(db,'tasks/'+user.uid+'/'+key);
-    remove(tRef);
-};
+window.deleteTask=(key)=>{
+  const userId = auth.currentUser.uid;
+  remove(ref(db,'tasks/'+userId+'/'+key));
+}
 
-// Add alarm (simple alert for now)
-window.addAlarm = (key)=>{
-    const user = auth.currentUser;
-    const tRef = ref(db,'tasks/'+user.uid+'/'+key);
-    setTimeout(()=>{
-        alert("Görev zamanı geldi!");
-    },10000); // test için 10 saniye
-};
+/* Alarm */
+window.setAlarm=(time,text)=>{
+  const t = new Date(time).getTime() - Date.now();
+  if(t>0) setTimeout(()=>alert("Alarm: "+text),t);
+}
 
-// FIREBASE CHAT
-function sendMsg(){
-    const text = msgInput.value.trim();
-    if(!text) return;
-    const user = auth.currentUser;
-    const msgRef = ref(db,'messages/');
-    const now = new Date().toLocaleString();
-    push(msgRef,{
-        text,user:user.displayName,time:now
+/* CHAT */
+const chatBoxEl = document.getElementById("chatBox");
+const msgInputEl = document.getElementById("msgInput");
+
+window.sendMsg=()=>{
+  const val = msgInputEl.value.trim();
+  if(!val) return;
+  const userId = auth.currentUser.uid;
+  push(ref(db,'messages'),{
+    user: auth.currentUser.displayName,
+    text: val,
+    timestamp: Date.now()
+  });
+  msgInputEl.value='';
+}
+
+function loadMessages(){
+  const messagesRef = ref(db,'messages');
+  onValue(messagesRef,(snapshot)=>{
+    chatBoxEl.innerHTML='';
+    const data = snapshot.val();
+    if(!data) return;
+    const arr = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
+    arr.forEach(([key,val])=>{
+      const li = document.createElement('div');
+      li.className='list-item';
+      li.innerHTML=`<span><b>${val.user}</b> <small>${new Date(val.timestamp).toLocaleString()}</small><br>${val.text}</span>
+        <div>
+          <button onclick="deleteMsg('${key}')"><i class="fas fa-trash"></i></button>
+        </div>`;
+      chatBoxEl.appendChild(li);
     });
-    msgInput.value='';
+  });
 }
 
-function loadMessages(uid){
-    const msgRef = ref(db,'messages/');
-    chatBox.innerHTML='';
-    onChildAdded(msgRef,(snap)=>{
-        const msg = snap.val();
-        const div = document.createElement("div");
-        div.dataset.key = snap.key;
-        div.className = 'message';
-        div.innerHTML = `<div class="message-header">${msg.user} • ${msg.time}</div>
-                         <div class="message-text">${msg.text}</div>
-                         <button onclick="deleteMsg('${snap.key}')">🗑️</button>`;
-        chatBox.prepend(div);
-    });
+window.deleteMsg=(key)=>{
+  remove(ref(db,'messages/'+key));
 }
-
-// Delete message
-window.deleteMsg = (key)=>{
-    const mRef = ref(db,'messages/'+key);
-    remove(mRef);
-}
-
-// Send feedback
-window.sendFeedback = ()=>{
-    const text = document.getElementById('feedbackText').value;
-    window.location.href = `mailto:yasindemirkan83@gmail.com?subject=Görüş & Öneri&body=${encodeURIComponent(text)}`;
-};

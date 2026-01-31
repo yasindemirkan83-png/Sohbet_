@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ANFA APP</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:black;color:white;max-width:480px;margin:auto;overflow:hidden}
+
+/* Splash */
+#splash{
+position:fixed;inset:0;z-index:10
+}
+#splash video{
+width:100%;height:100%;object-fit:cover
+}
+
+/* Login */
+#login{
+display:none;position:fixed;inset:0;
+background:black;z-index:9;
+display:flex;flex-direction:column;
+align-items:center;justify-content:center
+}
+#login img{width:120px;margin-bottom:20px}
+
+/* App */
+#app{display:none}
+#bgVideo{
+position:fixed;inset:0;z-index:-1;
+width:100%;height:100%;object-fit:cover
+}
+
+.card{
+background:rgba(255,255,255,.9);
+color:black;margin:10px;padding:10px;border-radius:12px
+}
+
+input,textarea,button{
+width:100%;margin:5px 0;padding:8px;border-radius:8px;border:none
+}
+
+.task.done{text-decoration:line-through;background:#c7f9cc}
+.msg{background:#eee;margin:5px;padding:5px;border-radius:6px}
+
+#settings{
+display:none;position:fixed;inset:0;
+background:#111;color:white;z-index:5;padding:15px
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+<video autoplay muted playsinline>
+<source src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/InShot_20260130_145437574.mp4" type="video/mp4">
+</video>
+</div>
+
+<!-- LOGIN -->
+<div id="login">
+<img src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/google-symbol.png">
+<button onclick="login()">Google ile Giriş</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+<video autoplay muted loop playsinline id="bgVideo">
+<source src="https://github.com/yasindemirkan83-png/Sohbet_/raw/main/InShot_20260130_145437574.mp4" type="video/mp4">
+</video>
+
+<button onclick="openSettings()" style="position:fixed;top:10px;right:10px">⚙️</button>
+
+<div class="card">
+<h3>Görevler</h3>
+<input id="taskText" placeholder="Görev">
+<button onclick="addTask()">Ekle</button>
+<div id="tasks"></div>
+</div>
+
+<div class="card">
+<h3>Mesajlar</h3>
+<input id="msgText" placeholder="Mesaj">
+<button onclick="sendMsg()">Gönder</button>
+<div id="msgs"></div>
+</div>
+
+<div class="card">
+<h3>Takvim</h3>
+<div id="today"></div>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings">
+<h3>Ayarlar</h3>
+<div id="adminPanel"></div>
+
+<button onclick="setAlarm()">Alarm Ekle</button>
+<div id="alarms"></div>
+
+<h4>Görüş & Öneri</h4>
+<textarea id="fb"></textarea>
+<button onclick="sendMail()">Mail Gönder</button>
+
+<button onclick="closeSettings()">⬅ Geri</button>
+</div>
+
+<script>
+const firebaseConfig={
+apiKey:"AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
+authDomain:"studio-3972799448-609d1.firebaseapp.com",
+databaseURL:"https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
+projectId:"studio-3972799448-609d1"
+}
+firebase.initializeApp(firebaseConfig)
+const auth=firebase.auth()
+const db=firebase.database()
+
+const ADMIN="yasindemirkan83@gmail.com"
+let userEmail=""
+let userName=""
+
+setTimeout(()=>{
+document.getElementById("splash").style.display="none"
+document.getElementById("login").style.display="flex"
+},3000)
+
+function login(){
+let p=new firebase.auth.GoogleAuthProvider()
+auth.signInWithPopup(p).then(r=>{
+userEmail=r.user.email
+let saved=localStorage.getItem("username")
+if(!saved){
+userName=prompt("Kullanıcı adın:")
+localStorage.setItem("username",userName)
+}else userName=saved
+
+document.getElementById("login").style.display="none"
+document.getElementById("app").style.display="block"
+loadTasks()
+loadMsgs()
+if(userEmail==ADMIN)
+document.getElementById("adminPanel").innerHTML="ADMIN PANEL"
+})
+}
+
+function addTask(){
+let t=document.getElementById("taskText").value
+db.ref("tasks").push({t})
+}
+
+function loadTasks(){
+db.ref("tasks").on("value",s=>{
+let h=""
+s.forEach(d=>{
+h+=`<div class="task" onclick="this.classList.toggle('done')">${d.val().t}</div>`
+})
+tasks.innerHTML=h
+})
+}
+
+function sendMsg(){
+let m=msgText.value
+db.ref("msgs").push({u:userName,m})
+}
+
+function loadMsgs(){
+db.ref("msgs").on("value",s=>{
+let h=""
+s.forEach(d=>{
+let v=d.val()
+h+=`<div class="msg"><b>${v.u}:</b> ${v.m}</div>`
+})
+msgs.innerHTML=h
+})
+}
+
+today.innerText=new Date().toLocaleDateString()
+
+function openSettings(){settings.style.display="block"}
+function closeSettings(){settings.style.display="none"}
+
+function sendMail(){
+let t=fb.value
+location.href="mailto:yasindemirkan83@gmail.com?body="+encodeURIComponent(t)
+}
+
+function setAlarm(){
+let m=prompt("Kaç dakika sonra?")
+let id=setTimeout(()=>alert("ALARM!"),m*60000)
+alarms.innerHTML+=`<div>Alarm: ${m} dk</div>`
+}
+</script>
+</body>
+</html>

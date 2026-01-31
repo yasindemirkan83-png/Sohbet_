@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ANFA PWA</title>
 
+<link rel="manifest" href="manifest.json">
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
 body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
@@ -30,108 +32,14 @@ body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
 .user-item{margin:2px;padding:4px;background:#222;border-radius:6px;}
 </style>
 
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
-import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
-  authDomain: "studio-3972799448-609d1.firebaseapp.com",
-  databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
-  projectId: "studio-3972799448-609d1",
-  storageBucket: "studio-3972799448-609d1.firebasestorage.app",
-  messagingSenderId: "210449601127",
-  appId: "1:210449601127:web:b3339666a09822b40c7ac2"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase();
-const auth = getAuth();
-const provider = new GoogleAuthProvider();
-
-window.addTask = async function(){
-  const taskInput = document.getElementById('taskInput');
-  const taskStart = document.getElementById('taskStart');
-  const taskEnd = document.getElementById('taskEnd');
-  const user = auth.currentUser;
-  if(!user || !taskInput.value) return alert("Giriş yapın ve görev adı girin!");
-  const newTaskRef = push(ref(db,'tasks'));
-  await set(newTaskRef,{
-    name: taskInput.value,
-    start: taskStart.value,
-    end: taskEnd.value,
-    user: user.uid,
-    completed:false
-  });
-  taskInput.value=''; taskStart.value=''; taskEnd.value='';
-};
-
-window.addMsg = async function(){
-  const msgInput = document.getElementById('msgInput');
-  const user = auth.currentUser;
-  if(!user || !msgInput.value) return alert("Giriş yapın ve mesaj yazın!");
-  const newMsgRef = push(ref(db,'messages'));
-  await set(newMsgRef,{
-    text: msgInput.value,
-    user:user.displayName,
-    time: new Date().toISOString()
-  });
-  msgInput.value='';
-};
-
-window.loadTasks = function(){
-  const tasksDiv = document.getElementById('tasks');
-  const user = auth.currentUser;
-  if(!user) return;
-  onValue(ref(db,'tasks'),snapshot=>{
-    tasksDiv.innerHTML='';
-    snapshot.forEach(snap=>{
-      const t = snap.val();
-      if(t.user===user.uid){
-        const div = document.createElement('div');
-        div.className='task-item';
-        div.innerText=`${t.name} [${t.start} - ${t.end}] ${t.completed?'✔':'❌'}`;
-        div.onclick=()=>{div.classList.toggle('selected')};
-        tasksDiv.appendChild(div);
-      }
-    });
-  });
-};
-
-window.loadMsgs = function(){
-  const chatDiv = document.getElementById('chatBox');
-  onValue(ref(db,'messages'),snapshot=>{
-    chatDiv.innerHTML='';
-    snapshot.forEach(snap=>{
-      const m = snap.val();
-      const div = document.createElement('div');
-      div.className='msg-item';
-      div.innerHTML=`<span>${m.user}: ${m.text}</span><span class="msg-meta">${new Date(m.time).toLocaleString()}</span>`;
-      div.onclick=()=>{div.remove()};
-      chatDiv.appendChild(div);
-    });
-  });
-};
-
-window.login = function(){
-  signInWithPopup(auth,provider)
-  .then(()=>{document.getElementById('login').style.display='none'; document.getElementById('app').style.display='flex';})
+<script type="module" src="firebaseConfig.js"></script>
+<script type="module" src="app.js"></script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js')
+  .then(()=>console.log('Service Worker Registered'))
   .catch(console.error);
-};
-
-window.logout = function(){
-  signOut(auth).then(()=>{document.getElementById('app').style.display='none'; document.getElementById('login').style.display='flex';});
-};
-
-onAuthStateChanged(auth,user=>{
-  if(user){
-    document.getElementById('userName').innerText = 'Hoşgeldin, '+user.displayName;
-    loadTasks();
-    loadMsgs();
-  }
-});
+}
 </script>
 </head>
 <body>
@@ -149,13 +57,14 @@ onAuthStateChanged(auth,user=>{
 
 <!-- Uygulama Ana Ekran -->
 <div id="app">
-  <video autoplay muted loop src="açılış .mp4" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;"></video>
+  <video autoplay muted loop src="uygulamaici.mp4" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;"></video>
   <div id="header">
     <div id="userName">Hoşgeldin</div>
-    <div id="settingsBtn" onclick="document.getElementById('settings').style.display='block'">⚙️</div>
+    <div id="settingsBtn" onclick="openSettings()">⚙️</div>
   </div>
 
   <div id="mainPanels">
+    <!-- Görev Kartı -->
     <div class="card" id="tasksCard">
       <h3>Görevler</h3>
       <div class="task-inputs">
@@ -172,6 +81,7 @@ onAuthStateChanged(auth,user=>{
       <div id="tasks"></div>
     </div>
 
+    <!-- Mesaj Kartı -->
     <div class="card" id="chatCard">
       <h3>Mesajlar</h3>
       <div id="chatBox"></div>
@@ -186,10 +96,10 @@ onAuthStateChanged(auth,user=>{
   </div>
 </div>
 
-<!-- Ayarlar ve Admin Panel -->
+<!-- Ayarlar / Admin Panel -->
 <div id="settings">
   <h2>Ayarlar / Admin Panel</h2>
-  <button onclick="document.getElementById('settings').style.display='none'">⬅ Geri</button>
+  <button onclick="closeSettings()">⬅ Geri</button>
   <h3>Kullanıcılar</h3>
   <div id="usersList"></div>
   <h3>Görüş & Öneri</h3>

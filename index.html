@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet App</title>
+<title>Sohbet App PWA</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="manifest" href="manifest.json">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
 body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
+
 /* SPLASH */
 #splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;background:black;display:flex;align-items:center;justify-content:center}
 #splash video{width:100%;height:100%;object-fit:cover}
@@ -37,7 +39,7 @@ body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 
 <!-- SPLASH -->
 <div id="splash">
-<video src="https://github.com/yasindemirkan83-png/Sohbet_/blob/main/a%C3%A7%C4%B1l%C4%B1%C5%9F%20.mp4" autoplay muted></video>
+<video src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/a%C3%A7%C4%B1l%C4%B1%C5%9F%20.mp4" autoplay muted></video>
 </div>
 
 <!-- LOGIN -->
@@ -48,7 +50,7 @@ body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 
 <!-- APP -->
 <div id="app">
-<video id="bgVideo" src="https://github.com/yasindemirkan83-png/Sohbet_/blob/main/uygulamaici.mp4" autoplay muted loop></video>
+<video id="bgVideo" src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/uygulamaici.mp4" autoplay muted loop></video>
 
 <div id="header">
 <div id="userName">Hoşgeldin</div>
@@ -81,5 +83,11 @@ body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 </div>
 
 <script type="module" src="app.js"></script>
+<script>
+// Register Service Worker
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('service-worker.js').then(()=>console.log('SW Registered'));
+}
+</script>
 </body>
 </html>

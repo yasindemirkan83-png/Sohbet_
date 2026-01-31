@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet App PWA</title>
+<title>Sohbet & Görev PWA</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="manifest" href="manifest.json">
 <style>
@@ -26,13 +26,25 @@ body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 #header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6)}
 #settingsBtn{font-size:24px;cursor:pointer}
 
-/* CARDS */
-.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7)}
-#taskList,#chatBox{max-height:200px;overflow-y:auto}
+/* GÖREV VE MESAJ KART ORANI */
+#taskCard{height:60%; overflow-y:auto; margin:10px; padding:15px; border-radius:12px; background:rgba(0,0,0,0.7);}
+#chatCard{height:20%; overflow-y:auto; margin:10px; padding:15px; border-radius:12px; background:rgba(0,0,0,0.7);}
+
+/* ALT PANEL */
+#taskInputPanel, #msgInputPanel{display:flex;gap:5px;margin:10px}
+#taskInputPanel input,#msgInputPanel input{flex:1;padding:8px;border-radius:8px;border:none}
+#taskInputPanel button,#msgInputPanel button{padding:8px;border-radius:8px;border:none;background:#1abc9c;color:black;cursor:pointer}
 
 /* SETTINGS */
 #settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;z-index:11}
 .btn{padding:10px;margin:5px 0;background:#1abc9c;border:none;border-radius:8px;width:100%}
+
+/* MESAJ BİLGİSİ */
+.message-header{font-size:10px;color:#ccc;margin-bottom:2px}
+.message-text{font-size:14px}
+
+/* SEÇİM */
+.selected{background:rgba(26, 188, 156,0.4)}
 </style>
 </head>
 <body>
@@ -57,20 +69,26 @@ body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 <div id="settingsBtn">⚙️</div>
 </div>
 
-<!-- Görevler -->
-<div class="card">
+<!-- Görevler Kart -->
+<div id="taskCard" class="card">
 <h3>Görevler</h3>
 <ul id="taskList"></ul>
-<input id="taskInput" placeholder="Görev ekle">
+<div id="taskInputPanel">
+<input type="text" id="taskInput" placeholder="Görev açıklaması">
+<input type="datetime-local" id="taskStart">
+<input type="datetime-local" id="taskEnd">
 <button onclick="addTask()">Ekle</button>
 </div>
+</div>
 
-<!-- Mesajlar -->
-<div class="card">
+<!-- Mesajlar Kart -->
+<div id="chatCard" class="card">
 <h3>Mesajlar</h3>
 <div id="chatBox"></div>
-<input id="msgInput" placeholder="Mesaj yaz">
+<div id="msgInputPanel">
+<input type="text" id="msgInput" placeholder="Mesaj yaz">
 <button onclick="sendMsg()">Gönder</button>
+</div>
 </div>
 
 <!-- SETTINGS -->
@@ -82,6 +100,7 @@ body,html{width:100%;height:100%;overflow:hidden;background:black;color:white}
 <button class="btn" onclick="logout()">Çıkış</button>
 </div>
 
+<script type="module" src="firebaseConfig.js"></script>
 <script type="module" src="app.js"></script>
 <script>
 if('serviceWorker' in navigator){

@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANFA Vardiya & Mesaj</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png" type="image/png">
+<title>Sohbet App</title>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial, sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
 body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
 #splash,#login,#app,#settings{position:fixed;top:0;left:0;width:100%;height:100%;}
 #splash video,#app video{width:100%;height:100%;object-fit:cover;}
-#login{display:flex;align-items:center;justify-content:center;flex-direction:column;background:black;z-index:10;display:none;}
+#login{display:none;align-items:center;justify-content:center;flex-direction:column;background:black;z-index:10;}
 #login img{width:120px;cursor:pointer;margin-top:20px;}
 #app{display:none;z-index:5;display:flex;flex-direction:column;}
 #header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
@@ -31,22 +30,23 @@ body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
 .user-item{margin:2px;padding:4px;background:#222;border-radius:6px;}
 </style>
 </head>
+
 <body>
 
 <!-- SPLASH -->
 <div id="splash">
-  <video autoplay muted loop src="açılış .mp4"></video>
+  <video src="açılış.mp4" autoplay muted></video>
 </div>
 
 <!-- LOGIN -->
 <div id="login">
-  <h1>Giriş Yap</h1>
-  <img src="google-symbol.png" id="googleLogin" alt="Google">
+<h2>Gmail ile giriş</h2>
+<img src="google-symbol.png" id="googleLogin">
 </div>
 
 <!-- APP -->
 <div id="app">
-  <video autoplay muted loop src="açılış .mp4" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;"></video>
+  <video autoplay muted loop src="açılış.mp4" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;"></video>
   <div id="header">
     <div id="userName">Hoşgeldin</div>
     <div id="settingsBtn">⚙️</div>
@@ -85,10 +85,10 @@ body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
   </div>
 </div>
 
-<!-- AYARLAR ve ADMIN PANEL -->
+<!-- AYARLAR -->
 <div id="settings">
   <h2>Ayarlar / Yönetici Paneli</h2>
-  <button onclick="toggleSettings()">⬅ Geri</button>
+  <button onclick="backHome()">⬅ Geri</button>
   
   <h3>Kullanıcılar</h3>
   <div id="usersList"></div>
@@ -100,25 +100,204 @@ body,html{width:100%;height:100%;background:black;color:white;overflow:hidden;}
   <button onclick="logout()">Çıkış</button>
 </div>
 
-<script type="module" src="firebaseConfig.js"></script>
-<script type="module" src="app.js"></script>
-<script>
-const splash = document.getElementById("splash");
-const appDiv = document.getElementById("app");
-setTimeout(()=>{splash.style.display="none";appDiv.style.display="flex";},5000);
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// Ayarlar aç/kapa
-document.getElementById("settingsBtn").onclick = ()=>{
-    document.getElementById("settings").style.display="block";
-    appDiv.style.display="none";
+const firebaseConfig = {
+apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
+authDomain: "studio-3972799448-609d1.firebaseapp.com",
+databaseURL: "https://studio-3972799448-609d1-default-rtdb.firebaseio.com",
+projectId: "studio-3972799448-609d1",
+storageBucket: "studio-3972799448-609d1.firebasestorage.app",
+messagingSenderId: "210449601127",
+appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
-function toggleSettings(){
-    document.getElementById("settings").style.display="none";
-    appDiv.style.display="flex";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+
+/* SPLASH -> LOGIN */
+setTimeout(()=>{
+  document.getElementById("splash").style.display="none";
+  document.getElementById("login").style.display="flex";
+},5000);
+
+/* LOGIN */
+document.getElementById("googleLogin").onclick=()=>{
+  signInWithPopup(auth,provider);
+};
+
+/* AUTH */
+onAuthStateChanged(auth,(user)=>{
+  if(user){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="flex";
+    document.getElementById("userName").innerText=user.displayName;
+    loadTasks();
+    loadMessages();
+    loadUsers();
+  }
+});
+
+/* LOGOUT */
+window.logout=()=>{
+  signOut(auth);
+  document.getElementById("settings").style.display="none";
+  document.getElementById("app").style.display="none";
+  document.getElementById("login").style.display="flex";
 }
 
-// PWA install prompt
-if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js');}
+/* AYARLAR */
+document.getElementById("settingsBtn").onclick=()=>{
+  document.getElementById("app").style.display="none";
+  document.getElementById("settings").style.display="block";
+}
+function backHome(){
+  document.getElementById("settings").style.display="none";
+  document.getElementById("app").style.display="flex";
+}
+
+/* FEEDBACK */
+function sendFeedback(){
+  const msg=document.getElementById('feedbackText').value;
+  window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Görüş & Öneri&body=${encodeURIComponent(msg)}`;
+}
+
+/* GÖREVLER */
+function addTask(){
+  const taskInput = document.getElementById('taskInput');
+  const taskStart = document.getElementById('taskStart');
+  const taskEnd = document.getElementById('taskEnd');
+  const user = auth.currentUser;
+  if(!taskInput.value || !user) return;
+  const taskRef = ref(db, 'tasks');
+  const newTaskRef = push(taskRef);
+  set(newTaskRef,{
+    name: taskInput.value,
+    start: taskStart.value,
+    end: taskEnd.value,
+    user: user.uid,
+    completed: false
+  });
+  taskInput.value=''; taskStart.value=''; taskEnd.value='';
+}
+
+/* LOAD TASKS */
+function loadTasks(){
+  const tasksDiv = document.getElementById('tasks');
+  const tasksRef = ref(db,'tasks');
+  tasksDiv.innerHTML='';
+  onValue(tasksRef,(snapshot)=>{
+    tasksDiv.innerHTML='';
+    snapshot.forEach(snap=>{
+      const data = snap.val();
+      const div = document.createElement('div');
+      div.className='task-item';
+      div.dataset.key=snap.key;
+      div.innerText=`${data.name} [${data.start} → ${data.end}] ${data.completed?'✅':''}`;
+      div.onclick=()=>{ div.classList.toggle('selected'); }
+      tasksDiv.prepend(div);
+    });
+  });
+}
+
+function deleteTask(){
+  const selected = document.querySelectorAll('.task-item.selected');
+  selected.forEach(div=>{
+    remove(ref(db,'tasks/'+div.dataset.key));
+  });
+}
+
+function completeTask(){
+  const selected = document.querySelectorAll('.task-item.selected');
+  selected.forEach(div=>{
+    update(ref(db,'tasks/'+div.dataset.key),{completed:true});
+  });
+}
+
+/* MESAJLAR */
+function sendMsg(){
+  const input = document.getElementById('msgInput');
+  const user = auth.currentUser;
+  if(!input.value || !user) return;
+  const chatRef = ref(db,'messages');
+  const newRef = push(chatRef);
+  set(newRef,{
+    user:user.displayName,
+    text: input.value,
+    time: new Date().toISOString()
+  });
+  input.value='';
+}
+
+function loadMessages(){
+  const chatBox = document.getElementById('chatBox');
+  const chatRef = ref(db,'messages');
+  chatBox.innerHTML='';
+  onValue(chatRef,(snapshot)=>{
+    chatBox.innerHTML='';
+    const msgs = [];
+    snapshot.forEach(snap=>{
+      msgs.push({...snap.val(),key:snap.key});
+    });
+    msgs.sort((a,b)=> new Date(b.time) - new Date(a.time));
+    msgs.forEach(msg=>{
+      const div = document.createElement('div');
+      div.className='msg-item';
+      div.dataset.key=msg.key;
+      div.innerHTML=`<span>${msg.user}: ${msg.text}</span> <span class="msg-meta">${new Date(msg.time).toLocaleString()}</span>`;
+      div.onclick=()=>{ div.classList.toggle('selected'); }
+      chatBox.appendChild(div);
+    });
+  });
+}
+
+function deleteMsg(){
+  const selected = document.querySelectorAll('.msg-item.selected');
+  selected.forEach(div=>{
+    remove(ref(db,'messages/'+div.dataset.key));
+  });
+}
+
+/* USERS */
+function loadUsers(){
+  const usersList = document.getElementById('usersList');
+  usersList.innerHTML='';
+  const usersRef = ref(db,'tasks'); // Basit olarak uid ve name listele
+  onValue(usersRef,(snapshot)=>{
+    usersList.innerHTML='';
+    snapshot.forEach(snap=>{
+      const data = snap.val();
+      const div = document.createElement('div');
+      div.className='user-item';
+      div.innerText=`${data.user || 'Anonim'}`;
+      usersList.appendChild(div);
+    });
+  });
+}
+
+/* ALARM */
+function setAlarm(){
+  const selected = document.querySelectorAll('.task-item.selected');
+  selected.forEach(div=>{
+    const key = div.dataset.key;
+    const taskRef = ref(db,'tasks/'+key);
+    onValue(taskRef,(snap)=>{
+      const data = snap.val();
+      if(data.start){
+        const ms = new Date(data.start).getTime() - Date.now();
+        if(ms>0){
+          setTimeout(()=>alert(`Alarm: ${data.name}`),ms);
+        }
+      }
+    },{onlyOnce:true});
+  });
+}
 </script>
 
 </body>

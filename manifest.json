@@ -1,11 +1,11 @@
 {
-  "name": "ANFA Vardiya & Sohbet",
-  "short_name": "ANFA App",
-  "description": "Görev, mesaj ve admin kontrol uygulaması",
-  "start_url": "index.html",
+  "name": "ANFA Vardiya & Mesaj",
+  "short_name": "ANFA",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#1abc9c",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sohbet App</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
 html,body{width:100%;height:100%;overflow:hidden;background:black;color:white;}
@@ -15,14 +16,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:black;color:white;}
 #bgVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
 #header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
 #settingsBtn{font-size:24px;cursor:pointer;}
-.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);}
+.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);max-height:220px;overflow-y:auto;}
 .card h3{margin-bottom:10px;}
-#taskList,#chatBox,#calendar{max-height:200px;overflow-y:auto;margin-top:5px;}
 .task-btns,#msg-btns{display:flex;justify-content:space-around;margin-top:5px;}
 button{padding:8px;border:none;border-radius:8px;cursor:pointer;}
 #settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow-y:auto;}
 #settings button{width:48%;margin:5px 1%;background:#1abc9c;color:black;font-weight:bold;}
 input,textarea{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:none;}
+#calendarContainer{overflow-y:auto;}
 </style>
 </head>
 <body>
@@ -34,7 +35,6 @@ input,textarea{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:no
 
 <!-- LOGIN -->
 <div id="login">
-<h2>Google ile giriş</h2>
 <img src="google-symbol.png" id="googleLogin">
 </div>
 
@@ -72,9 +72,33 @@ input,textarea{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:no
 </div>
 </div>
 
-<div class="card">
-<h3>Takvim</h3>
-<div id="calendar">Takvim paneli burada çalışacak</div>
+<div class="card" id="calendarContainer">
+<!-- Takvim HTML entegre edildi -->
+<div class="header" style="background:none;padding:0;margin-bottom:10px;text-align:center">
+<div class="logo-container">
+<div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+<div class="logo-text">ANFA GÜVENLİK</div>
+</div>
+<div id="date"></div>
+<div id="time"></div>
+<div id="todayShift"></div>
+</div>
+<div class="section">
+<div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+<button onclick="prevMonth()">◀</button>
+<span id="monthTitle"></span>
+<button onclick="nextMonth()">▶</button>
+</div>
+<div class="weekdays">
+<div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cts</div><div>Paz</div>
+</div>
+<div class="calendar-grid" id="calendar"></div>
+<div class="summary">
+<div><div class="summary-value" id="dayCount">0</div>Gündüz</div>
+<div><div class="summary-value" id="nightCount">0</div>Gece</div>
+<div><div class="summary-value" id="offCount">0</div>İzin</div>
+</div>
+<div class="holiday-box" id="holidayInfo"></div>
 </div>
 </div>
 
@@ -86,13 +110,14 @@ input,textarea{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:no
 <button onclick="sendMail()">📧 Görüş & Öneri Gönder</button>
 <button onclick="logout()">🚪 Çıkış</button>
 <div id="adminPanel"></div>
+<textarea id="feedbackText" placeholder="Görüş ve önerileriniz..."></textarea>
 </div>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
@@ -103,6 +128,7 @@ storageBucket: "studio-3972799448-609d1.firebasestorage.app",
 messagingSenderId: "210449601127",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -113,12 +139,10 @@ const ADMIN="yasindemirkan83@gmail.com";
 setTimeout(()=>{
 document.getElementById("splash").style.display="none";
 document.getElementById("login").style.display="flex";
-},3000);
+},5000);
 
 /* LOGIN */
-document.getElementById("googleLogin").onclick=()=>{
-signInWithPopup(auth,provider);
-};
+document.getElementById("googleLogin").onclick=()=>{signInWithPopup(auth,provider);};
 
 /* AUTH */
 onAuthStateChanged(auth,(user)=>{
@@ -133,87 +157,77 @@ loadMessages();
 });
 
 /* LOGOUT */
-window.logout=()=>{
-signOut(auth);
-location.reload();
-}
+window.logout=()=>{signOut(auth);location.reload();}
 
-/* TASK FUNCTIONS */
+/* TASKS */
 function addTask(){
 let val=document.getElementById("taskInput").value;
 let start=document.getElementById("taskStart").value;
 let end=document.getElementById("taskEnd").value;
-if(!val) return;
-let userId = auth.currentUser.uid;
-let taskRef = ref(db,"tasks/"+userId);
-push(taskRef,{title:val,start:start,end:end});
+if(!val)return;
+let uid=auth.currentUser.uid;
+push(ref(db,"tasks/"+uid),{title:val,start:start,end:end});
 document.getElementById("taskInput").value="";
 }
 function loadTasks(){
-let userId = auth.currentUser.uid;
-let taskRef = ref(db,"tasks/"+userId);
-onValue(taskRef,(snapshot)=>{
+let uid=auth.currentUser.uid;
+onValue(ref(db,"tasks/"+uid),(snap)=>{
 let taskList=document.getElementById("taskList");
 taskList.innerHTML="";
-snapshot.forEach(child=>{
+snap.forEach(child=>{
 let li=document.createElement("li");
 li.innerText=child.val().title+" ("+child.val().start+" → "+child.val().end+")";
 taskList.appendChild(li);
 });
 });
 }
-function deleteTask(){
-let userId = auth.currentUser.uid;
-let taskRef = ref(db,"tasks/"+userId);
-onValue(taskRef,(snapshot)=>{
-snapshot.forEach(child=>{
-child.ref.remove();
-});
-});
-}
-function editTask(){alert("Edit fonksiyonu eklenebilir");}
+function deleteTask(){let uid=auth.currentUser.uid;onValue(ref(db,"tasks/"+uid),(snap)=>{snap.forEach(c=>c.ref.remove());});}
+function editTask(){alert("Düzenleme fonksiyonu eklenecek");}
 function setAlarm(){let t=prompt("Dakika gir:");if(t){setTimeout(()=>alert("Alarm!"),t*60000);}}
 
-/* CHAT FUNCTIONS */
+/* CHAT */
 function sendMsg(){
 let val=document.getElementById("msgInput").value;
 let file=document.getElementById("msgImg").files[0];
-let userId = auth.currentUser.uid;
-let chatRef = ref(db,"messages/"+userId);
-let msgData={text:val};
-if(file){msgData.img=file.name;} // basit kayıt
-push(chatRef,msgData);
+let uid=auth.currentUser.uid;
+let msg={text:val};
+if(file) msg.img=file.name;
+push(ref(db,"messages/"+uid),msg);
 document.getElementById("msgInput").value="";
 document.getElementById("msgImg").value="";
 }
 function loadMessages(){
-let userId = auth.currentUser.uid;
-let chatRef = ref(db,"messages/"+userId);
-onValue(chatRef,(snapshot)=>{
+let uid=auth.currentUser.uid;
+onValue(ref(db,"messages/"+uid),(snap)=>{
 let chatBox=document.getElementById("chatBox");
 chatBox.innerHTML="";
-snapshot.forEach(child=>{
-let msg=child.val();
+snap.forEach(c=>{
+let msg=c.val();
 let div=document.createElement("div");
 div.innerText=msg.text;
 chatBox.appendChild(div);
 });
 });
 }
-function deleteMsg(){let userId = auth.currentUser.uid;let chatRef=ref(db,"messages/"+userId);onValue(chatRef,(snapshot)=>{snapshot.forEach(c=>c.ref.remove());});}
+function deleteMsg(){let uid=auth.currentUser.uid;onValue(ref(db,"messages/"+uid),(snap)=>{snap.forEach(c=>c.ref.remove());});}
 
 /* SETTINGS */
-document.getElementById("settingsBtn").onclick=()=>{
-document.getElementById("app").style.display="none";
-document.getElementById("settings").style.display="block";
-}
-function backHome(){
-document.getElementById("settings").style.display="none";
-document.getElementById("app").style.display="block";
-}
-function sendMail(){
-location.href="mailto:yasindemirkan83@gmail.com?subject=Görüş & Öneri&body=Mesajım:";
-}
+document.getElementById("settingsBtn").onclick=()=>{document.getElementById("app").style.display="none";document.getElementById("settings").style.display="block";}
+function backHome(){document.getElementById("settings").style.display="none";document.getElementById("app").style.display="block";}
+function sendMail(){let msg=document.getElementById("feedbackText").value;location.href=`mailto:yasindemirkan83@gmail.com?subject=Görüş & Öneri&body=${encodeURIComponent(msg)}`}
+
+/* TAKVİM LOGİK */
+const BASLANGIC=new Date(Date.UTC(2026,0,1))
+let secilen=1,currentYear=new Date().getFullYear(),currentMonth=new Date().getMonth()
+const tatiller={"1-1":"🎉 Yılbaşı","4-23":"🇹🇷 23 Nisan","5-1":"👷 1 Mayıs","5-19":"🇹🇷 19 Mayıs","7-15":"🇹🇷 15 Temmuz","8-30":"🇹🇷 30 Ağustos","10-29":"🇹🇷 29 Ekim"};
+function vardiya(t){const gunFarki=Math.floor((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate()) - Date.UTC(2026,0,1))/86400000)%4;const duzen=[['gece','izin','izin','gunduz'],['izin','izin','gunduz','gece'],['izin','gunduz','gece','izin'],['gunduz','gece','izin','izin']];return duzen[(gunFarki+4)%4];}
+function todayInfo(){const today=new Date();const v=vardiya(today);let g=[],n=[];v.forEach((x,i)=>{if(x==='gunduz') g.push((i+1)+'. Vardiya');if(x==='gece') n.push((i+1)+'. Vardiya');});todayShift.innerText=`Bugün → Gündüz: ${g.join(', ')||'-'} | Gece: ${n.join(', ')||'-'}`;}
+function draw(){calendar.innerHTML='';holidayInfo.style.display='none';holidayInfo.innerHTML='';let g=0,n=0,o=0;const today=new Date();const firstDay=(new Date(currentYear,currentMonth,1).getDay()+6)%7;const days=new Date(currentYear,currentMonth+1,0).getDate();monthTitle.innerText=new Date(currentYear,currentMonth).toLocaleDateString('tr-TR',{month:'long',year:'numeric'});for(let i=0;i<firstDay;i++){calendar.appendChild(document.createElement('div'))}for(let i=1;i<=days;i++){const date=new Date(currentYear,currentMonth,i);const v=vardiya(date)[secilen-1];const d=document.createElement('div');let key=(currentMonth+1)+'-'+i;d.className='day '+(v==='gunduz'?'work-day':v==='gece'?'work-night':'off');if(date.toDateString()===today.toDateString()){d.classList.add('today');}if(tatiller[key]){d.classList.add('holiday');holidayInfo.style.display='block';holidayInfo.innerHTML+=tatiller[key]+'<br>'}d.innerText=i;calendar.appendChild(d);v==='gunduz'?g++:v==='gece'?n++:o++}dayCount.innerText=g;nightCount.innerText=n;offCount.innerText=o;}
+document.querySelectorAll('.vardiya-btn').forEach(b=>{b.onclick=()=>{document.querySelectorAll('.vardiya-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');secilen=b.dataset.v;draw()}})
+function nextMonth(){currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}draw()}
+function prevMonth(){currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}draw()}
+function tick(){const n=new Date();time.innerText=n.toLocaleTimeString('tr-TR');date.innerText=n.toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+setInterval(tick,1000);tick();draw();todayInfo();
 </script>
 
 </body>

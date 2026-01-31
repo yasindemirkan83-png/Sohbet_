@@ -1,111 +1,141 @@
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { auth, db } from "./firebaseConfig.js";
+import { ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const db = getDatabase();
-const auth = getAuth();
+/* -------------------- GÖREVLER -------------------- */
+const tasksDiv = document.getElementById("tasks");
+const taskInput = document.getElementById("taskInput");
+const taskStart = document.getElementById("taskStart");
+const taskEnd = document.getElementById("taskEnd");
 
-const taskListContainer = document.getElementById('taskListContainer');
-const chatBox = document.getElementById('chatBox');
+let tasks = {};
 
-// Görev ekleme
-function addTask(){
-  const title = document.getElementById('taskInput').value;
-  const start = document.getElementById('taskStart').value;
-  const end = document.getElementById('taskEnd').value;
-  if(!title) return alert("Görev adı girin");
-  const user = auth.currentUser;
-  push(ref(db,'tasks'), { title, start, end, uid:user.uid, done:false, timestamp:Date.now() });
-  document.getElementById('taskInput').value='';
+export function addTask(){
+  if(!taskInput.value || !taskStart.value || !taskEnd.value) return alert("Tüm alanları doldurun");
+  const newTaskRef = push(ref(db, "tasks"));
+  set(newTaskRef, {
+    uid: auth.currentUser.uid,
+    name: taskInput.value,
+    start: taskStart.value,
+    end: taskEnd.value,
+    completed: false
+  });
+  taskInput.value=""; taskStart.value=""; taskEnd.value="";
 }
 
-// Görevleri çek ve göster
-onValue(ref(db,'tasks'), snapshot => {
-  taskListContainer.innerHTML='';
-  const data = snapshot.val();
-  if(!data) return;
-  const tasks = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
-  tasks.forEach(([key,val])=>{
-    const div = document.createElement('div');
-    div.innerText = `${val.title} (${val.start || ''} → ${val.end || ''})`;
-    div.dataset.key=key;
-    div.style.cursor='pointer';
-    div.style.background = val.done?'lightgreen':'transparent';
-    div.onclick=()=>div.classList.toggle('selected');
-    taskListContainer.appendChild(div);
-  });
-});
-
-// Görev silme
-function deleteSelectedTask(){
-  const selected = taskListContainer.querySelectorAll('.selected');
-  selected.forEach(s=>{
-    remove(ref(db,'tasks/'+s.dataset.key));
-  });
+/* Sil veya tamamlandı için seçilen görev */
+export function deleteTask(){
+  const sel = document.querySelector('input[name="taskRadio"]:checked');
+  if(sel) remove(ref(db,"tasks/"+sel.value));
+}
+export function completeTask(){
+  const sel = document.querySelector('input[name="taskRadio"]:checked');
+  if(sel) update(ref(db,"tasks/"+sel.value), {completed:true});
 }
 
-// Görevi tamamlandı işaretle
-function markDoneTask(){
-  const selected = taskListContainer.querySelectorAll('.selected');
-  selected.forEach(s=>{
-    const key = s.dataset.key;
-    push(ref(db,'tasks_done'), key); // opsiyonel kayıt
-    s.style.background='lightgreen';
-  });
+/* Alarm */
+export function setAlarm(){
+  const sel = document.querySelector('input[name="taskRadio"]:checked');
+  if(!sel) return alert("Görev seçin");
+  const task = tasks[sel.value];
+  const alarmTime = new Date(task.start).getTime() - Date.now();
+  if(alarmTime>0){
+    setTimeout(()=>alert(`Alarm: ${task.name}`), alarmTime);
+    alert("Alarm kuruldu");
+  } else alert("Geçmiş bir zaman seçemezsiniz");
 }
 
-// Alarm kur
-function setTaskAlarm(){
-  const selected = taskListContainer.querySelectorAll('.selected');
-  selected.forEach(s=>{
-    const key = s.dataset.key;
-    // Basit alarm için tarih kontrol edilebilir
-    alert(`Alarm kuruldu: ${s.innerText}`);
-  });
-}
-
-// MESAJLAR
-function sendMsg(){
-  const msg = document.getElementById('msgInput').value;
-  if(!msg) return;
-  const user = auth.currentUser;
-  push(ref(db,'messages'),{ text:msg, uid:user.uid, name:user.displayName, timestamp:Date.now() });
-  document.getElementById('msgInput').value='';
-}
-
-onValue(ref(db,'messages'), snapshot=>{
-  chatBox.innerHTML='';
-  const data = snapshot.val();
-  if(!data) return;
-  const msgs = Object.entries(data).sort((a,b)=>b[1].timestamp - a[1].timestamp);
-  msgs.forEach(([key,val])=>{
-    const div = document.createElement('div');
-    div.innerHTML=`<small>${val.name} - ${new Date(val.timestamp).toLocaleString()}</small><br>${val.text}`;
-    div.dataset.key=key;
-    div.style.cursor='pointer';
-    div.onclick=()=>div.classList.toggle('selected');
-    chatBox.appendChild(div);
-  });
-});
-
-function deleteSelectedMsg(){
-  const selected = chatBox.querySelectorAll('.selected');
-  selected.forEach(s=>{
-    remove(ref(db,'messages/'+s.dataset.key));
+/* Görevleri yükle ve görüntüle */
+export function loadTasks(){
+  const tasksRef = ref(db,"tasks");
+  onValue(tasksRef, snapshot=>{
+    tasksDiv.innerHTML="";
+    tasks = {};
+    snapshot.forEach(s=>{
+      const t = s.val(); t.id = s.key;
+      tasks[s.key] = t;
+      const div = document.createElement("div");
+      div.style.background = t.completed ? "#10b981" : "#334155";
+      div.style.padding="6px"; div.style.margin="4px 0"; div.style.borderRadius="6px";
+      div.innerHTML = `<input type="radio" name="taskRadio" value="${s.key}"> ${t.name} (${t.start} - ${t.end})`;
+      tasksDiv.prepend(div);
+    });
   });
 }
 
-// Ayarlar
-function toggleSettings(){
-  const s = document.getElementById('settings');
-  s.style.display = s.style.display==='block'?'none':'block';
+/* -------------------- MESAJLAR -------------------- */
+const chatBox = document.getElementById("chatBox");
+const msgInput = document.getElementById("msgInput");
+let messages = {};
+
+export function sendMsg(){
+  if(!msgInput.value) return;
+  const newMsgRef = push(ref(db,"messages"));
+  const now = new Date();
+  set(newMsgRef,{
+    uid: auth.currentUser.uid,
+    name: auth.currentUser.displayName,
+    msg: msgInput.value,
+    timestamp: now.getTime()
+  });
+  msgInput.value="";
 }
 
-function sendFeedback(){
-  const msg=document.getElementById('feedbackText').value;
-  window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Geri Bildirim&body=${encodeURIComponent(msg)}`;
+export function deleteMsg(){
+  const sel = document.querySelector('input[name="msgRadio"]:checked');
+  if(sel) remove(ref(db,"messages/"+sel.value));
 }
 
-function logout(){
-  auth.signOut();
-  location.reload();
+/* Mesajları yükle ve görüntüle */
+export function loadMessages(){
+  const msgRef = ref(db,"messages");
+  onValue(msgRef, snapshot=>{
+    chatBox.innerHTML="";
+    messages={};
+    let arr = [];
+    snapshot.forEach(s=>{
+      const m = s.val(); m.id=s.key;
+      messages[s.key] = m;
+      arr.push(m);
+    });
+    // Tarihe göre sırala, en yeni en üstte
+    arr.sort((a,b)=>b.timestamp - a.timestamp);
+    arr.forEach(m=>{
+      const div = document.createElement("div");
+      div.style.background="#334155"; div.style.margin="4px 0"; div.style.padding="6px"; div.style.borderRadius="6px";
+      const date = new Date(m.timestamp).toLocaleString();
+      div.innerHTML = `<input type="radio" name="msgRadio" value="${m.id}"> <b>${m.name}</b> <small>${date}</small><br>${m.msg}`;
+      chatBox.appendChild(div);
+    });
+  });
+}
+
+/* -------------------- YÖNETİCİ PANELİ -------------------- */
+const usersList = document.getElementById("usersList");
+export function loadUsers(){
+  const usersRef = ref(db,"users");
+  onValue(usersRef, snapshot=>{
+    usersList.innerHTML="";
+    snapshot.forEach(s=>{
+      const u = s.val(); u.id = s.key;
+      const div = document.createElement("div");
+      div.className="user-item";
+      div.innerHTML=`<span>${u.name}</span><span>${u.uid}</span>`;
+      usersList.appendChild(div);
+    });
+  });
+}
+
+/* -------------------- GÖRÜŞ & ÖNERİ -------------------- */
+export function sendFeedback(){
+  const txt = document.getElementById("feedbackText").value;
+  if(!txt) return;
+  const newRef = push(ref(db,"feedback"));
+  set(newRef,{
+    uid: auth.currentUser.uid,
+    name: auth.currentUser.displayName,
+    msg: txt,
+    timestamp: Date.now()
+  });
+  alert("Mesajınız gönderildi");
+  document.getElementById("feedbackText").value="";
 }

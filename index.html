@@ -6,29 +6,23 @@
 <title>Sohbet App</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
-html,body{width:100%;height:100%;background:black;color:white;overflow:hidden;}
-/* SPLASH */
-#splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;background:black;display:flex;justify-content:center;align-items:center;}
+html,body{width:100%;height:100%;overflow:hidden;background:black;color:white;}
+#splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;}
 #splash video{width:100%;height:100%;object-fit:cover;}
-/* LOGIN */
-#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9;background:black;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9;display:flex;align-items:center;justify-content:center;flex-direction:column;background:black;}
 #login img{width:120px;cursor:pointer;margin-top:20px;}
-/* APP */
-#app{display:none;width:100%;height:100%;position:fixed;top:0;left:0;}
+#app{display:none;position:fixed;top:0;left:0;width:100%;height:100%;}
 #bgVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
 #header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
-#settingsBtn{font-size:28px;cursor:pointer;}
-/* CARDS */
-.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);overflow:auto;}
-#taskList,#chatBox{max-height:200px;overflow-y:auto;margin-top:10px;}
-.task-icons{display:flex;justify-content:space-around;margin-top:10px;}
-.task-icons button, .chat-icons button{flex:1;margin:0 2px;padding:8px;border:none;border-radius:6px;background:#1abc9c;color:black;cursor:pointer;}
-.task-icons button:hover, .chat-icons button:hover{background:#16a085;}
-.chat-icons{display:flex;justify-content:space-around;margin-top:5px;}
-/* SETTINGS */
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow:auto;}
-.btn{padding:10px;margin:5px 0;background:#1abc9c;border:none;border-radius:8px;width:100%;cursor:pointer;}
-.btn:hover{background:#16a085;}
+#settingsBtn{font-size:24px;cursor:pointer;}
+.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);}
+.card h3{margin-bottom:10px;}
+#taskList,#chatBox,#calendar{max-height:200px;overflow-y:auto;margin-top:5px;}
+.task-btns,#msg-btns{display:flex;justify-content:space-around;margin-top:5px;}
+button{padding:8px;border:none;border-radius:8px;cursor:pointer;}
+#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow-y:auto;}
+#settings button{width:48%;margin:5px 1%;background:#1abc9c;color:black;font-weight:bold;}
+input,textarea{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:none;}
 </style>
 </head>
 <body>
@@ -47,51 +41,50 @@ html,body{width:100%;height:100%;background:black;color:white;overflow:hidden;}
 <!-- APP -->
 <div id="app">
 <video id="bgVideo" src="bg.mp4" autoplay muted loop></video>
+
 <div id="header">
 <div id="userName">Hoşgeldin</div>
 <div id="settingsBtn">⚙️</div>
 </div>
 
-<!-- Görevler -->
 <div class="card">
 <h3>Görevler</h3>
 <input id="taskInput" placeholder="Görev ekle">
-<div class="task-icons">
+<input type="datetime-local" id="taskStart">
+<input type="datetime-local" id="taskEnd">
+<div class="task-btns">
 <button onclick="addTask()">➕ Ekle</button>
-<button onclick="deleteTask()">🗑️ Sil</button>
+<button onclick="deleteTask()">🗑 Sil</button>
 <button onclick="editTask()">✏️ Düzenle</button>
 <button onclick="setAlarm()">⏰ Alarm</button>
 </div>
 <ul id="taskList"></ul>
 </div>
 
-<!-- Mesajlar -->
 <div class="card">
 <h3>Mesajlar</h3>
 <div id="chatBox"></div>
-<input id="msgInput" placeholder="Mesaj yaz">
-<div class="chat-icons">
-<button onclick="sendMsg()">📩 Gönder</button>
-<button onclick="deleteMsg()">🗑️ Sil</button>
-<button onclick="sendImage()">🖼️ Resim</button>
+<input type="text" id="msgInput" placeholder="Mesaj yaz">
+<input type="file" id="msgImg">
+<div id="msg-btns">
+<button onclick="sendMsg()">➤ Gönder</button>
+<button onclick="deleteMsg()">🗑 Sil</button>
 </div>
 </div>
 
-<!-- Takvim -->
 <div class="card">
 <h3>Takvim</h3>
-<div id="calendar"></div>
+<div id="calendar">Takvim paneli burada çalışacak</div>
 </div>
-
 </div>
 
 <!-- SETTINGS -->
 <div id="settings">
 <h2>Ayarlar</h2>
-<button class="btn" onclick="backHome()">⬅ Geri</button>
-<button class="btn" onclick="addAlarm()">Alarm ekle</button>
-<button class="btn" onclick="sendMail()">Görüş & Öneri</button>
-<button class="btn" onclick="logout()">Çıkış</button>
+<button onclick="backHome()">⬅ Geri</button>
+<button onclick="addAlarm()">⏰ Alarm ekle</button>
+<button onclick="sendMail()">📧 Görüş & Öneri Gönder</button>
+<button onclick="logout()">🚪 Çıkış</button>
 <div id="adminPanel"></div>
 </div>
 
@@ -112,8 +105,9 @@ appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
 const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+const ADMIN="yasindemirkan83@gmail.com";
 
 /* SPLASH -> LOGIN */
 setTimeout(()=>{
@@ -131,8 +125,8 @@ onAuthStateChanged(auth,(user)=>{
 if(user){
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
-document.getElementById("userName").innerText=user.displayName || user.email.split('@')[0];
-document.getElementById("adminPanel").innerText = (user.email=="yasindemirkan83@gmail.com") ? "ADMIN PANEL" : "";
+document.getElementById("userName").innerText=user.displayName;
+if(user.email===ADMIN) document.getElementById("adminPanel").innerHTML="<b>ADMIN PANEL</b>";
 loadTasks();
 loadMessages();
 }
@@ -144,54 +138,72 @@ signOut(auth);
 location.reload();
 }
 
-/* TASK */
+/* TASK FUNCTIONS */
 function addTask(){
-let val=taskInput.value;
-if(!val)return;
-let newTask=push(ref(db,"tasks"),{task:val,user:auth.currentUser.email});
-taskInput.value="";
+let val=document.getElementById("taskInput").value;
+let start=document.getElementById("taskStart").value;
+let end=document.getElementById("taskEnd").value;
+if(!val) return;
+let userId = auth.currentUser.uid;
+let taskRef = ref(db,"tasks/"+userId);
+push(taskRef,{title:val,start:start,end:end});
+document.getElementById("taskInput").value="";
 }
-function deleteTask(){
-taskList.innerHTML="";
-}
-function editTask(){
-alert("Görev düzenleme hazır değil");
-}
-
-/* CHAT */
-function sendMsg(){
-let val=msgInput.value;
-if(!val)return;
-push(ref(db,"messages"),{msg:val,user:auth.currentUser.email});
-msgInput.value="";
-}
-function deleteMsg(){chatBox.innerHTML="";}
-function sendImage(){alert("Resim gönderme hazır değil");}
-
-/* LOAD */
 function loadTasks(){
-const tRef=ref(db,"tasks");
-onValue(tRef,(snap)=>{
+let userId = auth.currentUser.uid;
+let taskRef = ref(db,"tasks/"+userId);
+onValue(taskRef,(snapshot)=>{
+let taskList=document.getElementById("taskList");
 taskList.innerHTML="";
-snap.forEach(s=>{
+snapshot.forEach(child=>{
 let li=document.createElement("li");
-li.innerText=s.val().task + " (" + s.val().user + ")";
+li.innerText=child.val().title+" ("+child.val().start+" → "+child.val().end+")";
 taskList.appendChild(li);
 });
 });
 }
-function loadMessages(){
-const mRef=ref(db,"messages");
-onValue(mRef,(snap)=>{
-chatBox.innerHTML="";
-snap.forEach(s=>{
-chatBox.innerHTML+=`<div>👤 ${s.val().user}: ${s.val().msg}</div>`;
+function deleteTask(){
+let userId = auth.currentUser.uid;
+let taskRef = ref(db,"tasks/"+userId);
+onValue(taskRef,(snapshot)=>{
+snapshot.forEach(child=>{
+child.ref.remove();
 });
 });
 }
+function editTask(){alert("Edit fonksiyonu eklenebilir");}
+function setAlarm(){let t=prompt("Dakika gir:");if(t){setTimeout(()=>alert("Alarm!"),t*60000);}}
+
+/* CHAT FUNCTIONS */
+function sendMsg(){
+let val=document.getElementById("msgInput").value;
+let file=document.getElementById("msgImg").files[0];
+let userId = auth.currentUser.uid;
+let chatRef = ref(db,"messages/"+userId);
+let msgData={text:val};
+if(file){msgData.img=file.name;} // basit kayıt
+push(chatRef,msgData);
+document.getElementById("msgInput").value="";
+document.getElementById("msgImg").value="";
+}
+function loadMessages(){
+let userId = auth.currentUser.uid;
+let chatRef = ref(db,"messages/"+userId);
+onValue(chatRef,(snapshot)=>{
+let chatBox=document.getElementById("chatBox");
+chatBox.innerHTML="";
+snapshot.forEach(child=>{
+let msg=child.val();
+let div=document.createElement("div");
+div.innerText=msg.text;
+chatBox.appendChild(div);
+});
+});
+}
+function deleteMsg(){let userId = auth.currentUser.uid;let chatRef=ref(db,"messages/"+userId);onValue(chatRef,(snapshot)=>{snapshot.forEach(c=>c.ref.remove());});}
 
 /* SETTINGS */
-settingsBtn.onclick=()=>{
+document.getElementById("settingsBtn").onclick=()=>{
 document.getElementById("app").style.display="none";
 document.getElementById("settings").style.display="block";
 }
@@ -199,12 +211,9 @@ function backHome(){
 document.getElementById("settings").style.display="none";
 document.getElementById("app").style.display="block";
 }
-
-/* ALARM */
-function addAlarm(){let t=prompt("Dakika gir:");if(t){setTimeout(()=>alert("Alarm!"),t*60000);}}
-
-/* MAIL */
-function sendMail(){location.href="mailto:yasindemirkan83@gmail.com?subject=Görüş&body=Mesajım:";}
+function sendMail(){
+location.href="mailto:yasindemirkan83@gmail.com?subject=Görüş & Öneri&body=Mesajım:";
+}
 </script>
 
 </body>

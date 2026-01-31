@@ -3,113 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sohbet App PWA</title>
+<title>Sohbet App</title>
+
+<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
-body,html{width:100%;height:100%;overflow:hidden;background:black;color:white;}
+/* GENEL */
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body,html{width:100%;height:100%;background:#000;color:#fff;overflow:hidden}
+
 /* SPLASH */
-#splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:999;background:black;}
+#splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;background:#000;}
 #splash video{width:100%;height:100%;object-fit:cover;}
+
 /* LOGIN */
-#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:998;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-#login img{width:120px;cursor:pointer;margin-top:20px;}
+#login{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+#login img{width:120px;cursor:pointer;margin-top:20px}
+
 /* APP */
-#app{display:none;position:fixed;top:0;left:0;width:100%;height:100%;overflow-y:auto;}
+#app{display:none;position:fixed;top:0;left:0;width:100%;height:100%;overflow:auto;}
 #bgVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
+
 /* HEADER */
 #header{height:50px;display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.6);}
-#settingsBtn{font-size:24px;cursor:pointer}
+#settingsBtn{font-size:28px;cursor:pointer}
+
 /* CARD */
-.card{margin:10px;padding:15px;border-radius:12px;background:rgba(0,0,0,0.7);}
+.card{margin:10px;background:rgba(0,0,0,0.6);border-radius:12px;padding:15px;}
 .card h3{margin-bottom:10px;}
-.card ul{list-style:none;max-height:150px;overflow-y:auto;padding:0;}
-.card ul li{padding:8px;margin-bottom:5px;background:rgba(255,255,255,0.1);border-radius:6px;}
-.card .actions{display:flex;justify-content:space-around;margin-top:10px;}
-.card .actions button{flex:1;margin:0 3px;padding:10px;border:none;border-radius:8px;background:#1abc9c;color:black;font-weight:700;cursor:pointer;}
-/* CHAT */
-#chatBox{max-height:150px;overflow-y:auto;margin-bottom:5px;}
-#chatBox div{margin:3px 0;padding:6px;border-radius:6px;background:rgba(255,255,255,0.1);}
-#chatActions{display:flex;justify-content:space-around;}
-#chatActions button{flex:1;margin:0 3px;padding:10px;border:none;border-radius:8px;background:#38bdf8;color:black;font-weight:700;cursor:pointer;}
-/* SETTINGS */
-#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;padding:20px;overflow-y:auto;z-index:1000;}
-#settings button{width:100%;margin:5px 0;padding:10px;border:none;border-radius:8px;background:#10b981;color:black;font-weight:700;cursor:pointer;}
-#settings textarea{width:100%;height:80px;border-radius:8px;padding:8px;border:none;margin-bottom:5px;}
+
+/* GÖREV PANELI */
+#taskList{max-height:200px;overflow-y:auto;margin-bottom:5px;}
+.task-item{padding:6px;margin:5px 0;background:#111;border-radius:8px;display:flex;justify-content:space-between;align-items:center;}
+
+/* MESAJ PANELI */
+#chatBox{height:150px;overflow-y:auto;margin-bottom:5px;}
+.message-item{padding:6px;margin:5px 0;background:#111;border-radius:8px;display:flex;justify-content:space-between;align-items:center;}
+
 /* TAKVIM */
-#takvimSection{margin:10px;}
-#calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-.day{padding:10px;background:rgba(255,255,255,0.1);border-radius:6px;text-align:center;}
-.today{outline:2px solid #38bdf8;box-shadow:0 0 10px #38bdf8;}
-.work-day{background:rgba(16,185,129,.4);}
-.work-night{background:rgba(56,189,248,.4);}
-.off{background:rgba(100,116,139,.4);}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px;}
+.day{background:#222;padding:10px;border-radius:8px;text-align:center;position:relative;}
+.today{outline:2px solid #38bdf8;box-shadow:0 0 8px #38bdf8;}
+.work-day{background:rgba(16,185,129,0.4);}
+.work-night{background:rgba(56,189,248,0.4);}
+.off{background:rgba(100,116,139,0.4);}
+
+/* SETTINGS */
+#settings{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);padding:20px;overflow:auto;}
+.settings-panel button{margin:5px 0;padding:10px;width:100%;border:none;border-radius:8px;background:#38bdf8;color:#000;font-weight:700;cursor:pointer;}
+.settings-panel textarea{width:100%;height:80px;padding:5px;border-radius:8px;border:none;margin-bottom:5px;}
 </style>
 </head>
 <body>
 
 <!-- SPLASH -->
 <div id="splash">
-<video src="acilis.mp4" autoplay muted></video>
+<video src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/acilis.mp4" autoplay muted></video>
 </div>
 
 <!-- LOGIN -->
 <div id="login">
-<img src="google-symbol.png" id="googleLogin">
+<h2>Giriş Yap</h2>
+<img src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/google-symbol.png" id="googleLogin">
 </div>
 
 <!-- APP -->
 <div id="app">
-<video id="bgVideo" src="uygulamaici.mp4" autoplay muted loop></video>
+<video id="bgVideo" src="https://raw.githubusercontent.com/yasindemirkan83-png/Sohbet_/main/uygulamaici.mp4" autoplay muted loop></video>
+
 <div id="header">
 <div id="userName">Hoşgeldin</div>
 <div id="settingsBtn">⚙️</div>
 </div>
 
+<!-- GÖREV PANELI -->
 <div class="card">
 <h3>Görevler</h3>
-<input id="taskInput" placeholder="Görev ekle">
-<div class="actions">
-<button onclick="addTask()">➕ Ekle</button>
-<button onclick="deleteTask()">🗑️ Sil</button>
-<button onclick="markDone()">✅ Tamamlandı</button>
-<button onclick="setAlarm()">⏰ Alarm</button>
+<input type="text" id="taskInput" placeholder="Görev başlığı">
+<input type="datetime-local" id="taskStart">
+<input type="datetime-local" id="taskEnd">
+<div style="display:flex;gap:5px;margin-top:5px;">
+<button onclick="addTask()">➕</button>
+<button onclick="deleteSelectedTask()">🗑️</button>
+<button onclick="markDoneTask()">✅</button>
+<button onclick="setAlarmTask()">⏰</button>
 </div>
 <ul id="taskList"></ul>
 </div>
 
+<!-- MESAJ PANELI -->
 <div class="card">
 <h3>Mesajlar</h3>
 <div id="chatBox"></div>
-<input id="msgInput" placeholder="Mesaj yaz">
-<div id="chatActions">
-<button onclick="sendMsg()">✉️ Gönder</button>
-<button onclick="addImage()">🖼️ Resim</button>
-<button onclick="deleteMsg()">🗑️ Sil</button>
+<input type="text" id="msgInput" placeholder="Mesaj yaz">
+<div style="display:flex;gap:5px;margin-top:5px;">
+<button onclick="sendMsg()">📩</button>
+<button onclick="deleteSelectedMsg()">🗑️</button>
+<button onclick="addImg()">🖼️</button>
 </div>
 </div>
 
-<div class="card" id="takvimSection">
+<!-- TAKVIM PANELI -->
+<div class="card">
 <h3>Takvim</h3>
 <div id="calendar"></div>
-</div>
 </div>
 
 <!-- SETTINGS -->
 <div id="settings">
 <h2>Ayarlar</h2>
+<div class="settings-panel">
 <button onclick="toggleSettings()">⬅ Geri</button>
-<button onclick="adminPanel()">👤 Admin Paneli</button>
-<textarea id="feedbackText" placeholder="Görüş ve önerileriniz..."></textarea>
-<button onclick="sendFeedback()">📩 Gönder</button>
+<button onclick="sendFeedback()">📩 Görüş & Öneri</button>
 <button onclick="logout()">🚪 Çıkış</button>
+<hr>
+<b>Admin Panel</b>
+<div id="adminPanel"></div>
+</div>
 </div>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyDE5-fq9ifhtBlXTVOR1PhzD3XuVOWSVeE",
@@ -121,99 +139,122 @@ messagingSenderId: "210449601127",
 appId: "1:210449601127:web:b3339666a09822b40c7ac2"
 };
 
-const appF = initializeApp(firebaseConfig);
-const auth = getAuth(appF);
-const db = getDatabase(appF);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
-let currentUser=null;
+const db = getDatabase(app);
 
-// SPLASH -> LOGIN
-setTimeout(()=>{document.getElementById("splash").style.display="none";document.getElementById("login").style.display="flex";},5000);
+let currentUser = null;
+const ADMIN="yasindemirkan83@gmail.com";
 
-// LOGIN
+/* SPLASH -> LOGIN */
+setTimeout(()=>{
+document.getElementById("splash").style.display="none";
+document.getElementById("login").style.display="flex";
+},5000);
+
+/* LOGIN */
 document.getElementById("googleLogin").onclick=()=>{
 signInWithPopup(auth,provider);
 };
 
-// AUTH
-onAuthStateChanged(auth,user=>{
+/* AUTH STATE */
+onAuthStateChanged(auth,(user)=>{
 if(user){
 currentUser=user;
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
 document.getElementById("userName").innerText=user.displayName;
-loadTasks();loadMessages();drawCalendar();
+if(user.email===ADMIN) document.getElementById("adminPanel").innerHTML="<b>Admin yetkili</b>";
+loadTasks();
+loadMessages();
 }
 });
 
-// LOGOUT
-window.logout=()=>{
-signOut(auth).then(()=>location.reload());
-}
+/* LOGOUT */
+function logout(){signOut(auth); location.reload();}
 
-// TASKS
+/* SETTINGS */
+const settingsBtn=document.getElementById("settingsBtn");
+settingsBtn.onclick=()=>{toggleSettings();}
+function toggleSettings(){let s=document.getElementById("settings"); s.style.display=s.style.display==="block"?"none":"block"}
+
+/* TASK FUNCTIONS */
 function addTask(){
-let val=document.getElementById("taskInput").value;
-if(!val) return;
-const tRef=push(ref(db,'tasks/'+currentUser.uid));
-set(tRef,{text:val,done:false});
+const title=document.getElementById("taskInput").value;
+const start=document.getElementById("taskStart").value;
+const end=document.getElementById("taskEnd").value;
+if(!title) return;
+const tRef=push(ref(db,"tasks"));
+set(tRef,{uid:currentUser.uid,title,start,end,done:false});
 document.getElementById("taskInput").value="";
+document.getElementById("taskStart").value="";
+document.getElementById("taskEnd").value="";
 }
 function loadTasks(){
-const tRef=ref(db,'tasks/'+currentUser.uid);
-onValue(tRef,snap=>{
-const list=document.getElementById("taskList");
-list.innerHTML="";
+const tRef=ref(db,"tasks");
+onValue(tRef,(snap)=>{
+const ul=document.getElementById("taskList");
+ul.innerHTML="";
 snap.forEach(child=>{
 const li=document.createElement("li");
-li.innerText=child.val().text;
+li.className="task-item";
+li.innerText=child.val().title + " ("+child.val().start+"→"+child.val().end+")";
 if(child.val().done) li.style.textDecoration="line-through";
-list.appendChild(li);
-li.onclick=()=>{
-child.ref.update({done:!child.val().done});
-}
+li.onclick=()=>{li.dataset.key=child.key; li.classList.toggle("selected");};
+ul.prepend(li);
 });
 });
 }
-function deleteTask(){
-const tRef=ref(db,'tasks/'+currentUser.uid);
-onValue(tRef,snap=>{
-snap.forEach(child=>{child.ref.remove();});
-});
-}
-function markDone(){const tRef=ref(db,'tasks/'+currentUser.uid);onValue(tRef,snap=>{snap.forEach(child=>{child.ref.update({done:true});});});}
-function setAlarm(){let t=prompt("Dakika gir:");if(t){setTimeout(()=>alert("Alarm!"),t*60000);}}
+function deleteSelectedTask(){document.querySelectorAll(".task-item.selected").forEach(li=>{remove(ref(db,"tasks/"+li.dataset.key))});}
+function markDoneTask(){document.querySelectorAll(".task-item.selected").forEach(li=>{update(ref(db,"tasks/"+li.dataset.key),{done:true})});}
+function setAlarmTask(){let t=prompt("Dakika gir:"); if(t) setTimeout(()=>alert("Alarm!"),t*60000);}
 
-// CHAT
+/* MESSAGE FUNCTIONS */
 function sendMsg(){
-let val=document.getElementById("msgInput").value;
-if(!val) return;
-const cRef=push(ref(db,'messages'));
-set(cRef,{user:currentUser.displayName,text:val});
+const msg=document.getElementById("msgInput").value; if(!msg) return;
+push(ref(db,"messages"),{uid:currentUser.uid,name:currentUser.displayName,text:msg});
 document.getElementById("msgInput").value="";
 }
-function addImage(){alert("Resim ekleme telefon seçimi henüz yok.");}
-function deleteMsg(){const cRef=ref(db,'messages');onValue(cRef,snap=>{snap.forEach(child=>{child.ref.remove();});});}
-function loadMessages(){const cRef=ref(db,'messages');onValue(cRef,snap=>{const box=document.getElementById("chatBox");box.innerHTML="";snap.forEach(child=>{box.innerHTML+=`<div>👤 ${child.val().user}: ${child.val().text}</div>`;});});}
-
-// SETTINGS
-function toggleSettings(){const s=document.getElementById("settings");s.style.display=s.style.display==="block"?"none":"block";}
-function adminPanel(){alert("Admin Paneli: Kullanıcıları kontrol et.");}
-function sendFeedback(){let msg=document.getElementById("feedbackText").value;window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Geri Bildirim&body=${encodeURIComponent(msg)}`;}
-
-// TAKVIM
-function drawCalendar(){
-const cal=document.getElementById("calendar");
-cal.innerHTML="";
-let daysInMonth=31;
-let startDay=6; // Cumartesi 31.01.2026
-for(let i=0;i<startDay;i++){let d=document.createElement("div");cal.appendChild(d);}
-for(let i=1;i<=daysInMonth;i++){
-let d=document.createElement("div");d.innerText=i;
-if(i===31) d.classList.add("today");
-cal.appendChild(d);
+function loadMessages(){
+const mRef=ref(db,"messages");
+onValue(mRef,(snap)=>{
+const box=document.getElementById("chatBox"); box.innerHTML="";
+snap.forEach(child=>{
+const div=document.createElement("div");
+div.className="message-item"; div.innerText=child.val().name+": "+child.val().text;
+box.appendChild(div);
+});
+});
 }
+function deleteSelectedMsg(){document.querySelectorAll(".message-item.selected").forEach(div=>{remove(ref(db,"messages/"+div.dataset.key))});}
+function addImg(){alert("Resim ekleme modu");}
+
+/* FEEDBACK */
+function sendFeedback(){
+const msg=document.getElementById("feedbackText").value;
+if(!msg) return;
+window.location.href=`mailto:yasindemirkan83@gmail.com?subject=Geri Bildirim&body=${encodeURIComponent(msg)}`;
 }
 </script>
+
+<!-- TAKVIM -->
+<script>
+/* TAKVIM */
+const today=new Date(2026,0,31); // 31.01.2026 Cumartesi
+const calendar=document.getElementById("calendar");
+function drawCalendar(){
+calendar.innerHTML="";
+const firstDay=(new Date(today.getFullYear(),today.getMonth(),1).getDay()+6)%7;
+const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+for(let i=0;i<firstDay;i++){let empty=document.createElement("div");calendar.appendChild(empty);}
+for(let d=1;d<=daysInMonth;d++){
+const div=document.createElement("div"); div.className="day"; div.innerText=d;
+if(d===31) div.classList.add("today");
+calendar.appendChild(div);
+}}
+drawCalendar();
+</script>
+
 </body>
 </html>
